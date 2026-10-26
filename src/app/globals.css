@@ -1,0 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-canvas: #F5F8FC;
+    --card-surface: #FFFFFF;
+    --border-subtle: #E2EAF4;
+    --text-heading: #14213D;
+    --text-body: #64748B;
+    --text-muted: #94A3B8;
+
+    /* Default / ERP Center Blue Theme */
+    --theme-primary: #2563EB;
+    --theme-dark: #164EAB;
+    --theme-light: #EFF6FF;
+    --theme-secondary: #60A5FA;
+    --theme-border: #BFDBFE;
+    --theme-ring: rgba(37, 99, 235, 0.2);
+
+    --radius-card: 16px;
+    --radius-button: 12px;
+  }
+
+  /* Module Specific Theme Identifiers */
+  [data-theme="inventory"],
+  .theme-inventory {
+    --theme-primary: #2563EB;
+    --theme-dark: #1D4ED8;
+    --theme-light: #EFF6FF;
+    --theme-secondary: #60A5FA;
+    --theme-border: #BFDBFE;
+    --theme-ring: rgba(37, 99, 235, 0.2);
+  }
+
+  [data-theme="procurement"],
+  .theme-procurement {
+    --theme-primary: #F28C28;
+    --theme-dark: #D97706;
+    --theme-light: #FFF7ED;
+    --theme-secondary: #FB923C;
+    --theme-border: #FED7AA;
+    --theme-ring: rgba(242, 140, 40, 0.25);
+  }
+
+  [data-theme="hr"],
+  .theme-hr {
+    --theme-primary: #0D9488;
+    --theme-dark: #0F766E;
+    --theme-light: #F0FDFA;
+    --theme-secondary: #2DD4BF;
+    --theme-border: #99F6E4;
+    --theme-ring: rgba(13, 148, 136, 0.25);
+  }
+
+  [data-theme="finance"],
+  .theme-finance {
+    --theme-primary: #6366F1;
+    --theme-dark: #4338CA;
+    --theme-light: #EEF2FF;
+    --theme-secondary: #818CF8;
+    --theme-border: #C7D2FE;
+    --theme-ring: rgba(99, 102, 241, 0.25);
+  }
+
+  [data-theme="reports"],
+  .theme-reports {
+    --theme-primary: #8B5CF6;
+    --theme-dark: #6D28D9;
+    --theme-light: #F5F3FF;
+    --theme-secondary: #A78BFA;
+    --theme-border: #DDD6FE;
+    --theme-ring: rgba(139, 92, 246, 0.25);
+  }
+
+  body {
+    background-color: #F5F8FC;
+    color: #14213D;
+    font-family: 'IBM Plex Sans Thai', Prompt, -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: Prompt, 'IBM Plex Sans Thai', sans-serif;
+    color: #14213D;
+    font-weight: 600;
+  }
+}
+
+/* Common SaaS Components */
+.erp-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E2EAF4;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px -2px rgba(20, 33, 61, 0.04), 0 1px 3px 0 rgba(20, 33, 61, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.erp-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 6px 20px -2px rgba(20, 33, 61, 0.06), 0 2px 6px -1px rgba(20, 33, 61, 0.03);
+}
+
+.erp-input {
+  background-color: #FFFFFF;
+  border: 1px solid #DCE5F0;
+  border-radius: 0.75rem;
+  color: #14213D;
+  transition: all 0.15s ease-in-out;
+}
+
+.erp-input::placeholder {
+  color: #94A3B8;
+}
+
+.erp-input:focus {
+  outline: none;
+  border-color: var(--theme-primary, #2563EB);
+  box-shadow: 0 0 0 3px var(--theme-ring, rgba(37, 99, 235, 0.18));
+}
+
+/* Custom Enterprise Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Number alignment */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle smooth modal animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
