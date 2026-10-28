@@ -28,14 +28,14 @@ export default function ERPPortalHomePage() {
       id: 'hr',
       code: 'HRM • บุคลากร',
       title: 'HR & บุคลากร',
-      desc: 'จัดการข้อมูลแพทย์ พยาบาล พนักงาน โครงสร้างองค์กร ตารางเวรปฏิบัติงาน และศูนย์อนุมัติคำขอบุคลากร',
-      kpiBadge: 'เตรียมเปิดใช้งาน',
-      statusText: 'อยู่ระหว่างพัฒนาระบบ',
-      isReady: false,
-      route: '#',
-      gradient: 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
-      edgeColor: '#475569',
-      glowColor: 'rgba(100, 116, 139, 0.25)',
+      desc: 'จัดการข้อมูลแพทย์ พยาบาล พนักงาน โครงสร้างองค์กร ตารางเวรปฏิบัติงาน ใบประกอบวิชาชีพ และเงินเดือน',
+      kpiBadge: 'พร้อมใช้งาน 100%',
+      statusText: 'ใบประกอบวิชาชีพใกล้หมดอายุ 3 รายการ',
+      isReady: true,
+      route: '/hr',
+      gradient: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+      edgeColor: '#115e59',
+      glowColor: 'rgba(13, 148, 136, 0.34)',
       svgIcon: (
         <svg className="w-8 h-8 text-white drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -46,17 +46,36 @@ export default function ERPPortalHomePage() {
       )
     },
     {
+      id: 'budget',
+      code: 'BUDGET • งบประมาณ',
+      title: 'ระบบบริหารงบประมาณ',
+      desc: 'จัดทำงบประมาณประจำปี จัดสรรกรอบวงเงิน ควบคุมงบประมาณ และติดตามภาระผูกพันของโรงพยาบาล',
+      kpiBadge: 'ปีงบประมาณ 2569',
+      statusText: 'พร้อมใช้งาน',
+      isReady: true,
+      route: '/budget',
+      gradient: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+      edgeColor: '#064e3b',
+      glowColor: 'rgba(5, 150, 105, 0.34)',
+      svgIcon: (
+        <svg className="w-8 h-8 text-white drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+          <path d="M22 12A10 10 0 0 0 12 2v10z" />
+        </svg>
+      )
+    },
+    {
       id: 'finance',
-      code: 'FIN • แผนงบประมาณ',
-      title: 'งบประมาณและการเงิน',
-      desc: 'บริหารงบประมาณประจำปี แผนจัดซื้อกรอบวงเงิน (PP) ค่าใช้จ่าย เจ้าหนี้ และสถานะการเบิกจ่ายโรงพยาบาล',
-      kpiBadge: 'เตรียมเปิดใช้งาน',
-      statusText: 'อยู่ระหว่างพัฒนาระบบ',
-      isReady: false,
-      route: '#',
-      gradient: 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
-      edgeColor: '#475569',
-      glowColor: 'rgba(100, 116, 139, 0.25)',
+      code: 'FINANCE • ACCOUNTING',
+      title: 'ระบบบริหารการเงินและบัญชี',
+      desc: 'บริหารรายรับ รายจ่าย เจ้าหนี้ ลูกหนี้ การเบิกจ่าย และการบันทึกบัญชีของโรงพยาบาล',
+      kpiBadge: 'พร้อมใช้งาน 100%',
+      statusText: 'พร้อมใช้งาน',
+      isReady: true,
+      route: '/finance',
+      gradient: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+      edgeColor: '#0c4a6e',
+      glowColor: 'rgba(2, 132, 199, 0.34)',
       svgIcon: (
         <svg className="w-8 h-8 text-white drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <ellipse cx="12" cy="5" rx="9" ry="3" />
@@ -609,7 +628,7 @@ export default function ERPPortalHomePage() {
                 ระบบงานทั้งหมด
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
-                6 ระบบงานหลัก
+                7 ระบบงานหลัก
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
