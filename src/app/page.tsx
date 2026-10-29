@@ -69,13 +69,13 @@ export default function ERPPortalHomePage() {
       code: 'FINANCE • ACCOUNTING',
       title: 'ระบบบริหารการเงินและบัญชี',
       desc: 'บริหารรายรับ รายจ่าย เจ้าหนี้ ลูกหนี้ การเบิกจ่าย และการบันทึกบัญชีของโรงพยาบาล',
-      kpiBadge: 'พร้อมใช้งาน 100%',
-      statusText: 'พร้อมใช้งาน',
-      isReady: true,
-      route: '/finance',
-      gradient: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-      edgeColor: '#0c4a6e',
-      glowColor: 'rgba(2, 132, 199, 0.34)',
+      kpiBadge: 'ยังไม่พร้อมใช้งาน',
+      statusText: 'ยังไม่เปิดใช้งาน (อยู่ระหว่างพัฒนา)',
+      isReady: false,
+      route: '#',
+      gradient: 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
+      edgeColor: '#475569',
+      glowColor: 'rgba(100, 116, 139, 0.25)',
       svgIcon: (
         <svg className="w-8 h-8 text-white drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <ellipse cx="12" cy="5" rx="9" ry="3" />
@@ -251,8 +251,9 @@ export default function ERPPortalHomePage() {
     };
   }, []);
 
-  // Direct navigation to target system route
-  const navigateToModule = (route: string) => {
+  // Direct navigation to target system route (only if module is ready)
+  const navigateToModule = (route: string, isReady = true) => {
+    if (!isReady || !route || route === '#') return;
     router.push(route);
   };
 
@@ -675,14 +676,16 @@ export default function ERPPortalHomePage() {
           </div>
         </section>
 
-        {/* ================= 4. 6 ERP MODULES GRID ================= */}
+        {/* ================= 4. ERP MODULES GRID ================= */}
         {currentView === 'grid' ? (
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pb-8">
             {filteredModules.map((mod) => (
               <div key={mod.id}>
                 <article
-                  onClick={() => navigateToModule(mod.route)}
-                  className="module-card cursor-pointer p-6 sm:p-7 h-full flex flex-col justify-between group"
+                  onClick={() => navigateToModule(mod.route, mod.isReady)}
+                  className={`module-card p-6 sm:p-7 h-full flex flex-col justify-between ${
+                    mod.isReady ? 'cursor-pointer group' : 'cursor-not-allowed opacity-85'
+                  }`}
                 >
                   <div>
                     {/* Top Row: Squircle Icon + Live KPI Badge */}
@@ -704,7 +707,13 @@ export default function ERPPortalHomePage() {
                         <span className="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-slate-100 text-slate-600 border border-slate-200/80">
                           {mod.code}
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60">
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                            mod.isReady
+                              ? 'bg-blue-50 text-blue-700 border-blue-200/60'
+                              : 'bg-slate-100 text-slate-500 border-slate-200'
+                          }`}
+                        >
                           {mod.kpiBadge}
                         </span>
                       </div>
@@ -712,7 +721,13 @@ export default function ERPPortalHomePage() {
 
                     {/* Module Title & Description */}
                     <div className="space-y-2">
-                      <h3 className="text-xl font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors">
+                      <h3
+                        className={`text-xl font-extrabold transition-colors ${
+                          mod.isReady
+                            ? 'text-slate-900 group-hover:text-blue-600'
+                            : 'text-slate-700'
+                        }`}
+                      >
                         {mod.title}
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
@@ -725,29 +740,55 @@ export default function ERPPortalHomePage() {
                   <div className="pt-5 mt-6 border-t border-slate-100 space-y-3">
                     <div className="flex items-center justify-between text-[11px] text-slate-500">
                       <span className="flex items-center gap-1.5 font-medium">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span
+                          className={`w-2 h-2 rounded-full ${
+                            mod.isReady ? 'bg-emerald-500' : 'bg-slate-400'
+                          }`}
+                        ></span>
                         {mod.statusText}
                       </span>
-                      <span className="font-semibold text-slate-400">พร้อมใช้งาน</span>
+                      <span className="font-semibold text-slate-400">
+                        {mod.isReady ? 'พร้อมใช้งาน' : 'ยังไม่พร้อมใช้งาน'}
+                      </span>
                     </div>
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigateToModule(mod.route);
-                      }}
-                      className="w-full py-3 px-4 rounded-2xl bg-[#f1f6fe] group-hover:bg-blue-600 text-blue-800 group-hover:text-white font-bold text-xs sm:text-sm flex items-center justify-between border border-blue-100 group-hover:border-blue-700 shadow-2xs group-hover:shadow-md transition-all"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="w-6 h-6 rounded-full bg-blue-700 group-hover:bg-white text-white group-hover:text-blue-700 flex items-center justify-center transition-colors">
-                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </span>
-                        <span>เข้าสู่ระบบงาน</span>
-                      </div>
-                      <span className="text-[11px] opacity-75 group-hover:opacity-100">เปิดระบบ →</span>
-                    </button>
+                    {mod.isReady ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigateToModule(mod.route, mod.isReady);
+                        }}
+                        className="w-full py-3 px-4 rounded-2xl bg-[#f1f6fe] group-hover:bg-blue-600 text-blue-800 group-hover:text-white font-bold text-xs sm:text-sm flex items-center justify-between border border-blue-100 group-hover:border-blue-700 shadow-2xs group-hover:shadow-md transition-all"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-6 h-6 rounded-full bg-blue-700 group-hover:bg-white text-white group-hover:text-blue-700 flex items-center justify-center transition-colors">
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8">
+                              <path d="m9 18 6-6-6-6" />
+                            </svg>
+                          </span>
+                          <span>เข้าสู่ระบบงาน</span>
+                        </div>
+                        <span className="text-[11px] opacity-75 group-hover:opacity-100">เปิดระบบ →</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full py-3 px-4 rounded-2xl bg-slate-100 text-slate-400 font-bold text-xs sm:text-sm flex items-center justify-between border border-slate-200 cursor-not-allowed"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-6 h-6 rounded-full bg-slate-300 text-white flex items-center justify-center">
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                          </span>
+                          <span>ยังไม่เปิดใช้งาน</span>
+                        </div>
+                        <span className="text-[11px]">รอเปิดระบบ</span>
+                      </button>
+                    )}
                   </div>
                 </article>
               </div>
@@ -759,8 +800,10 @@ export default function ERPPortalHomePage() {
             {filteredModules.map((mod) => (
               <div
                 key={mod.id}
-                onClick={() => navigateToModule(mod.route)}
-                className="module-card cursor-pointer p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                onClick={() => navigateToModule(mod.route, mod.isReady)}
+                className={`module-card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+                  mod.isReady ? 'cursor-pointer' : 'cursor-not-allowed opacity-85'
+                }`}
               >
                 <div className="flex items-center gap-4">
                   <div
@@ -781,7 +824,11 @@ export default function ERPPortalHomePage() {
                       <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600">
                         {mod.code}
                       </span>
-                      <span className="text-[11px] font-bold text-blue-600">
+                      <span
+                        className={`text-[11px] font-bold ${
+                          mod.isReady ? 'text-blue-600' : 'text-slate-400'
+                        }`}
+                      >
                         {mod.kpiBadge}
                       </span>
                     </div>
@@ -791,18 +838,29 @@ export default function ERPPortalHomePage() {
                     <p className="text-xs text-slate-500">{mod.desc}</p>
                   </div>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigateToModule(mod.route);
-                  }}
-                  className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs hover:shadow-md shrink-0 flex items-center gap-2 transition-all"
-                >
-                  <span>เข้าสู่ระบบงาน</span>
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
-                </button>
+                {mod.isReady ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigateToModule(mod.route, mod.isReady);
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs hover:shadow-md shrink-0 flex items-center gap-2 transition-all"
+                  >
+                    <span>เข้าสู่ระบบงาน</span>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold shrink-0 cursor-not-allowed"
+                  >
+                    ยังไม่เปิดใช้งาน
+                  </button>
+                )}
               </div>
             ))}
           </section>

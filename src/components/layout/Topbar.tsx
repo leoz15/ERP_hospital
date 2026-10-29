@@ -247,25 +247,24 @@ export function Topbar() {
                     {isBudget && <Check className="w-4 h-4 text-[#059669]" />}
                   </Link>
 
-                  {/* 6. Finance & Accounting */}
-                  <Link
-                    href="/finance"
-                    onClick={() => setShowAppSwitcher(false)}
-                    className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${
-                      isFinance ? 'bg-sky-50 font-bold text-[#0284C7]' : 'hover:bg-[#F5F8FC] text-[#64748B]'
-                    }`}
+                  {/* 6. Finance & Accounting (Disabled / Not Ready) */}
+                  <div
+                    className="flex items-center justify-between p-2.5 rounded-xl text-xs bg-slate-50/70 text-slate-400 cursor-not-allowed opacity-75 select-none"
+                    title="ระบบบริหารการเงินและบัญชียังไม่เปิดใช้งาน"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-[#0284C7] text-white flex items-center justify-center shadow-xs">
+                      <div className="w-8 h-8 rounded-xl bg-slate-300 text-white flex items-center justify-center">
                         <Landmark className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="font-bold text-[#14213D]">การเงินและบัญชี (Finance & Accounting)</div>
-                        <div className="text-[10px] text-[#94A3B8]">รายรับ รายจ่าย เจ้าหนี้ ลูกหนี้ สมุดบัญชีแยกประเภท</div>
+                        <div className="font-bold text-slate-500">การเงินและบัญชี (Finance & Accounting)</div>
+                        <div className="text-[10px] text-slate-400">ยังไม่พร้อมใช้งาน (อยู่ระหว่างพัฒนา)</div>
                       </div>
                     </div>
-                    {isFinance && <Check className="w-4 h-4 text-[#0284C7]" />}
-                  </Link>
+                    <span className="px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-500 text-[9px] font-bold">
+                      ปิดไว้
+                    </span>
+                  </div>
                 </div>
               </div>
             </>

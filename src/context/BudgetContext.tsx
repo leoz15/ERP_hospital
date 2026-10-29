@@ -441,6 +441,18 @@ interface BudgetContextType {
   approveAdjustment: (id: string, approved: boolean) => void;
   transactions: BudgetTransactionItem[];
   convertCommitmentToActual: (budgetCode: string, amount: number, refDocNo: string) => void;
+  reserveBudget: (budgetCode: string, amount: number, refDocNo: string, description: string) => void;
+  commitBudget: (budgetCode: string, amount: number, refDocNo: string, description: string) => void;
+  releaseBudget: (budgetCode: string, amount: number, refDocNo: string, description: string) => void;
+  getAllocationBudgetInfo: (allocNoOrBudgetCode: string) => {
+    allocation?: BudgetAllocationRecord;
+    plan?: BudgetPlanItem;
+    allocatedAmount: number;
+    remainingBudget: number;
+    reservedAmount: number;
+    commitmentAmount: number;
+    actualAmount: number;
+  };
   audits: BudgetAuditItem[];
   logBudgetAudit: (module: string, action: string, docNo: string, detail: string) => void;
 }
@@ -618,6 +630,148 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  // Reserve budget when PR is created/approved
+  const reserveBudget = (budgetCode: string, amount: number, refDocNo: string, description: string) => {
+    setPlans((prev) =>
+      prev.map((p) => {
+        if (p.budgetCode === budgetCode) {
+          return {
+            ...p,
+            reservedAmount: p.reservedAmount + amount,
+          };
+        }
+        return p;
+      })
+    );
+    setTransactions((prev) => [
+      {
+        id: `btx-${Date.now()}`,
+        txNo: `BTX-202610-${prev.length + 95}`,
+        date: new Date().toISOString().slice(0, 10),
+        refDocNo,
+        sourceSystem: 'PROCUREMENT (PR)',
+        budgetCode,
+        departmentName: plans.find((x) => x.budgetCode === budgetCode)?.departmentName || 'หน่วยงาน รพ.',
+        description,
+        txType: 'RESERVATION',
+        amount,
+        status: 'ACTIVE',
+      },
+      ...prev,
+    ]);
+    logBudgetAudit(
+      'BUDGET_CONTROL',
+      'RESERVE_BUDGET',
+      refDocNo,
+      `กันงบประมาณ (Reserved) ฿${amount.toLocaleString()} สำหรับ ${refDocNo} (${budgetCode})`
+    );
+  };
+
+  // Commit budget when PO is created/approved (moves from reserved to commitment)
+  const commitBudget = (budgetCode: string, amount: number, refDocNo: string, description: string) => {
+    setPlans((prev) =>
+      prev.map((p) => {
+        if (p.budgetCode === budgetCode) {
+          return {
+            ...p,
+            reservedAmount: Math.max(0, p.reservedAmount - amount),
+            commitmentAmount: p.commitmentAmount + amount,
+          };
+        }
+        return p;
+      })
+    );
+    setTransactions((prev) => [
+      {
+        id: `btx-${Date.now()}`,
+        txNo: `BTX-202610-${prev.length + 96}`,
+        date: new Date().toISOString().slice(0, 10),
+        refDocNo,
+        sourceSystem: 'PROCUREMENT (PO)',
+        budgetCode,
+        departmentName: plans.find((x) => x.budgetCode === budgetCode)?.departmentName || 'หน่วยงาน รพ.',
+        description,
+        txType: 'COMMITMENT',
+        amount,
+        status: 'ACTIVE',
+      },
+      ...prev,
+    ]);
+    logBudgetAudit(
+      'BUDGET_CONTROL',
+      'COMMIT_BUDGET',
+      refDocNo,
+      `บันทึกภาระผูกพัน (Commitment) ฿${amount.toLocaleString()} สำหรับใบสั่งซื้อ ${refDocNo} (${budgetCode})`
+    );
+  };
+
+  // Release budget if PR/PO is cancelled or reduced
+  const releaseBudget = (budgetCode: string, amount: number, refDocNo: string, description: string) => {
+    setPlans((prev) =>
+      prev.map((p) => {
+        if (p.budgetCode === budgetCode) {
+          return {
+            ...p,
+            reservedAmount: Math.max(0, p.reservedAmount - amount),
+          };
+        }
+        return p;
+      })
+    );
+    setTransactions((prev) => [
+      {
+        id: `btx-${Date.now()}`,
+        txNo: `BTX-202610-${prev.length + 97}`,
+        date: new Date().toISOString().slice(0, 10),
+        refDocNo,
+        sourceSystem: 'PROCUREMENT (PR)',
+        budgetCode,
+        departmentName: plans.find((x) => x.budgetCode === budgetCode)?.departmentName || 'หน่วยงาน รพ.',
+        description,
+        txType: 'RELEASE',
+        amount,
+        status: 'ACTIVE',
+      },
+      ...prev,
+    ]);
+    logBudgetAudit(
+      'BUDGET_CONTROL',
+      'RELEASE_BUDGET',
+      refDocNo,
+      `คืนวงเงินกันงบประมาณ ฿${amount.toLocaleString()} สำหรับ ${refDocNo} (${budgetCode})`
+    );
+  };
+
+  // Query allocation details with available remaining budget
+  const getAllocationBudgetInfo = (allocNoOrBudgetCode: string) => {
+    const alloc = allocations.find(
+      (a) => a.allocNo === allocNoOrBudgetCode || a.budgetCode === allocNoOrBudgetCode
+    );
+    const plan = plans.find(
+      (p) => p.budgetCode === alloc?.budgetCode || p.budgetCode === allocNoOrBudgetCode
+    );
+
+    const allocatedAmount = alloc ? alloc.allocatedAmount : plan ? plan.allocatedAmount : 0;
+    const reservedAmount = plan ? plan.reservedAmount : 0;
+    const commitmentAmount = plan ? plan.commitmentAmount : 0;
+    const actualAmount = plan ? plan.actualAmount : 0;
+
+    const remainingBudget = Math.max(
+      0,
+      allocatedAmount - reservedAmount - commitmentAmount - actualAmount
+    );
+
+    return {
+      allocation: alloc,
+      plan,
+      allocatedAmount,
+      remainingBudget,
+      reservedAmount,
+      commitmentAmount,
+      actualAmount,
+    };
+  };
+
   return (
     <BudgetContext.Provider
       value={{
@@ -631,6 +785,10 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
         approveAdjustment,
         transactions,
         convertCommitmentToActual,
+        reserveBudget,
+        commitBudget,
+        releaseBudget,
+        getAllocationBudgetInfo,
         audits,
         logBudgetAudit,
       }}
