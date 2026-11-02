@@ -42,7 +42,6 @@ export default function ERPPortalHomePage() {
     gradient: string;
     edgeColor: string;
     glowColor: string;
-    visibled?: boolean;
     svgIcon: React.ReactNode;
   }
   const erpModules: erpModulesTypes[] = [
@@ -54,7 +53,7 @@ export default function ERPPortalHomePage() {
       kpiBadge: "พร้อมใช้งาน 100%",
       statusText: "ใบประกอบวิชาชีพใกล้หมดอายุ 3 รายการ",
       isReady: true,
-      visibled: true,
+
       route: "/hr",
       gradient: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
       edgeColor: "#115e59",
@@ -84,7 +83,6 @@ export default function ERPPortalHomePage() {
       kpiBadge: "ปีงบประมาณ 2569",
       statusText: "พร้อมใช้งาน",
       isReady: true,
-      visibled: true,
 
       route: "/budget",
       gradient: "linear-gradient(135deg, #059669 0%, #047857 100%)",
@@ -113,7 +111,6 @@ export default function ERPPortalHomePage() {
       kpiBadge: "ยังไม่พร้อมใช้งาน",
       statusText: "ยังไม่เปิดใช้งาน (อยู่ระหว่างพัฒนา)",
       isReady: false,
-      visibled: true,
 
       route: "#",
       gradient: "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)",
@@ -143,7 +140,6 @@ export default function ERPPortalHomePage() {
       kpiBadge: "รออนุมัติ 5 PR",
       statusText: "รอตรวจรับ 4 PO วันนี้",
       isReady: true,
-      visibled: true,
 
       route: "/procurement",
       gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
@@ -173,7 +169,6 @@ export default function ERPPortalHomePage() {
       kpiBadge: "1,420 รายการ",
       statusText: "แจ้งเตือน Lot ใกล้หมดอายุ 3 รายการ",
       isReady: true,
-      visibled: true,
 
       route: "/inventory",
       gradient: "linear-gradient(135deg, #4f46e5 0%, #3730a3 100%)",
@@ -203,7 +198,7 @@ export default function ERPPortalHomePage() {
       kpiBadge: "Real-time BI",
       statusText: "แดชบอร์ดสรุปผล 24 รายงาน",
       isReady: true,
-      visibled: true,
+
       route: "/operations/reports",
       gradient: "linear-gradient(135deg, #9333ea 0%, #6b21a8 100%)",
       edgeColor: "#3b0764",
@@ -231,7 +226,7 @@ export default function ERPPortalHomePage() {
       kpiBadge: "เตรียมเปิดใช้งาน",
       statusText: "อยู่ระหว่างพัฒนาระบบ",
       isReady: false,
-      visibled: true,
+
       route: "#",
       gradient: "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)",
       edgeColor: "#475569",
@@ -275,7 +270,8 @@ export default function ERPPortalHomePage() {
                 signal: controller?.signal,
               });
               if (!response.ok) return [id, false] as const;
-              const available = isDev || (await response.json()).status === "ok";
+              const available =
+                isDev || (await response.json()).status === "ok";
               return [id, available] as const;
             } catch {
               return [id, false] as const;
@@ -284,10 +280,19 @@ export default function ERPPortalHomePage() {
         );
         if (!active) return;
         const availability = Object.fromEntries(results);
-        setModules((current) => current.map((module) => ({
-          ...module,
-          visibled: availability[module.id] === true,
-        })));
+        setModules((current) =>
+          current.map((module) => {
+            if (availability[module.id] === true) {
+              return module;
+            }
+            return {
+              ...module,
+              isReady: false,
+              statusText:
+                "ระบบไม่พร้อมใช้งาน (Frontend) กรุณาติดต่อเจ้าหน้าที่",
+            };
+          }),
+        );
       } finally {
         clearTimeout(timeout);
         // Schedule after completion so slow checks never overlap.
@@ -306,10 +311,9 @@ export default function ERPPortalHomePage() {
   // Filter modules
   const filteredModules = modules.filter(
     (m) =>
-      m?.visibled &&
-      (m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.code.toLowerCase().includes(searchQuery.toLowerCase())),
+      m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.code.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Keyboard shortcut Ctrl+K
