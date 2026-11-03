@@ -1,14 +1,12 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { BarChart3, Printer, Download } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart3, Download, Printer } from 'lucide-react';
+import Link from 'next/link';
+import { Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 export default function HRReportsPage() {
-  const { payrolls, employees } = useHR();
+
   const { addToast } = useApp();
 
   const costTrend = [
@@ -38,14 +36,14 @@ export default function HRReportsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => window.print()}
             className="px-3.5 py-2 border border-[#E2EAF4] rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-slate-50"
           >
             <Printer className="w-4 h-4" />
             <span>พิมพ์รายงาน</span>
           </button>
-          <button
+          <button type="button"
             onClick={() => addToast('success', 'ส่งออกรายงาน HR Analytics (Excel / CSV) เรียบร้อยแล้ว')}
             className="px-4 py-2 bg-[#0D9488] text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
           >

@@ -1,29 +1,29 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useApp } from '@/context/AppContext';
+import { createFormRowId } from '@/lib/form-row';
 import {
-  SlidersHorizontal,
-  Plus,
-  CheckCircle,
-  XCircle,
-  Search,
-  Building,
-  RefreshCw,
   AlertTriangle,
-  Eye,
-  Copy,
-  Printer,
-  X,
+  Building,
+  Calendar,
+  CheckCircle,
   CheckCircle2,
   Clock,
-  Calendar,
-  ShieldCheck,
+  Copy,
+  Eye,
   Package,
+  Plus,
+  Printer,
+  RefreshCw,
+  ShieldCheck,
+  SlidersHorizontal,
+  X
 } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import React, { useEffect, useId, useState } from 'react';
 
 export default function StockAdjustmentPage() {
+  const formId = useId();
   const { currentUser, addToast, refreshKey, triggerRefresh } = useApp();
   const [adjustments, setAdjustments] = useState<any[]>([]);
   const [warehouses, setWarehouses] = useState<any[]>([]);
@@ -32,14 +32,14 @@ export default function StockAdjustmentPage() {
 
   // Modal
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState<any | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState<any>(null);
 
   // Form
   const [warehouseId, setWarehouseId] = useState('');
   const [adjustmentType, setAdjustmentType] = useState('DAMAGED');
   const [reason, setReason] = useState('');
   const [lines, setLines] = useState<any[]>([
-    { itemId: '', currentQty: 0, adjustmentQty: -1, unit: 'Unit' },
+    { clientId: "initial-1115", itemId: '', currentQty: 0, adjustmentQty: -1, unit: 'Unit' },
   ]);
 
   const loadData = () => {
@@ -87,7 +87,7 @@ export default function StockAdjustmentPage() {
   };
 
   const addLine = () => {
-    setLines([...lines, { itemId: '', currentQty: 0, adjustmentQty: -1, unit: 'Unit' }]);
+    setLines([...lines, { clientId: createFormRowId(), itemId: '', currentQty: 0, adjustmentQty: -1, unit: 'Unit' }]);
   };
 
   const removeLine = (idx: number) => {
@@ -167,7 +167,7 @@ export default function StockAdjustmentPage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-1.5 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
         >
@@ -194,66 +194,7 @@ export default function StockAdjustmentPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
-                    <RefreshCw className="w-6 h-6 mx-auto animate-spin text-amber-600 mb-2" />
-                    กำลังดึงข้อมูลใบปรับยอด...
-                  </td>
-                </tr>
-              ) : adjustments.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
-                    ยังไม่มีรายการขอปรับปรุงยอด
-                  </td>
-                </tr>
-              ) : (
-                adjustments.map((adj) => (
-                  <tr
-                    key={adj.id}
-                    className="hover:bg-amber-50/40 transition-colors group cursor-pointer"
-                    onClick={() => setShowDetailModal(adj)}
-                  >
-                    <td className="py-3 px-4 font-mono font-bold text-amber-700">
-                      <span className="hover:underline bg-amber-50 group-hover:bg-amber-100 text-amber-800 px-2 py-0.5 rounded transition-colors">
-                        {adj.adjustmentNumber}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-semibold text-[#14213D] whitespace-nowrap">
-                      {adj.warehouse.name}
-                    </td>
-                    <td className="py-3 px-3 whitespace-nowrap">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                        {adj.adjustmentType}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-right font-semibold tabular-nums">
-                      {adj.lines.length} รายการ
-                    </td>
-                    <td className="py-3 px-3 text-[#64748B] truncate max-w-[200px]" title={adj.reason}>
-                      {adj.reason}
-                    </td>
-                    <td className="py-3 px-3 text-[#64748B]">
-                      {adj.requestedBy}
-                    </td>
-                    <td className="py-3 px-3 text-[#64748B]">
-                      {adj.approvedBy || '-'}
-                    </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <StatusBadge status={adj.status} />
-                    </td>
-                    <td className="py-3 px-4 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => setShowDetailModal(adj)}
-                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-[#334155] rounded-lg text-xs font-medium transition-colors flex items-center gap-1 mx-auto"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>ดูรายละเอียด & อนุมัติ</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableRows(loading, adjustments, setShowDetailModal)}
             </tbody>
           </table>
         </div>
@@ -265,7 +206,7 @@ export default function StockAdjustmentPage() {
           <div className="bg-white rounded-2xl shadow-2xl border border-[#E2EAF4] max-w-3xl w-full p-6 animate-scale-up space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[#E2EAF4]">
               <h3 className="text-sm font-bold text-[#14213D]">สร้างใบขอปรับปรุงยอดสต็อก (New Stock Adjustment)</h3>
-              <button
+              <button type="button"
                 onClick={() => setShowCreateModal(false)}
                 className="text-[#94A3B8] hover:text-[#64748B] font-bold"
               >
@@ -276,8 +217,8 @@ export default function StockAdjustmentPage() {
             <form onSubmit={handleCreateAdjustment} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#334155] mb-1">คลังสินค้าที่ต้องการปรับปรุง *</label>
-                  <select
+                  <label htmlFor={`${formId}-field-1`} className="block text-xs font-semibold text-[#334155] mb-1">คลังสินค้าที่ต้องการปรับปรุง *</label>
+                  <select id={`${formId}-field-1`}
                     value={warehouseId}
                     onChange={(e) => setWarehouseId(e.target.value)}
                     className="w-full text-xs px-3 py-2 bg-[#F5F8FC] border border-[#E2EAF4] rounded-lg"
@@ -291,8 +232,8 @@ export default function StockAdjustmentPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#334155] mb-1">ประเภทการปรับปรุง (Type) *</label>
-                  <select
+                  <label htmlFor={`${formId}-field-2`} className="block text-xs font-semibold text-[#334155] mb-1">ประเภทการปรับปรุง (Type) *</label>
+                  <select id={`${formId}-field-2`}
                     value={adjustmentType}
                     onChange={(e) => setAdjustmentType(e.target.value)}
                     className="w-full text-xs px-3 py-2 bg-[#F5F8FC] border border-[#E2EAF4] rounded-lg font-semibold"
@@ -322,7 +263,7 @@ export default function StockAdjustmentPage() {
 
                 <div className="p-3 space-y-2">
                   {lines.map((line, idx) => (
-                    <div key={idx} className="flex items-center gap-3 bg-[#F5F8FC] p-2.5 rounded-lg border border-[#E2EAF4]">
+                    <div key={line.clientId} className="flex items-center gap-3 bg-[#F5F8FC] p-2.5 rounded-lg border border-[#E2EAF4]">
                       <div className="flex-1">
                         <select
                           required
@@ -347,19 +288,18 @@ export default function StockAdjustmentPage() {
                       </div>
 
                       <div className="w-28">
-                        <label className="text-[10px] text-[#94A3B8] block text-right">ปรับ (+/-):</label>
-                        <input
+                        <label htmlFor={`${formId}-field-3-${idx}`} className="text-[10px] text-[#94A3B8] block text-right">ปรับ (+/-):</label>
+                        <input id={`${formId}-field-3-${idx}`}
                           type="number"
                           required
                           value={line.adjustmentQty}
                           onChange={(e) => {
                             const updated = [...lines];
-                            updated[idx].adjustmentQty = parseFloat(e.target.value) || 0;
+                            updated[idx].adjustmentQty = Number.parseFloat(e.target.value) || 0;
                             setLines(updated);
                           }}
-                          className={`w-full text-xs px-2 py-1 bg-white border border-slate-300 rounded text-right font-bold tabular-nums ${
-                            line.adjustmentQty > 0 ? 'text-emerald-600' : 'text-rose-600'
-                          }`}
+                          className={`w-full text-xs px-2 py-1 bg-white border border-slate-300 rounded text-right font-bold tabular-nums ${line.adjustmentQty > 0 ? 'text-emerald-600' : 'text-rose-600'
+                            }`}
                         />
                       </div>
 
@@ -383,10 +323,10 @@ export default function StockAdjustmentPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">
+                <label htmlFor={`${formId}-field-4`} className="block text-xs font-semibold text-[#334155] mb-1">
                   เหตุผลและความจำเป็นในการปรับปรุงยอด *
                 </label>
-                <textarea
+                <textarea id={`${formId}-field-4`}
                   rows={2}
                   required
                   value={reason}
@@ -475,7 +415,7 @@ export default function StockAdjustmentPage() {
                 </button>
 
                 {showDetailModal.status === 'PENDING_APPROVAL' && (
-                  <button
+                  <button type="button"
                     onClick={() => handleApproveAdjustment(showDetailModal.id, 'APPROVE')}
                     className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all"
                   >
@@ -518,13 +458,7 @@ export default function StockAdjustmentPage() {
                     <span>ประเภทการปรับปรุง</span>
                   </div>
                   <div className="font-bold text-amber-800 text-sm mt-1">
-                    {showDetailModal.adjustmentType === 'DAMAGED'
-                      ? 'สินค้าชำรุดเสียหาย'
-                      : showDetailModal.adjustmentType === 'EXPIRED'
-                      ? 'สินค้าหมดอายุ'
-                      : showDetailModal.adjustmentType === 'FOUND'
-                      ? 'พบสินค้าเกินจากการตรวจนับ'
-                      : showDetailModal.adjustmentType}
+                    {getAdjustmentTypeText(showDetailModal)}
                   </div>
                   <div className="text-[11px] text-[#64748B] mt-0.5">
                     ตามระเบียบพัสดุและคลัง
@@ -622,9 +556,8 @@ export default function StockAdjustmentPage() {
                                 {l.currentQty?.toLocaleString()}
                               </td>
                               <td
-                                className={`py-2.5 px-3 text-right font-bold tabular-nums ${
-                                  l.adjustmentQty > 0 ? 'text-emerald-600' : 'text-rose-600'
-                                }`}
+                                className={`py-2.5 px-3 text-right font-bold tabular-nums ${l.adjustmentQty > 0 ? 'text-emerald-600' : 'text-rose-600'
+                                  }`}
                               >
                                 {l.adjustmentQty > 0 ? `+${l.adjustmentQty}` : l.adjustmentQty}
                               </td>
@@ -667,11 +600,10 @@ export default function StockAdjustmentPage() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
-                      showDetailModal.status === 'APPROVED'
-                        ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                        : 'bg-amber-50/60 border-amber-200 text-amber-900'
-                    }`}
+                    className={`p-3 rounded-xl border ${showDetailModal.status === 'APPROVED'
+                      ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
+                      : 'bg-amber-50/60 border-amber-200 text-amber-900'
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       {showDetailModal.status === 'APPROVED' ? (
@@ -689,11 +621,10 @@ export default function StockAdjustmentPage() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
-                      showDetailModal.status === 'APPROVED'
-                        ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                        : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
-                    }`}
+                    className={`p-3 rounded-xl border ${showDetailModal.status === 'APPROVED'
+                      ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
+                      : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-600" />
@@ -707,11 +638,10 @@ export default function StockAdjustmentPage() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
-                      showDetailModal.status === 'APPROVED'
-                        ? 'bg-blue-50/60 border-blue-200 text-blue-900'
-                        : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
-                    }`}
+                    className={`p-3 rounded-xl border ${showDetailModal.status === 'APPROVED'
+                      ? 'bg-blue-50/60 border-blue-200 text-blue-900'
+                      : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#94A3B8]" />
@@ -754,13 +684,13 @@ export default function StockAdjustmentPage() {
                 </button>
                 {showDetailModal.status === 'PENDING_APPROVAL' && (
                   <>
-                    <button
+                    <button type="button"
                       onClick={() => handleApproveAdjustment(showDetailModal.id, 'REJECT')}
                       className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold transition-colors"
                     >
                       ไม่อนุมัติ
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => handleApproveAdjustment(showDetailModal.id, 'APPROVE')}
                       className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors"
                     >
@@ -776,4 +706,82 @@ export default function StockAdjustmentPage() {
       )}
     </div>
   );
+}
+
+function getAdjustmentTypeText(showDetailModal: any): React.ReactNode {
+  if (showDetailModal.adjustmentType === 'DAMAGED') {
+    return 'สินค้าชำรุดเสียหาย';
+  }
+  if (showDetailModal.adjustmentType === 'EXPIRED') {
+    return 'สินค้าหมดอายุ';
+  }
+  if (showDetailModal.adjustmentType === 'FOUND') {
+    return 'พบสินค้าเกินจากการตรวจนับ';
+  }
+  return showDetailModal.adjustmentType;
+
+}
+
+function renderTableRows(loading: boolean, adjustments: any[], setShowDetailModal: React.Dispatch<any>): React.ReactNode {
+  if (loading) {
+    return <tr>
+      <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
+        <RefreshCw className="w-6 h-6 mx-auto animate-spin text-amber-600 mb-2" />
+        กำลังดึงข้อมูลใบปรับยอด...
+      </td>
+    </tr>;
+  }
+  if (adjustments.length === 0) {
+    return <tr>
+      <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
+        ยังไม่มีรายการขอปรับปรุงยอด
+      </td>
+    </tr>;
+  }
+  return adjustments.map((adj) => (
+    <tr
+      key={adj.id}
+      className="hover:bg-amber-50/40 transition-colors group cursor-pointer"
+      onClick={() => setShowDetailModal(adj)}
+    >
+      <td className="py-3 px-4 font-mono font-bold text-amber-700">
+        <span className="hover:underline bg-amber-50 group-hover:bg-amber-100 text-amber-800 px-2 py-0.5 rounded transition-colors">
+          {adj.adjustmentNumber}
+        </span>
+      </td>
+      <td className="py-3 px-3 font-semibold text-[#14213D] whitespace-nowrap">
+        {adj.warehouse.name}
+      </td>
+      <td className="py-3 px-3 whitespace-nowrap">
+        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+          {adj.adjustmentType}
+        </span>
+      </td>
+      <td className="py-3 px-3 text-right font-semibold tabular-nums">
+        {adj.lines.length} รายการ
+      </td>
+      <td className="py-3 px-3 text-[#64748B] truncate max-w-[200px]" title={adj.reason}>
+        {adj.reason}
+      </td>
+      <td className="py-3 px-3 text-[#64748B]">
+        {adj.requestedBy}
+      </td>
+      <td className="py-3 px-3 text-[#64748B]">
+        {adj.approvedBy || '-'}
+      </td>
+      <td className="py-3 px-3 text-center whitespace-nowrap">
+        <StatusBadge status={adj.status} />
+      </td>
+      <td className="py-3 px-4 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+        <button type="button"
+          onClick={() => setShowDetailModal(adj)}
+          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-[#334155] rounded-lg text-xs font-medium transition-colors flex items-center gap-1 mx-auto"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          <span>ดูรายละเอียด & อนุมัติ</span>
+        </button>
+      </td>
+    </tr>
+  ));
+
 }

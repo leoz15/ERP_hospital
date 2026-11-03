@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { GraduationCap, Plus, Award, Calendar, Users } from 'lucide-react';
+import { useHR } from '@/context/HRContext';
+import { GraduationCap, Plus } from 'lucide-react';
+import Link from 'next/link';
+import React, { useId, useState } from 'react';
 
 export default function HRTrainingPage() {
+  const formId = useId();
   const { trainings, addTraining } = useHR();
   const { addToast } = useApp();
 
@@ -54,7 +55,7 @@ export default function HRTrainingPage() {
             บริหารจัดการหลักสูตรอบรมภายใน-ภายนอก ประวัติการฝึกอบรม และสะสมหน่วยกิตวิชาชีพ (CME / CNEU / CPE)
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={() => setShowModal(true)}
           className="px-4 py-2.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-xl text-xs font-bold flex items-center gap-2 shrink-0"
         >
@@ -90,7 +91,7 @@ export default function HRTrainingPage() {
               <span className="font-bold text-[#14213D]">
                 ผู้ลงทะเบียน: {tr.seatsEnrolled}/{tr.seatsTotal} คน
               </span>
-              <button
+              <button type="button"
                 onClick={() => addToast('info', `บันทึกการลงทะเบียนเข้าอบรมหลักสูตร ${tr.courseCode}`)}
                 className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-[#0D9488] font-bold rounded-xl"
               >
@@ -107,12 +108,12 @@ export default function HRTrainingPage() {
             <h3 className="font-extrabold text-base text-[#14213D]">เปิดหลักสูตรฝึกอบรมใหม่</h3>
             <form onSubmit={handleCreate} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold mb-1">ชื่อหลักสูตรอบรม *</label>
-                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="เช่น การช่วยฟื้นคืนชีพขั้นสูง ACLS" className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
+                <label htmlFor={`${formId}-field-78`} className="block font-bold mb-1">ชื่อหลักสูตรอบรม *</label>
+                <input id={`${formId}-field-78`} type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="เช่น การช่วยฟื้นคืนชีพขั้นสูง ACLS" className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
               </div>
               <div>
-                <label className="block font-bold mb-1">หมวดหมู่หลักสูตร</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
+                <label htmlFor={`${formId}-field-79`} className="block font-bold mb-1">หมวดหมู่หลักสูตร</label>
+                <select id={`${formId}-field-79`} value={category} onChange={(e) => setCategory(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
                   <option value="บังคับตามมาตรฐาน HA / JCI">บังคับตามมาตรฐาน HA / JCI</option>
                   <option value="พัฒนาทักษะทางคลินิก (Clinical)">พัฒนาทักษะทางคลินิก (Clinical)</option>
                   <option value="ช่วยชีวิตขั้นสูง (BLS / ACLS)">ช่วยชีวิตขั้นสูง (BLS / ACLS)</option>
@@ -120,17 +121,17 @@ export default function HRTrainingPage() {
                 </select>
               </div>
               <div>
-                <label className="block font-bold mb-1">วิทยากร</label>
-                <input type="text" value={instructor} onChange={(e) => setInstructor(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
+                <label htmlFor={`${formId}-field-80`} className="block font-bold mb-1">วิทยากร</label>
+                <input id={`${formId}-field-80`} type="text" value={instructor} onChange={(e) => setInstructor(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">จำนวนชั่วโมง</label>
-                  <input type="number" value={hours} onChange={(e) => setHours(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-81`} className="block font-bold mb-1">จำนวนชั่วโมง</label>
+                  <input id={`${formId}-field-81`} type="number" value={hours} onChange={(e) => setHours(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">หน่วยกิต CME/CNEU</label>
-                  <input type="number" value={cmePoints} onChange={(e) => setCmePoints(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-82`} className="block font-bold mb-1">หน่วยกิต CME/CNEU</label>
+                  <input id={`${formId}-field-82`} type="number" value={cmePoints} onChange={(e) => setCmePoints(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t">

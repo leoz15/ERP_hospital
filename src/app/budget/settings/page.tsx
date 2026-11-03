@@ -1,17 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
 import {
-  Settings,
-  Calendar,
-  Layers,
   Building2,
-  FolderKanban,
-  Landmark,
-  Users,
-  GitPullRequest,
+  Calendar,
   CheckCircle2,
+  FolderKanban,
+  GitPullRequest,
+  Landmark,
+  Layers,
+  Settings
 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function BudgetSettingsPage() {
   const [activeTab, setActiveTab] = useState<
@@ -41,7 +40,7 @@ export default function BudgetSettingsPage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={triggerSave}
           className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm"
         >
@@ -69,14 +68,13 @@ export default function BudgetSettingsPage() {
           ].map((item) => {
             const Icon = item.icon;
             return (
-              <button
+              <button type="button"
                 key={item.id}
                 onClick={() => setActiveTab(item.id as typeof activeTab)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                  activeTab === item.id
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${activeTab === item.id
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 {item.label}

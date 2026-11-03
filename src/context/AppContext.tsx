@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 export interface UserProfile {
   id: string;
@@ -16,9 +16,11 @@ export interface UserProfile {
   } | null;
 }
 
+export type ToastType = 'success' | 'error' | 'warning' | 'info';
+
 export interface ToastMessage {
   id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
+  type: ToastType;
   message: string;
 }
 
@@ -28,7 +30,7 @@ interface AppContextType {
   setCurrentUser: (user: UserProfile) => void;
   switchRole: (username: string) => void;
   toasts: ToastMessage[];
-  addToast: (type: 'success' | 'error' | 'warning' | 'info', message: string) => void;
+  addToast: (type: ToastType, message: string) => void;
   removeToast: (id: string) => void;
   selectedWarehouse: string;
   setSelectedWarehouse: (id: string) => void;
@@ -47,12 +49,13 @@ const defaultUser: UserProfile = {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export function AppProvider({ children }: { children: React.ReactNode }) {
+export function AppProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [currentUser, setCurrentUser] = useState<UserProfile>(defaultUser);
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState<string>('');
   const [refreshKey, setRefreshKey] = useState<number>(0);
+  const nextToastId = useRef(0);
 
   useEffect(() => {
     fetch('/api/auth')
@@ -68,46 +71,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .catch((err) => console.error('Failed to load users:', err));
   }, []);
 
-  const switchRole = (username: string) => {
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const triggerRefresh = useCallback(() => {
+    setRefreshKey((prev) => prev + 1);
+  }, []);
+
+  const addToast = useCallback((type: ToastType, message: string) => {
+    const id = `toast-${++nextToastId.current}`;
+    setToasts((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => removeToast(id), 4500);
+  }, [removeToast]);
+
+  const switchRole = useCallback((username: string) => {
     const found = allUsers.find((u) => u.username === username);
     if (found) {
       setCurrentUser(found);
       addToast('info', `สลับผู้ใช้เป็น: ${found.name} [สิทธิ์: ${found.role}]`);
       triggerRefresh();
     }
-  };
+  }, [allUsers, addToast, triggerRefresh]);
 
-  const addToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, type, message }]);
-    setTimeout(() => {
-      removeToast(id);
-    }, 4500);
-  };
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  const triggerRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
+  const value = useMemo(() => ({
+    currentUser, allUsers, setCurrentUser, switchRole, toasts, addToast, removeToast,
+    selectedWarehouse, setSelectedWarehouse, refreshKey, triggerRefresh,
+  }), [currentUser, allUsers, switchRole, toasts, addToast, removeToast, selectedWarehouse, refreshKey, triggerRefresh]);
 
   return (
     <AppContext.Provider
-      value={{
-        currentUser,
-        allUsers,
-        setCurrentUser,
-        switchRole,
-        toasts,
-        addToast,
-        removeToast,
-        selectedWarehouse,
-        setSelectedWarehouse,
-        refreshKey,
-        triggerRefresh,
-      }}
+      value={value}
     >
       {children}
     </AppContext.Provider>

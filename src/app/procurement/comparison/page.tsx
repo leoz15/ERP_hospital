@@ -1,44 +1,40 @@
 'use client';
 
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useApp } from '@/context/AppContext';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import {
+  ModalShell,
   SourcingHeader,
   StatCard,
-  ModalShell,
-  SectionCard,
-  inputCls,
   btnPrimary,
   btnSecondary,
   btnSuccess,
-  fmtDate,
   fmtMoney,
+  inputCls
 } from '@/components/procurement/SourcingUI';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useApp } from '@/context/AppContext';
 import {
-  Scale,
-  Trophy,
-  CheckCircle2,
-  DollarSign,
-  Clock,
-  Star,
-  FileSearch,
-  ShoppingCart,
-  Building2,
-  Package,
-  Sparkles,
   AlertCircle,
-  Truck,
-  ShieldCheck,
-  FileText,
-  Plus,
+  Building2,
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  FileSearch,
   Paperclip,
-  Eye,
+  Plus,
+  Scale,
+  ShieldCheck,
+  ShoppingCart,
+  Sparkles,
+  Star,
+  Trophy,
+  Truck
 } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useId, useMemo, useState } from 'react';
 
 function ComparisonContent() {
+  const formId = useId();
   const searchParams = useSearchParams();
   const rfqIdParam = searchParams.get('rfqId') || '';
   const { addToast, refreshKey, triggerRefresh, currentUser } = useApp();
@@ -116,10 +112,7 @@ function ComparisonContent() {
     return Math.min(...quotations.map((q) => q.deliveryDays || 999));
   }, [quotations]);
 
-  const maxQuality = useMemo(() => {
-    if (quotations.length === 0) return 0;
-    return Math.max(...quotations.map((q) => q.qualityScore || 0));
-  }, [quotations]);
+
 
   const winnerQuote = useMemo(() => {
     if (!activeRfq?.selectedQuotationId) return null;
@@ -214,7 +207,7 @@ function ComparisonContent() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div aria-busy={loading} className="space-y-6 max-w-7xl mx-auto">
       <SourcingHeader
         crumb="เปรียบเทียบใบเสนอราคา"
         title="เปรียบเทียบใบเสนอราคา (Quotation Comparison)"
@@ -244,10 +237,10 @@ function ComparisonContent() {
             <FileSearch className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0">
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">
+            <label htmlFor={`${formId}-field-108`} className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">
               เลือกคำขอใบเสนอราคา (RFQ) เพื่อเปรียบเทียบ
             </label>
-            <select
+            <select id={`${formId}-field-108`}
               value={selectedRfqId}
               onChange={(e) => setSelectedRfqId(e.target.value)}
               className="w-full text-xs font-semibold px-3 py-1.5 border border-[#E2EAF4] rounded-lg bg-[#F5F8FC] focus:bg-white text-[#14213D] focus:ring-2 focus:ring-[#F28C28]"
@@ -294,11 +287,7 @@ function ComparisonContent() {
             label="ราคาต่ำสุดที่เสนอ"
             value={minPrice > 0 ? `฿${fmtMoney(minPrice)}` : '-'}
             hint={
-              minPrice > 0 && estimatedTotal > 0
-                ? minPrice < estimatedTotal
-                  ? `ประหยัด ฿${fmtMoney(estimatedTotal - minPrice)} (${(((estimatedTotal - minPrice) / estimatedTotal) * 100).toFixed(1)}%)`
-                  : 'สูงกว่าราคากลาง'
-                : 'ไม่มีข้อเสนอ'
+              getMinPriceContent(minPrice, estimatedTotal)
             }
             icon={minPrice > 0 && minPrice <= estimatedTotal ? Sparkles : AlertCircle}
             tone={minPrice > 0 && minPrice <= estimatedTotal ? 'emerald' : 'amber'}
@@ -321,7 +310,7 @@ function ComparisonContent() {
       )}
 
       {/* Awarded Banner & Action */}
-      {activeRfq && activeRfq.status === 'AWARDED' && winnerQuote && (
+      {activeRfq?.status === 'AWARDED' && winnerQuote && (
         <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-sm shrink-0">
@@ -363,7 +352,7 @@ function ComparisonContent() {
       )}
 
       {/* PO Created Banner */}
-      {activeRfq && activeRfq.status === 'PO_CREATED' && (
+      {activeRfq?.status === 'PO_CREATED' && (
         <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 text-purple-900 flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2.5">
             <CheckCircle2 className="w-5 h-5 text-purple-600 shrink-0" />
@@ -424,9 +413,8 @@ function ComparisonContent() {
                       return (
                         <th
                           key={q.id}
-                          className={`py-3 px-4 text-center min-w-[220px] transition-colors ${
-                            isWinner ? 'bg-emerald-50/70 border-x border-emerald-200' : ''
-                          }`}
+                          className={`py-3 px-4 text-center min-w-[220px] transition-colors ${isWinner ? 'bg-emerald-50/70 border-x border-emerald-200' : ''
+                            }`}
                         >
                           <div className="flex flex-col items-center gap-1">
                             {isWinner && (
@@ -465,18 +453,16 @@ function ComparisonContent() {
                       return (
                         <td
                           key={q.id}
-                          className={`py-3 px-4 text-center ${
-                            isWinner ? 'bg-emerald-50/40 border-x border-emerald-200' : ''
-                          }`}
+                          className={`py-3 px-4 text-center ${isWinner ? 'bg-emerald-50/40 border-x border-emerald-200' : ''
+                            }`}
                         >
                           <div className={`text-base font-extrabold tabular-nums ${isLowest ? 'text-emerald-700' : 'text-[#14213D]'}`}>
                             ฿{fmtMoney(q.totalAmount)}
                           </div>
                           {estimatedTotal > 0 && (
                             <div
-                              className={`text-[10px] font-semibold mt-0.5 ${
-                                diffEst <= 0 ? 'text-emerald-600' : 'text-rose-600'
-                              }`}
+                              className={`text-[10px] font-semibold mt-0.5 ${diffEst <= 0 ? 'text-emerald-600' : 'text-rose-600'
+                                }`}
                             >
                               {diffEst <= 0 ? '▼ ประหยัด ' : '▲ สูงกว่า '}
                               {Math.abs(diffEst).toFixed(1)}%
@@ -499,14 +485,12 @@ function ComparisonContent() {
                       return (
                         <td
                           key={q.id}
-                          className={`py-2.5 px-4 text-center ${
-                            isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
-                          }`}
+                          className={`py-2.5 px-4 text-center ${isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
+                            }`}
                         >
                           <span
-                            className={`font-semibold tabular-nums ${
-                              isFastest ? 'text-emerald-700 font-bold' : 'text-slate-700'
-                            }`}
+                            className={`font-semibold tabular-nums ${isFastest ? 'text-emerald-700 font-bold' : 'text-slate-700'
+                              }`}
                           >
                             {q.deliveryDays} วัน
                           </span>
@@ -527,9 +511,8 @@ function ComparisonContent() {
                       return (
                         <td
                           key={q.id}
-                          className={`py-2.5 px-4 text-center text-slate-700 ${
-                            isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
-                          }`}
+                          className={`py-2.5 px-4 text-center text-slate-700 ${isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
+                            }`}
                         >
                           {q.paymentTerm || q.supplier?.paymentTerm || '-'}
                         </td>
@@ -548,9 +531,8 @@ function ComparisonContent() {
                       return (
                         <td
                           key={q.id}
-                          className={`py-2.5 px-4 text-center text-slate-700 ${
-                            isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
-                          }`}
+                          className={`py-2.5 px-4 text-center text-slate-700 ${isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
+                            }`}
                         >
                           {q.warranty || '-'}
                         </td>
@@ -569,9 +551,8 @@ function ComparisonContent() {
                       return (
                         <td
                           key={q.id}
-                          className={`py-2.5 px-4 text-center ${
-                            isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
-                          }`}
+                          className={`py-2.5 px-4 text-center ${isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
+                            }`}
                         >
                           {q.qualityScore > 0 ? (
                             <span className="inline-flex items-center gap-1 font-bold text-amber-600">
@@ -597,9 +578,8 @@ function ComparisonContent() {
                       return (
                         <td
                           key={q.id}
-                          className={`py-2.5 px-4 text-center ${
-                            isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
-                          }`}
+                          className={`py-2.5 px-4 text-center ${isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
+                            }`}
                         >
                           {q.attachmentName ? (
                             <a
@@ -647,9 +627,8 @@ function ComparisonContent() {
                         return (
                           <td
                             key={q.id}
-                            className={`py-2.5 px-4 text-center ${
-                              isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
-                            }`}
+                            className={`py-2.5 px-4 text-center ${isWinner ? 'bg-emerald-50/30 border-x border-emerald-200' : ''
+                              }`}
                           >
                             {qline ? (
                               <div>
@@ -685,25 +664,10 @@ function ComparisonContent() {
                       return (
                         <td
                           key={q.id}
-                          className={`py-3 px-4 text-center ${
-                            isWinner ? 'bg-emerald-50/50 border-x border-emerald-200' : ''
-                          }`}
+                          className={`py-3 px-4 text-center ${isWinner ? 'bg-emerald-50/50 border-x border-emerald-200' : ''
+                            }`}
                         >
-                          {isWinner ? (
-                            <span className="inline-flex items-center gap-1 text-emerald-700 font-bold text-xs">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-600" /> ได้รับคัดเลือก
-                            </span>
-                          ) : activeRfq.status !== 'PO_CREATED' ? (
-                            <button
-                              type="button"
-                              onClick={() => handleOpenAward(q.id)}
-                              className="px-3 py-1.5 bg-white hover:bg-emerald-50 border border-emerald-300 text-emerald-700 rounded-lg text-xs font-semibold shadow-2xs hover:border-emerald-500 transition-all"
-                            >
-                              เลือกรายนี้เป็นผู้ชนะ
-                            </button>
-                          ) : (
-                            <span className="text-slate-400 text-[11px]">-</span>
-                          )}
+                          {getIsWinnerContent(isWinner, activeRfq, handleOpenAward, q)}
                         </td>
                       );
                     })}
@@ -742,8 +706,8 @@ function ComparisonContent() {
       >
         <div className="space-y-4 text-xs">
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">ผู้จำหน่ายที่คัดเลือกเป็นผู้ชนะ *</label>
-            <select
+            <label htmlFor={`${formId}-field-109`} className="block font-semibold text-slate-700 mb-1">ผู้จำหน่ายที่คัดเลือกเป็นผู้ชนะ *</label>
+            <select id={`${formId}-field-109`}
               value={candidateQuoteId}
               onChange={(e) => setCandidateQuoteId(e.target.value)}
               className={inputCls}
@@ -757,7 +721,7 @@ function ComparisonContent() {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">เกณฑ์การตัดสิน (Criteria) *</label>
+            <div className="block font-semibold text-slate-700 mb-1">เกณฑ์การตัดสิน (Criteria) *</div>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { id: 'LOWEST_PRICE', label: 'ราคาต่ำสุด', desc: 'ถูกต้องตามสเปกและเสนอราคาต่ำสุด' },
@@ -769,11 +733,10 @@ function ComparisonContent() {
                   key={c.id}
                   type="button"
                   onClick={() => setCriteria(c.id as any)}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
-                    criteria === c.id
-                      ? 'border-[#F28C28] bg-orange-50/70 text-[#D97706] shadow-2xs'
-                      : 'border-[#E2EAF4] hover:bg-slate-50 text-slate-600'
-                  }`}
+                  className={`p-2.5 rounded-xl border text-left transition-all ${criteria === c.id
+                    ? 'border-[#F28C28] bg-orange-50/70 text-[#D97706] shadow-2xs'
+                    : 'border-[#E2EAF4] hover:bg-slate-50 text-slate-600'
+                    }`}
                 >
                   <div className="font-bold text-xs">{c.label}</div>
                   <div className="text-[10px] text-slate-400 mt-0.5">{c.desc}</div>
@@ -783,10 +746,10 @@ function ComparisonContent() {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">
+            <label htmlFor={`${formId}-field-110`} className="block font-semibold text-slate-700 mb-1">
               เหตุผลประกอบการคัดเลือก (สำหรับบันทึกรายงานจัดซื้อ) *
             </label>
-            <textarea
+            <textarea id={`${formId}-field-110`}
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
@@ -838,8 +801,8 @@ function ComparisonContent() {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">วันที่คาดว่าจะส่งมอบสินค้า</label>
-            <input
+            <label htmlFor={`${formId}-field-111`} className="block font-semibold text-slate-700 mb-1">วันที่คาดว่าจะส่งมอบสินค้า</label>
+            <input id={`${formId}-field-111`}
               type="date"
               value={expectedDate}
               onChange={(e) => setExpectedDate(e.target.value)}
@@ -848,8 +811,8 @@ function ComparisonContent() {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">หมายเหตุเพิ่มเติมในใบสั่งซื้อ</label>
-            <textarea
+            <label htmlFor={`${formId}-field-112`} className="block font-semibold text-slate-700 mb-1">หมายเหตุเพิ่มเติมในใบสั่งซื้อ</label>
+            <textarea id={`${formId}-field-112`}
               rows={3}
               value={poRemarks}
               onChange={(e) => setPoRemarks(e.target.value)}
@@ -860,6 +823,36 @@ function ComparisonContent() {
       </ModalShell>
     </div>
   );
+}
+
+function getIsWinnerContent(isWinner: boolean, activeRfq: any, handleOpenAward: (quoteId?: string) => void, q: any) {
+  if (isWinner) {
+    return <span className="inline-flex items-center gap-1 text-emerald-700 font-bold text-xs">
+      <CheckCircle2 className="w-4 h-4 text-emerald-600" /> ได้รับคัดเลือก
+    </span>;
+  }
+  if (activeRfq.status !== 'PO_CREATED') {
+    return <button
+      type="button"
+      onClick={() => handleOpenAward(q.id)}
+      className="px-3 py-1.5 bg-white hover:bg-emerald-50 border border-emerald-300 text-emerald-700 rounded-lg text-xs font-semibold shadow-2xs hover:border-emerald-500 transition-all"
+    >
+      เลือกรายนี้เป็นผู้ชนะ
+    </button>;
+  }
+  return <span className="text-slate-400 text-[11px]">-</span>;
+
+}
+
+function getMinPriceContent(minPrice: number, estimatedTotal: any): string {
+  if (minPrice > 0 && estimatedTotal > 0) {
+    if (minPrice < estimatedTotal) {
+      return `ประหยัด ฿${fmtMoney(estimatedTotal - minPrice)} (${(((estimatedTotal - minPrice) / estimatedTotal) * 100).toFixed(1)}%)`;
+    }
+    return 'สูงกว่าราคากลาง';
+  }
+  return 'ไม่มีข้อเสนอ';
+
 }
 
 export default function ComparisonPage() {

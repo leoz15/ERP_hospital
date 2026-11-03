@@ -1,14 +1,13 @@
-import React from 'react';
 
 interface StatusBadgeProps {
   status: string;
   className?: string;
 }
 
-export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
+export function StatusBadge({ status, className = '' }: Readonly<StatusBadgeProps>) {
   let bg = 'bg-slate-50 text-[#64748B] border-[#E2EAF4]';
   let dotColor = 'bg-[#94A3B8]';
-  let label = status;
+  let label: string;
 
   switch (status) {
     case 'POSTED':
@@ -20,17 +19,7 @@ export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
       bg = 'bg-emerald-50 text-[#059669] border-emerald-200';
       dotColor = 'bg-[#10B981]';
       label =
-        status === 'POSTED'
-          ? 'บันทึกเข้าสต็อกแล้ว'
-          : status === 'FULLY_RECEIVED'
-          ? 'รับของครบแล้ว'
-          : status === 'COMPLETED'
-          ? 'เสร็จสิ้น'
-          : status === 'NORMAL'
-          ? 'ปกติ'
-          : status === 'ACTIVE'
-          ? 'ใช้งานปกติ'
-          : 'สมบูรณ์';
+        getStatusText(status);
       break;
     case 'APPROVED':
       bg = 'bg-blue-50 text-[#2563EB] border-blue-200';
@@ -82,11 +71,7 @@ export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
       bg = 'bg-amber-50 text-[#D97706] border-amber-200';
       dotColor = 'bg-[#F59E0B]';
       label =
-        status === 'COUNTED'
-          ? 'นับเสร็จรอปิด'
-          : status === 'IN_PROGRESS'
-          ? 'กำลังตรวจนับ'
-          : 'รออนุมัติ';
+        getStatusText2(status);
       break;
     case 'IN_TRANSIT':
       bg = 'bg-indigo-50 text-[#6366F1] border-indigo-200';
@@ -120,15 +105,7 @@ export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
       bg = 'bg-rose-50 text-[#E11D48] border-rose-200';
       dotColor = 'bg-[#EF4444]';
       label =
-        status === 'OUT_OF_STOCK'
-          ? 'สินค้าหมดคลัง'
-          : status === 'REJECTED'
-          ? 'ปฏิเสธ / ไม่อนุมัติ'
-          : status === 'REVERSED'
-          ? 'ยกเลิกการตัดรับ (Reversed)'
-          : status === 'DAMAGED'
-          ? 'ชำรุด'
-          : 'ยกเลิก';
+        getStatusText3(status);
       break;
     case 'CLOSED':
       bg = 'bg-slate-100 text-slate-700 border-slate-300';
@@ -146,8 +123,6 @@ export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
       label = 'กักกัน (Quarantine)';
       break;
     case 'DRAFT':
-      bg = 'bg-slate-50 text-[#64748B] border-[#E2EAF4]';
-      dotColor = 'bg-[#94A3B8]';
       label = 'ฉบับร่าง (Draft)';
       break;
     default:
@@ -162,4 +137,52 @@ export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
       <span>{label}</span>
     </span>
   );
+}
+
+function getStatusText3(status: string): string {
+  if (status === 'OUT_OF_STOCK') {
+    return 'สินค้าหมดคลัง';
+  }
+  if (status === 'REJECTED') {
+    return 'ปฏิเสธ / ไม่อนุมัติ';
+  }
+  if (status === 'REVERSED') {
+    return 'ยกเลิกการตัดรับ (Reversed)';
+  }
+  if (status === 'DAMAGED') {
+    return 'ชำรุด';
+  }
+  return 'ยกเลิก';
+
+}
+
+function getStatusText2(status: string): string {
+  if (status === 'COUNTED') {
+    return 'นับเสร็จรอปิด';
+  }
+  if (status === 'IN_PROGRESS') {
+    return 'กำลังตรวจนับ';
+  }
+  return 'รออนุมัติ';
+
+}
+
+function getStatusText(status: string): string {
+  if (status === 'POSTED') {
+    return 'บันทึกเข้าสต็อกแล้ว';
+  }
+  if (status === 'FULLY_RECEIVED') {
+    return 'รับของครบแล้ว';
+  }
+  if (status === 'COMPLETED') {
+    return 'เสร็จสิ้น';
+  }
+  if (status === 'NORMAL') {
+    return 'ปกติ';
+  }
+  if (status === 'ACTIVE') {
+    return 'ใช้งานปกติ';
+  }
+  return 'สมบูรณ์';
+
 }

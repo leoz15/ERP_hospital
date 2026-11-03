@@ -1,35 +1,33 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useApp } from '@/context/AppContext';
-import {
-  ArrowUpFromLine,
-  Plus,
-  Search,
-  CheckCircle,
-  XCircle,
-  FileText,
-  UserCheck,
-  PackageCheck,
-  Package,
-  ShieldAlert,
-  Building,
-  RefreshCw,
-  Eye,
-  Copy,
-  Printer,
-  X,
-  CheckCircle2,
-  Clock,
-  Calendar,
-  AlertTriangle,
-  ChevronRight,
-  ChevronLeft,
-} from 'lucide-react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useApp } from '@/context/AppContext';
+import { createFormRowId } from '@/lib/form-row';
+import {
+  AlertTriangle,
+  ArrowUpFromLine,
+  Building,
+  Calendar,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Copy,
+  Eye,
+  Package,
+  PackageCheck,
+  Plus,
+  Printer,
+  RefreshCw,
+  Search,
+  ShieldAlert,
+  UserCheck,
+  X
+} from 'lucide-react';
+import React, { useEffect, useId, useState } from 'react';
 
 export default function StockIssuePage() {
+  const formId = useId();
   const { currentUser, addToast, refreshKey, triggerRefresh } = useApp();
   const [issues, setIssues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +37,7 @@ export default function StockIssuePage() {
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState<any | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState<any>(null);
 
   // Form states
   const [departments, setDepartments] = useState<any[]>([]);
@@ -52,7 +50,7 @@ export default function StockIssuePage() {
   const [requesterName, setRequesterName] = useState(currentUser.name);
   const [remark, setRemark] = useState('');
   const [lines, setLines] = useState<any[]>([
-    { itemId: '', requestedQty: 1, lotNumber: '', availableStock: 0, unit: 'Unit' },
+    { clientId: "initial-1485", itemId: '', requestedQty: 1, lotNumber: '', availableStock: 0, unit: 'Unit' },
   ]);
 
   const loadData = () => {
@@ -137,7 +135,7 @@ export default function StockIssuePage() {
   };
 
   const addLine = () => {
-    setLines([...lines, { itemId: '', requestedQty: 1, lotNumber: '', availableStock: 0, unit: 'Unit' }]);
+    setLines([...lines, { clientId: createFormRowId(), itemId: '', requestedQty: 1, lotNumber: '', availableStock: 0, unit: 'Unit' }]);
   };
 
   const removeLine = (idx: number) => {
@@ -280,7 +278,7 @@ export default function StockIssuePage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-1.5 px-4 py-2 bg-[#2563EB] hover:bg-[#164EAB] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
         >
@@ -329,69 +327,7 @@ export default function StockIssuePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
-                    <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
-                    กำลังดึงข้อมูลใบเบิก...
-                  </td>
-                </tr>
-              ) : paginatedIssues.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
-                    ยังไม่มีรายการใบเบิกพัสดุ
-                  </td>
-                </tr>
-              ) : (
-                paginatedIssues.map((iss) => (
-                  <tr
-                    key={iss.id}
-                    className="hover:bg-[#F5F8FC] transition-colors"
-                  >
-                    <td className="py-3 px-4 font-mono font-bold text-[#2563EB] whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => setShowDetailModal(iss)}
-                        className="hover:underline"
-                      >
-                        {iss.issueNumber}
-                      </button>
-                    </td>
-                    <td className="py-3 px-3">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-[#334155] border border-[#E2EAF4]">
-                        {iss.issueType === 'DIRECT' ? 'เบิกใช้งานจริง' : 'เบิกเติมคลังย่อย'}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-medium text-[#14213D] whitespace-nowrap">
-                      {iss.department.name}
-                    </td>
-                    <td className="py-3 px-3 text-[#64748B] whitespace-nowrap">
-                      {iss.requesterName}
-                    </td>
-                    <td className="py-3 px-3 text-[#334155] whitespace-nowrap">
-                      {iss.sourceWarehouse.name}
-                    </td>
-                    <td className="py-3 px-3 text-right font-semibold tabular-nums">
-                      {iss.lines.length} รายการ
-                    </td>
-                    <td className="py-3 px-3 whitespace-nowrap text-[#64748B]">
-                      {new Date(iss.requestDate).toLocaleDateString('th-TH')}
-                    </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <StatusBadge status={iss.status} />
-                    </td>
-                    <td className="py-3 px-4 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => setShowDetailModal(iss)}
-                        className="px-3 py-1 bg-blue-50/80 hover:bg-blue-100 text-[#2563EB] rounded-lg text-xs font-semibold transition-all inline-flex items-center gap-1.5 border border-blue-200 shadow-2xs"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>ดูข้อมูล</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableRows(loading, paginatedIssues, setShowDetailModal)}
             </tbody>
           </table>
         </div>
@@ -424,11 +360,10 @@ export default function StockIssuePage() {
                 key={page}
                 type="button"
                 onClick={() => setCurrentPage(page)}
-                className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
-                  currentPage === page
-                    ? 'bg-[#2563EB] text-white shadow-2xs'
-                    : 'border border-[#E2EAF4] hover:bg-[#F5F8FC] text-[#334155]'
-                }`}
+                className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${currentPage === page
+                  ? 'bg-[#2563EB] text-white shadow-2xs'
+                  : 'border border-[#E2EAF4] hover:bg-[#F5F8FC] text-[#334155]'
+                  }`}
               >
                 {page}
               </button>
@@ -460,7 +395,7 @@ export default function StockIssuePage() {
                   ระบบตรวจสอบยอดคงเหลือพร้อมจ่าย (Available Stock) และจัดสรร Lot ตามเกณฑ์ FEFO
                 </p>
               </div>
-              <button
+              <button type="button"
                 onClick={() => setShowCreateModal(false)}
                 className="text-[#94A3B8] hover:text-[#64748B] text-lg font-bold"
               >
@@ -472,10 +407,10 @@ export default function StockIssuePage() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* Issue Type */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#334155] mb-1">
+                  <label htmlFor={`${formId}-field-83`} className="block text-xs font-semibold text-[#334155] mb-1">
                     ประเภทการเบิก *
                   </label>
-                  <select
+                  <select id={`${formId}-field-83`}
                     value={issueType}
                     onChange={(e) => setIssueType(e.target.value)}
                     className="w-full text-xs px-3 py-2 bg-white border border-[#DCE5F0] rounded-xl focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 text-[#14213D]"
@@ -487,10 +422,10 @@ export default function StockIssuePage() {
 
                 {/* Department */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#334155] mb-1">
+                  <label htmlFor={`${formId}-field-84`} className="block text-xs font-semibold text-[#334155] mb-1">
                     แผนกที่ขอเบิก *
                   </label>
-                  <select
+                  <select id={`${formId}-field-84`}
                     value={selectedDeptId}
                     onChange={(e) => setSelectedDeptId(e.target.value)}
                     className="w-full text-xs px-3 py-2 bg-white border border-[#DCE5F0] rounded-xl focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 text-[#14213D]"
@@ -505,10 +440,10 @@ export default function StockIssuePage() {
 
                 {/* Source Warehouse */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#334155] mb-1">
+                  <label htmlFor={`${formId}-field-85`} className="block text-xs font-semibold text-[#334155] mb-1">
                     คลังสินค้าต้นทาง *
                   </label>
-                  <select
+                  <select id={`${formId}-field-85`}
                     value={selectedWarehouseId}
                     onChange={(e) => setSelectedWarehouseId(e.target.value)}
                     className="w-full text-xs px-3 py-2 bg-white border border-[#DCE5F0] rounded-xl focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 text-[#14213D]"
@@ -523,10 +458,10 @@ export default function StockIssuePage() {
 
                 {/* Requester Name */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#334155] mb-1">
+                  <label htmlFor={`${formId}-field-86`} className="block text-xs font-semibold text-[#334155] mb-1">
                     ชื่อผู้ขอเบิก *
                   </label>
-                  <input
+                  <input id={`${formId}-field-86`}
                     type="text"
                     required
                     value={requesterName}
@@ -551,7 +486,7 @@ export default function StockIssuePage() {
 
                 <div className="p-3 space-y-2">
                   {lines.map((line, idx) => (
-                    <div key={idx} className="flex items-center gap-3 bg-[#F5F8FC] p-2.5 rounded-lg border border-[#E2EAF4]/70">
+                    <div key={line.clientId} className="flex items-center gap-3 bg-[#F5F8FC] p-2.5 rounded-lg border border-[#E2EAF4]/70">
                       <div className="flex-1">
                         <select
                           required
@@ -576,8 +511,8 @@ export default function StockIssuePage() {
                       </div>
 
                       <div className="w-24">
-                        <label className="text-[10px] text-[#94A3B8] block text-right">จำนวนเบิก:</label>
-                        <input
+                        <label htmlFor={`${formId}-field-87-${idx}`} className="text-[10px] text-[#94A3B8] block text-right">จำนวนเบิก:</label>
+                        <input id={`${formId}-field-87-${idx}`}
                           type="number"
                           min="1"
                           max={line.availableStock || 99999}
@@ -585,7 +520,7 @@ export default function StockIssuePage() {
                           value={line.requestedQty}
                           onChange={(e) => {
                             const updated = [...lines];
-                            updated[idx].requestedQty = parseFloat(e.target.value) || 0;
+                            updated[idx].requestedQty = Number.parseFloat(e.target.value) || 0;
                             setLines(updated);
                           }}
                           className="w-full text-xs px-2 py-1 bg-white border border-slate-300 rounded text-right font-bold"
@@ -593,8 +528,8 @@ export default function StockIssuePage() {
                       </div>
 
                       <div className="w-28">
-                        <label className="text-[10px] text-[#94A3B8] block">Lot (FEFO):</label>
-                        <input
+                        <label htmlFor={`${formId}-field-88-${idx}`} className="text-[10px] text-[#94A3B8] block">Lot (FEFO):</label>
+                        <input id={`${formId}-field-88-${idx}`}
                           type="text"
                           readOnly
                           value={line.lotNumber || 'Auto FEFO'}
@@ -615,10 +550,10 @@ export default function StockIssuePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">
+                <label htmlFor={`${formId}-field-89`} className="block text-xs font-semibold text-[#334155] mb-1">
                   เหตุผล / หมายเหตุการเบิก
                 </label>
-                <textarea
+                <textarea id={`${formId}-field-89`}
                   rows={2}
                   value={remark}
                   onChange={(e) => setRemark(e.target.value)}
@@ -706,7 +641,7 @@ export default function StockIssuePage() {
                 </button>
 
                 {showDetailModal.status === 'APPROVED' && (
-                  <button
+                  <button type="button"
                     onClick={() => handlePostIssue(showDetailModal.id)}
                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all"
                   >
@@ -858,11 +793,10 @@ export default function StockIssuePage() {
                               </td>
                               <td className="py-2.5 px-3 text-center">
                                 <span
-                                  className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                                    l.issuedQty > 0
-                                      ? 'bg-emerald-100 text-emerald-800'
-                                      : 'bg-slate-100 text-[#64748B]'
-                                  }`}
+                                  className={`px-2 py-0.5 rounded text-[10px] font-semibold ${l.issuedQty > 0
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : 'bg-slate-100 text-[#64748B]'
+                                    }`}
                                 >
                                   {l.issuedQty > 0 ? 'ตัดจ่ายแล้ว' : 'รอดำเนินการ'}
                                 </span>
@@ -900,11 +834,10 @@ export default function StockIssuePage() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
-                      showDetailModal.status !== 'PENDING_APPROVAL'
-                        ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                        : 'bg-amber-50/60 border-amber-200 text-amber-900'
-                    }`}
+                    className={`p-3 rounded-xl border ${showDetailModal.status !== 'PENDING_APPROVAL'
+                      ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
+                      : 'bg-amber-50/60 border-amber-200 text-amber-900'
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       {showDetailModal.status !== 'PENDING_APPROVAL' ? (
@@ -922,13 +855,8 @@ export default function StockIssuePage() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
-                      showDetailModal.status === 'ISSUED'
-                        ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                        : showDetailModal.status === 'APPROVED'
-                        ? 'bg-blue-50/60 border-blue-200 text-blue-900'
-                        : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
-                    }`}
+                    className={`p-3 rounded-xl border ${getStatusClassName(showDetailModal)
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       <PackageCheck className="w-3.5 h-3.5 text-[#2563EB]" />
@@ -940,11 +868,10 @@ export default function StockIssuePage() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
-                      showDetailModal.status === 'ISSUED'
-                        ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                        : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
-                    }`}
+                    className={`p-3 rounded-xl border ${showDetailModal.status === 'ISSUED'
+                      ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
+                      : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#94A3B8]" />
@@ -989,13 +916,13 @@ export default function StockIssuePage() {
                 {/* Department Approval Action */}
                 {showDetailModal.status === 'PENDING_APPROVAL' && (
                   <>
-                    <button
+                    <button type="button"
                       onClick={() => handleApprove(showDetailModal.id, 'REJECT')}
                       className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold transition-colors"
                     >
                       ไม่อนุมัติ
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => handleApprove(showDetailModal.id, 'APPROVE')}
                       className="px-4 py-2 bg-[#2563EB] hover:bg-[#164EAB] text-white rounded-xl text-xs font-semibold shadow-sm flex items-center gap-1.5"
                     >
@@ -1007,7 +934,7 @@ export default function StockIssuePage() {
 
                 {/* Warehouse Picking & Post Issue Action */}
                 {showDetailModal.status === 'APPROVED' && (
-                  <button
+                  <button type="button"
                     onClick={() => handlePostIssue(showDetailModal.id)}
                     className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm flex items-center gap-1.5"
                   >
@@ -1022,4 +949,82 @@ export default function StockIssuePage() {
       )}
     </div>
   );
+}
+
+function getStatusClassName(showDetailModal: any) {
+  if (showDetailModal.status === 'ISSUED') {
+    return 'bg-emerald-50/60 border-emerald-200 text-emerald-900';
+  }
+  if (showDetailModal.status === 'APPROVED') {
+    return 'bg-blue-50/60 border-blue-200 text-blue-900';
+  }
+  return 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]';
+
+}
+
+function renderTableRows(loading: boolean, paginatedIssues: any[], setShowDetailModal: React.Dispatch<any>): React.ReactNode {
+  if (loading) {
+    return <tr>
+      <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
+        <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
+        กำลังดึงข้อมูลใบเบิก...
+      </td>
+    </tr>;
+  }
+  if (paginatedIssues.length === 0) {
+    return <tr>
+      <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
+        ยังไม่มีรายการใบเบิกพัสดุ
+      </td>
+    </tr>;
+  }
+  return paginatedIssues.map((iss) => (
+    <tr
+      key={iss.id}
+      className="hover:bg-[#F5F8FC] transition-colors"
+    >
+      <td className="py-3 px-4 font-mono font-bold text-[#2563EB] whitespace-nowrap">
+        <button
+          type="button"
+          onClick={() => setShowDetailModal(iss)}
+          className="hover:underline"
+        >
+          {iss.issueNumber}
+        </button>
+      </td>
+      <td className="py-3 px-3">
+        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-[#334155] border border-[#E2EAF4]">
+          {iss.issueType === 'DIRECT' ? 'เบิกใช้งานจริง' : 'เบิกเติมคลังย่อย'}
+        </span>
+      </td>
+      <td className="py-3 px-3 font-medium text-[#14213D] whitespace-nowrap">
+        {iss.department.name}
+      </td>
+      <td className="py-3 px-3 text-[#64748B] whitespace-nowrap">
+        {iss.requesterName}
+      </td>
+      <td className="py-3 px-3 text-[#334155] whitespace-nowrap">
+        {iss.sourceWarehouse.name}
+      </td>
+      <td className="py-3 px-3 text-right font-semibold tabular-nums">
+        {iss.lines.length} รายการ
+      </td>
+      <td className="py-3 px-3 whitespace-nowrap text-[#64748B]">
+        {new Date(iss.requestDate).toLocaleDateString('th-TH')}
+      </td>
+      <td className="py-3 px-3 text-center whitespace-nowrap">
+        <StatusBadge status={iss.status} />
+      </td>
+      <td className="py-3 px-4 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+        <button type="button"
+          onClick={() => setShowDetailModal(iss)}
+          className="px-3 py-1 bg-blue-50/80 hover:bg-blue-100 text-[#2563EB] rounded-lg text-xs font-semibold transition-all inline-flex items-center gap-1.5 border border-blue-200 shadow-2xs"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          <span>ดูข้อมูล</span>
+        </button>
+      </td>
+    </tr>
+  ));
+
 }

@@ -1,21 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import {
   Building,
-  Plus,
-  Layers,
-  MapPin,
-  User,
-  Thermometer,
-  ShieldCheck,
-  RefreshCw,
   FolderTree,
+  MapPin,
+  Plus,
+  Thermometer,
+  User
 } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import React, { useEffect, useId, useState } from 'react';
 
 export default function WarehousesPage() {
+  const formId = useId();
   const { addToast, refreshKey, triggerRefresh, currentUser } = useApp();
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +110,7 @@ export default function WarehousesPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div aria-busy={loading} className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E2EAF4] shadow-sm">
         <div>
@@ -126,7 +123,7 @@ export default function WarehousesPage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-1.5 px-4 py-2 bg-[#2563EB] hover:bg-[#164EAB] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
         >
@@ -179,7 +176,7 @@ export default function WarehousesPage() {
                   <FolderTree className="w-3.5 h-3.5 text-[#2563EB]" />
                   ตำแหน่งจัดเก็บ ({wh.locations.length} ตำแหน่ง)
                 </span>
-                <button
+                <button type="button"
                   onClick={() => setShowAddLocationModal(wh.id)}
                   className="text-[#2563EB] hover:text-[#164EAB] text-[11px] font-bold hover:underline"
                 >
@@ -221,7 +218,7 @@ export default function WarehousesPage() {
           <div className="bg-white rounded-2xl shadow-2xl border border-[#E2EAF4] max-w-md w-full p-6 animate-scale-up space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E2EAF4]">
               <h3 className="text-sm font-bold text-[#14213D]">เพิ่มคลังสินค้าใหม่ (New Warehouse)</h3>
-              <button
+              <button type="button"
                 onClick={() => setShowCreateModal(false)}
                 className="text-[#94A3B8] hover:text-[#64748B] font-bold"
               >
@@ -231,8 +228,8 @@ export default function WarehousesPage() {
 
             <form onSubmit={handleCreateWarehouse} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">รหัสคลัง (Code) *</label>
-                <input
+                <label htmlFor={`${formId}-field-191`} className="block text-xs font-semibold text-[#334155] mb-1">รหัสคลัง (Code) *</label>
+                <input id={`${formId}-field-191`}
                   type="text"
                   required
                   placeholder="เช่น RAD, DENT, PHARM"
@@ -243,8 +240,8 @@ export default function WarehousesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">ชื่อคลังสินค้า *</label>
-                <input
+                <label htmlFor={`${formId}-field-192`} className="block text-xs font-semibold text-[#334155] mb-1">ชื่อคลังสินค้า *</label>
+                <input id={`${formId}-field-192`}
                   type="text"
                   required
                   placeholder="เช่น คลังย่อยแผนกรังสีวิทยา"
@@ -255,8 +252,8 @@ export default function WarehousesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">ประเภทคลัง *</label>
-                <select
+                <label htmlFor={`${formId}-field-193`} className="block text-xs font-semibold text-[#334155] mb-1">ประเภทคลัง *</label>
+                <select id={`${formId}-field-193`}
                   value={whForm.type}
                   onChange={(e) => setWhForm({ ...whForm, type: e.target.value })}
                   className="w-full text-xs px-3 py-2 bg-[#F5F8FC] border border-[#E2EAF4] rounded-lg"
@@ -269,8 +266,8 @@ export default function WarehousesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">ชื่อผู้รับผิดชอบ</label>
-                <input
+                <label htmlFor={`${formId}-field-194`} className="block text-xs font-semibold text-[#334155] mb-1">ชื่อผู้รับผิดชอบ</label>
+                <input id={`${formId}-field-194`}
                   type="text"
                   placeholder="เช่น เจ้าหน้าที่คลังประจำแผนก"
                   value={whForm.managerName}
@@ -280,8 +277,8 @@ export default function WarehousesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">สถานที่ตั้ง</label>
-                <input
+                <label htmlFor={`${formId}-field-195`} className="block text-xs font-semibold text-[#334155] mb-1">สถานที่ตั้ง</label>
+                <input id={`${formId}-field-195`}
                   type="text"
                   placeholder="เช่น อาคาร 2 ชั้น 1 ห้องพัสดุ"
                   value={whForm.location}
@@ -316,7 +313,7 @@ export default function WarehousesPage() {
           <div className="bg-white rounded-2xl shadow-2xl border border-[#E2EAF4] max-w-sm w-full p-6 animate-scale-up space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E2EAF4]">
               <h3 className="text-sm font-bold text-[#14213D]">เพิ่มตำแหน่งจัดเก็บ (Storage Bin)</h3>
-              <button
+              <button type="button"
                 onClick={() => setShowAddLocationModal(null)}
                 className="text-[#94A3B8] hover:text-[#64748B] font-bold"
               >
@@ -326,8 +323,8 @@ export default function WarehousesPage() {
 
             <form onSubmit={handleAddLocation} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">โซน (Zone) *</label>
-                <input
+                <label htmlFor={`${formId}-field-196`} className="block text-xs font-semibold text-[#334155] mb-1">โซน (Zone) *</label>
+                <input id={`${formId}-field-196`}
                   type="text"
                   required
                   placeholder="เช่น Zone A - เวชภัณฑ์"
@@ -339,8 +336,8 @@ export default function WarehousesPage() {
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-xs font-semibold text-[#334155] mb-1">ชั้นวาง (Rack)</label>
-                  <input
+                  <label htmlFor={`${formId}-field-197`} className="block text-xs font-semibold text-[#334155] mb-1">ชั้นวาง (Rack)</label>
+                  <input id={`${formId}-field-197`}
                     type="text"
                     value={locForm.rack}
                     onChange={(e) => setLocForm({ ...locForm, rack: e.target.value })}
@@ -348,8 +345,8 @@ export default function WarehousesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#334155] mb-1">ชั้น (Shelf)</label>
-                  <input
+                  <label htmlFor={`${formId}-field-198`} className="block text-xs font-semibold text-[#334155] mb-1">ชั้น (Shelf)</label>
+                  <input id={`${formId}-field-198`}
                     type="text"
                     value={locForm.shelf}
                     onChange={(e) => setLocForm({ ...locForm, shelf: e.target.value })}
@@ -357,8 +354,8 @@ export default function WarehousesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#334155] mb-1">ช่อง (Bin)</label>
-                  <input
+                  <label htmlFor={`${formId}-field-199`} className="block text-xs font-semibold text-[#334155] mb-1">ช่อง (Bin)</label>
+                  <input id={`${formId}-field-199`}
                     type="text"
                     value={locForm.bin}
                     onChange={(e) => setLocForm({ ...locForm, bin: e.target.value })}

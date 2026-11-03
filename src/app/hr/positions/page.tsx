@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import { AlertCircle, Briefcase, CheckCircle2, UserPlus } from 'lucide-react';
 import Link from 'next/link';
-import { Briefcase, UserPlus, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function HRPositionsPage() {
   const manpowerPlans = [

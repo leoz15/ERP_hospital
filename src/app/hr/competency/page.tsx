@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import { Award } from 'lucide-react';
 import Link from 'next/link';
-import { Award, ShieldCheck } from 'lucide-react';
 
 export default function HRCompetencyPage() {
   const matrix = [
@@ -44,7 +43,7 @@ export default function HRCompetencyPage() {
             </thead>
             <tbody className="divide-y divide-[#E2EAF4]">
               {matrix.map((m, i) => (
-                <tr key={i} className="hover:bg-[#F5F8FC]">
+                <tr key={m.role} className="hover:bg-[#F5F8FC]">
                   <td className="py-3.5 px-4 font-bold text-[#14213D]">{m.role}</td>
                   <td className="py-3.5 px-4 font-semibold text-[#0D9488]">{m.level}</td>
                   <td className="py-3.5 px-4 text-center font-mono font-bold">{m.patientSafety}</td>

@@ -1,6 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+
+export type HRApprovalStatus = 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
 
 export interface HREmployee {
   id: string;
@@ -106,7 +108,7 @@ export interface HRShiftSwap {
   toDate: string;
   toShift: 'เวรเช้า (M)' | 'เวรบ่าย (A)' | 'เวรดึก (N)';
   reason: string;
-  status: 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+  status: HRApprovalStatus;
 }
 
 export interface HROTRequest {
@@ -124,7 +126,7 @@ export interface HROTRequest {
   ratePerHour: number;
   totalAmount: number;
   reason: string;
-  status: 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+  status: HRApprovalStatus;
 }
 
 export interface HRLeaveRequest {
@@ -141,7 +143,7 @@ export interface HRLeaveRequest {
   reason: string;
   substitutePerson: string;
   medicalCert: boolean;
-  status: 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+  status: HRApprovalStatus;
   createdAt: string;
 }
 
@@ -1313,7 +1315,7 @@ interface HRContextType {
 
 const HRContext = createContext<HRContextType | undefined>(undefined);
 
-export function HRProvider({ children }: { children: React.ReactNode }) {
+export function HRProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [employees, setEmployees] = useState<HREmployee[]>(INITIAL_EMPLOYEES);
   const [recruitments, setRecruitments] = useState<HRRecruitment[]>(INITIAL_RECRUITMENTS);
   const [attendance, setAttendance] = useState<HRAttendance[]>(INITIAL_ATTENDANCE);
@@ -1321,13 +1323,13 @@ export function HRProvider({ children }: { children: React.ReactNode }) {
   const [swaps, setSwaps] = useState<HRShiftSwap[]>(INITIAL_SWAPS);
   const [otRequests, setOtRequests] = useState<HROTRequest[]>(INITIAL_OTS);
   const [leaves, setLeaves] = useState<HRLeaveRequest[]>(INITIAL_LEAVES);
-  const [payrolls, setPayrolls] = useState<HRPayrollRecord[]>(INITIAL_PAYROLLS);
+  const payrolls = INITIAL_PAYROLLS;
   const [licenses, setLicenses] = useState<HRLicenseCredential[]>(INITIAL_LICENSES);
   const [trainings, setTrainings] = useState<HRTrainingCourse[]>(INITIAL_TRAININGS);
   const [performances] = useState<HRPerformanceReview[]>(INITIAL_PERFORMANCES);
   const [audits, setAudits] = useState<HRAuditItem[]>(INITIAL_AUDITS);
 
-  const logHRAudit = (module: string, action: string, docNo: string, detail: string) => {
+  const logHRAudit = useCallback((module: string, action: string, docNo: string, detail: string) => {
     const newItem: HRAuditItem = {
       id: `aud-${Date.now()}`,
       timestamp: new Date().toLocaleString('sv-SE').slice(0, 16),
@@ -1338,33 +1340,38 @@ export function HRProvider({ children }: { children: React.ReactNode }) {
       detail,
     };
     setAudits((prev) => [newItem, ...prev]);
-  };
+  }, [setAudits]);
 
-  const addEmployee = (emp: Omit<HREmployee, 'id'>) => {
+
+  const addEmployee = useCallback((emp: Omit<HREmployee, 'id'>) => {
     const newEmp: HREmployee = { ...emp, id: `emp-${Date.now()}` };
     setEmployees((prev) => [newEmp, ...prev]);
     logHRAudit('EMPLOYEE', 'CREATE_EMPLOYEE', emp.empCode, `ขึ้นทะเบียนบุคลากรใหม่: ${emp.fullName} (${emp.position})`);
-  };
+  }, [setEmployees, logHRAudit]);
 
-  const addRecruitment = (rec: Omit<HRRecruitment, 'id'>) => {
+
+  const addRecruitment = useCallback((rec: Omit<HRRecruitment, 'id'>) => {
     const newRec: HRRecruitment = { ...rec, id: `rec-${Date.now()}` };
     setRecruitments((prev) => [newRec, ...prev]);
     logHRAudit('RECRUITMENT', 'CREATE_REQUISITION', rec.reqNo, `เปิดอัตราสรรหาบุคลากร: ${rec.positionTitle} จำนวน ${rec.headcountRequested} อัตรา`);
-  };
+  }, [setRecruitments, logHRAudit]);
 
-  const addAttendance = (att: Omit<HRAttendance, 'id'>) => {
+
+  const addAttendance = useCallback((att: Omit<HRAttendance, 'id'>) => {
     const newAtt: HRAttendance = { ...att, id: `att-${Date.now()}` };
     setAttendance((prev) => [newAtt, ...prev]);
     logHRAudit('ATTENDANCE', 'MANUAL_CHECKIN', att.empCode, `ลงเวลาปฏิบัติงาน ${att.empName} เวลา ${att.checkIn}`);
-  };
+  }, [setAttendance, logHRAudit]);
 
-  const addSwapRequest = (swap: Omit<HRShiftSwap, 'id'>) => {
+
+  const addSwapRequest = useCallback((swap: Omit<HRShiftSwap, 'id'>) => {
     const newSwap: HRShiftSwap = { ...swap, id: `sw-${Date.now()}` };
     setSwaps((prev) => [newSwap, ...prev]);
     logHRAudit('ROSTER', 'REQUEST_SHIFT_SWAP', swap.swapNo, `ขอสลับเวรระหว่าง ${swap.requesterName} และ ${swap.targetName}`);
-  };
+  }, [setSwaps, logHRAudit]);
 
-  const updateSwapStatus = (id: string, status: 'APPROVED' | 'REJECTED') => {
+
+  const updateSwapStatus = useCallback((id: string, status: 'APPROVED' | 'REJECTED') => {
     setSwaps((prev) =>
       prev.map((s) => {
         if (s.id === id) {
@@ -1374,15 +1381,17 @@ export function HRProvider({ children }: { children: React.ReactNode }) {
         return s;
       })
     );
-  };
+  }, [setSwaps, logHRAudit]);
 
-  const addOTRequest = (ot: Omit<HROTRequest, 'id'>) => {
+
+  const addOTRequest = useCallback((ot: Omit<HROTRequest, 'id'>) => {
     const newOT: HROTRequest = { ...ot, id: `ot-${Date.now()}` };
     setOtRequests((prev) => [newOT, ...prev]);
     logHRAudit('OVERTIME', 'CREATE_OT_REQUEST', ot.otNo, `ขออนุมัติทำงานล่วงเวลา (OT) ${ot.empName} จำนวน ${ot.hours} ชม.`);
-  };
+  }, [setOtRequests, logHRAudit]);
 
-  const updateOTStatus = (id: string, status: 'APPROVED' | 'REJECTED') => {
+
+  const updateOTStatus = useCallback((id: string, status: 'APPROVED' | 'REJECTED') => {
     setOtRequests((prev) =>
       prev.map((o) => {
         if (o.id === id) {
@@ -1392,15 +1401,17 @@ export function HRProvider({ children }: { children: React.ReactNode }) {
         return o;
       })
     );
-  };
+  }, [setOtRequests, logHRAudit]);
 
-  const addLeaveRequest = (lv: Omit<HRLeaveRequest, 'id'>) => {
+
+  const addLeaveRequest = useCallback((lv: Omit<HRLeaveRequest, 'id'>) => {
     const newLv: HRLeaveRequest = { ...lv, id: `lv-${Date.now()}` };
     setLeaves((prev) => [newLv, ...prev]);
     logHRAudit('LEAVE', 'CREATE_LEAVE_REQUEST', lv.leaveNo, `ยื่นใบลา (${lv.leaveType}) ของ ${lv.empName} จำนวน ${lv.days} วัน`);
-  };
+  }, [setLeaves, logHRAudit]);
 
-  const updateLeaveStatus = (id: string, status: 'APPROVED' | 'REJECTED') => {
+
+  const updateLeaveStatus = useCallback((id: string, status: 'APPROVED' | 'REJECTED') => {
     setLeaves((prev) =>
       prev.map((l) => {
         if (l.id === id) {
@@ -1410,19 +1421,22 @@ export function HRProvider({ children }: { children: React.ReactNode }) {
         return l;
       })
     );
-  };
+  }, [setLeaves, logHRAudit]);
 
-  const runPayrollBatch = (period: string) => {
+
+  const runPayrollBatch = useCallback((period: string) => {
     logHRAudit('PAYROLL', 'PROCESS_PAYROLL_BATCH', `PAY-${period}`, `ประมวลผลเงินเดือน ค่าเวร และภาษี ประจำงวด ${period} สำเร็จ`);
-  };
+  }, [logHRAudit]);
 
-  const addLicense = (lic: Omit<HRLicenseCredential, 'id'>) => {
+
+  const addLicense = useCallback((lic: Omit<HRLicenseCredential, 'id'>) => {
     const newLic: HRLicenseCredential = { ...lic, id: `lic-${Date.now()}` };
     setLicenses((prev) => [newLic, ...prev]);
     logHRAudit('LICENSE', 'REGISTER_LICENSE', lic.licenseNo, `บันทึกใบประกอบวิชาชีพ ${lic.licenseNo} ของ ${lic.empName}`);
-  };
+  }, [setLicenses, logHRAudit]);
 
-  const renewLicense = (id: string, newExpiryDate: string) => {
+
+  const renewLicense = useCallback((id: string, newExpiryDate: string) => {
     setLicenses((prev) =>
       prev.map((l) => {
         if (l.id === id) {
@@ -1437,44 +1451,48 @@ export function HRProvider({ children }: { children: React.ReactNode }) {
         return l;
       })
     );
-  };
+  }, [setLicenses, logHRAudit]);
 
-  const addTraining = (tr: Omit<HRTrainingCourse, 'id'>) => {
+
+  const addTraining = useCallback((tr: Omit<HRTrainingCourse, 'id'>) => {
     const newTr: HRTrainingCourse = { ...tr, id: `tr-${Date.now()}` };
     setTrainings((prev) => [newTr, ...prev]);
     logHRAudit('TRAINING', 'CREATE_COURSE', tr.courseCode, `เปิดหลักสูตรฝึกอบรมใหม่: ${tr.title}`);
-  };
+  }, [setTrainings, logHRAudit]);
+
+  const value = useMemo(() => ({
+    employees,
+    addEmployee,
+    recruitments,
+    addRecruitment,
+    attendance,
+    addAttendance,
+    shifts,
+    swaps,
+    addSwapRequest,
+    updateSwapStatus,
+    otRequests,
+    addOTRequest,
+    updateOTStatus,
+    leaves,
+    addLeaveRequest,
+    updateLeaveStatus,
+    payrolls,
+    runPayrollBatch,
+    licenses,
+    addLicense,
+    renewLicense,
+    trainings,
+    addTraining,
+    performances,
+    audits,
+    logHRAudit,
+  }), [employees, addEmployee, recruitments, addRecruitment, attendance, addAttendance, shifts, swaps, addSwapRequest, updateSwapStatus, otRequests, addOTRequest, updateOTStatus, leaves, addLeaveRequest, updateLeaveStatus, payrolls, runPayrollBatch, licenses, addLicense, renewLicense, trainings, addTraining, performances, audits, logHRAudit]);
+
 
   return (
     <HRContext.Provider
-      value={{
-        employees,
-        addEmployee,
-        recruitments,
-        addRecruitment,
-        attendance,
-        addAttendance,
-        shifts,
-        swaps,
-        addSwapRequest,
-        updateSwapStatus,
-        otRequests,
-        addOTRequest,
-        updateOTStatus,
-        leaves,
-        addLeaveRequest,
-        updateLeaveStatus,
-        payrolls,
-        runPayrollBatch,
-        licenses,
-        addLicense,
-        renewLicense,
-        trainings,
-        addTraining,
-        performances,
-        audits,
-        logHRAudit,
-      }}
+      value={value}
     >
       {children}
     </HRContext.Provider>

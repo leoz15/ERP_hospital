@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { ShieldCheck, Plus, RefreshCw } from 'lucide-react';
+import { HRLicenseCredential, useHR } from '@/context/HRContext';
+import { Plus, RefreshCw, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
+import React, { useId, useState } from 'react';
 
 export default function HRLicensesPage() {
+  const formId = useId();
   const { licenses, employees, addLicense, renewLicense } = useHR();
   const { addToast } = useApp();
 
@@ -56,7 +57,7 @@ export default function HRLicensesPage() {
             ตรวจสอบเลขที่ใบอนุญาตประกอบวิชาชีพ แพทยสภา สภาการพยาบาล สภาเภสัชกรรม สภาเทคนิคการแพทย์ และหน่วยกิตสะสม
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={() => setShowModal(true)}
           className="px-4 py-2.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-xl text-xs font-bold flex items-center gap-2 shrink-0"
         >
@@ -96,23 +97,11 @@ export default function HRLicensesPage() {
                     <span className="font-bold text-[#0D9488]">{lic.cmeCreditsEarned}</span>/{lic.cmeCreditsRequired}
                   </td>
                   <td className="py-3 px-4 text-center">
-                    {lic.status === 'EXPIRED' ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
-                        หมดอายุ ({Math.abs(lic.daysRemaining)} วัน)
-                      </span>
-                    ) : lic.status === 'NEAR_EXPIRY' ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                        เหลือ {lic.daysRemaining} วัน
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        ปกติ (Active)
-                      </span>
-                    )}
+                    {getStatusContent(lic)}
                   </td>
                   <td className="py-3 px-4 text-right">
                     {(lic.status === 'EXPIRED' || lic.status === 'NEAR_EXPIRY') && (
-                      <button
+                      <button type="button"
                         onClick={() => {
                           renewLicense(lic.id, '2031-10-28');
                           addToast('success', `บันทึกต่ออายุใบประกอบวิชาชีพ ${lic.licenseNo} อีก 5 ปีเรียบร้อยแล้ว`);
@@ -137,16 +126,16 @@ export default function HRLicensesPage() {
             <h3 className="font-extrabold text-base text-[#14213D]">ขึ้นทะเบียนใบประกอบวิชาชีพใหม่</h3>
             <form onSubmit={handleCreate} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold mb-1">บุคลากร</label>
-                <select value={empCode} onChange={(e) => setEmpCode(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
+                <label htmlFor={`${formId}-field-53`} className="block font-bold mb-1">บุคลากร</label>
+                <select id={`${formId}-field-53`} value={empCode} onChange={(e) => setEmpCode(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
                   {employees.map((e) => (
                     <option key={e.id} value={e.empCode}>{e.fullName}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block font-bold mb-1">ประเภทใบประกอบวิชาชีพ</label>
-                <select value={licenseType} onChange={(e) => setLicenseType(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
+                <label htmlFor={`${formId}-field-54`} className="block font-bold mb-1">ประเภทใบประกอบวิชาชีพ</label>
+                <select id={`${formId}-field-54`} value={licenseType} onChange={(e) => setLicenseType(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
                   <option value="ใบประกอบวิชาชีพเวชกรรม (แพทยสภา)">ใบประกอบวิชาชีพเวชกรรม (แพทยสภา)</option>
                   <option value="ใบประกอบวิชาชีพการพยาบาลและผดุงครรภ์">ใบประกอบวิชาชีพการพยาบาลและผดุงครรภ์</option>
                   <option value="ใบประกอบวิชาชีพเภสัชกรรม">ใบประกอบวิชาชีพเภสัชกรรม</option>
@@ -156,12 +145,12 @@ export default function HRLicensesPage() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">เลขที่ใบอนุญาต *</label>
-                  <input type="text" value={licenseNo} onChange={(e) => setLicenseNo(e.target.value)} placeholder="เช่น พย.556789" className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
+                  <label htmlFor={`${formId}-field-55`} className="block font-bold mb-1">เลขที่ใบอนุญาต *</label>
+                  <input id={`${formId}-field-55`} type="text" value={licenseNo} onChange={(e) => setLicenseNo(e.target.value)} placeholder="เช่น พย.556789" className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">วันหมดอายุ</label>
-                  <input type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-56`} className="block font-bold mb-1">วันหมดอายุ</label>
+                  <input id={`${formId}-field-56`} type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t">
@@ -176,3 +165,20 @@ export default function HRLicensesPage() {
   );
 }
 
+
+function getStatusContent(lic: HRLicenseCredential): React.ReactNode {
+  if (lic.status === 'EXPIRED') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
+      หมดอายุ ({Math.abs(lic.daysRemaining)} วัน)
+    </span>;
+  }
+  if (lic.status === 'NEAR_EXPIRY') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+      เหลือ {lic.daysRemaining} วัน
+    </span>;
+  }
+  return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+    ปกติ (Active)
+  </span>;
+
+}

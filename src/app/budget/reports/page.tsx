@@ -1,22 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
 import { useBudget } from '@/context/BudgetContext';
 import {
-  FileBarChart,
-  Download,
-  Printer,
   CheckCircle2,
-  Building2,
-  Layers,
-  Wallet,
-  Lock,
-  Receipt,
-  GitCompare,
+  Download,
+  FileBarChart,
+  Printer
 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function BudgetReportsPage() {
-  const { plans, transactions } = useBudget();
+  const { plans } = useBudget();
   const [selectedReport, setSelectedReport] = useState<
     | 'ANNUAL'
     | 'BY_DEPT'
@@ -69,14 +63,14 @@ export default function BudgetReportsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => handleExport('Excel (.xlsx)')}
             className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-2 shadow-sm"
           >
             <Download className="w-4 h-4" />
             ส่งออก Excel (.xlsx)
           </button>
-          <button
+          <button type="button"
             onClick={() => handleExport('PDF (.pdf)')}
             className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center gap-2 shadow-sm"
           >
@@ -92,7 +86,7 @@ export default function BudgetReportsPage() {
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             {exportBanner}
           </span>
-          <button onClick={() => setExportBanner(null)} className="text-emerald-700 hover:underline">
+          <button type="button" onClick={() => setExportBanner(null)} className="text-emerald-700 hover:underline">
             ปิด
           </button>
         </div>
@@ -102,14 +96,13 @@ export default function BudgetReportsPage() {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center gap-2">
           {reportTypes.map((r) => (
-            <button
+            <button type="button"
               key={r.id}
               onClick={() => setSelectedReport(r.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
-                selectedReport === r.id
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${selectedReport === r.id
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               {r.label}
             </button>

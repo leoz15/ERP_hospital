@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -132,8 +132,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
           lines:
             Array.isArray(lines) && lines.length > 0
               ? {
-                  create: formattedLines,
-                }
+                create: formattedLines,
+              }
               : undefined,
         },
         include: { lines: true, department: true, plan: true },

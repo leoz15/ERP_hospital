@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { generateDocumentNumber } from '@/lib/doc-sequence';
 import { logAudit } from '@/lib/audit';
+import { generateDocumentNumber } from '@/lib/doc-sequence';
+import { prisma } from '@/lib/prisma';
 import { rfqInclude } from '@/lib/rfq';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -92,12 +92,13 @@ export async function POST(req: Request) {
       include: { lines: true, suppliers: true },
     });
 
+    const requisitionReference = pr ? ' อ้างอิงใบขอซื้อ ' + pr.prNumber : '';
     await logAudit({
       action: 'CREATE',
       module: 'RFQ',
       entityId: rfq.id,
       user: createdBy || 'เจ้าหน้าที่จัดซื้อ',
-      remarks: `สร้างคำขอใบเสนอราคา ${rfq.rfqNumber}${pr ? ` อ้างอิงใบขอซื้อ ${pr.prNumber}` : ''} ส่งถึงผู้จำหน่าย ${uniqueSupplierIds.length} ราย`,
+      remarks: `สร้างคำขอใบเสนอราคา ${rfq.rfqNumber}${requisitionReference} ส่งถึงผู้จำหน่าย ${uniqueSupplierIds.length} ราย`,
     });
 
     return NextResponse.json(rfq, { status: 201 });

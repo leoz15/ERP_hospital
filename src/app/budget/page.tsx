@@ -1,27 +1,20 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
 import { useBudget } from "@/context/BudgetContext";
 import {
-  PieChart,
-  Wallet,
-  CheckCircle2,
-  Clock,
-  FileSpreadsheet,
-  ArrowRightLeft,
-  ShieldCheck,
-  TrendingUp,
-  AlertTriangle,
-  Building2,
   ArrowUpRight,
+  FileSpreadsheet,
   Layers,
-  Receipt,
   Lock,
+  PieChart,
+  Receipt,
+  ShieldCheck,
+  Wallet
 } from "lucide-react";
+import Link from "next/link";
 
 export default function BudgetDashboardPage() {
-  const { plans, adjustments, approveAdjustment } = useBudget();
+  const { plans, adjustments } = useBudget();
 
   // Compute totals from live BudgetContext
   const totalApproved = plans.reduce((acc, p) => acc + p.approvedAmount, 0);
@@ -301,9 +294,7 @@ export default function BudgetDashboardPage() {
               <div>
                 <div className="flex justify-between text-xs font-bold mb-1.5">
                   <span className="flex items-center gap-2 text-blue-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                    ใช้จ่ายจริง (Actual Expense จากระบบ Finance)
-                  </span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600" /><span>ใช้จ่ายจริง (Actual Expense จากระบบ Finance)</span></span>
                   <span className="text-slate-900">
                     {formatMillion(totalActual)} ({actualPct}%)
                   </span>
@@ -319,9 +310,7 @@ export default function BudgetDashboardPage() {
               <div>
                 <div className="flex justify-between text-xs font-bold mb-1.5">
                   <span className="flex items-center gap-2 text-amber-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                    ภาระผูกพัน (Commitment จากใบสั่งซื้อ PO ที่อนุมัติแล้ว)
-                  </span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /><span>ภาระผูกพัน (Commitment จากใบสั่งซื้อ PO ที่อนุมัติแล้ว)</span></span>
                   <span className="text-slate-900">
                     {formatMillion(totalCommitment)} ({commitmentPct}%)
                   </span>
@@ -337,9 +326,7 @@ export default function BudgetDashboardPage() {
               <div>
                 <div className="flex justify-between text-xs font-bold mb-1.5">
                   <span className="flex items-center gap-2 text-purple-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-                    กันงบประมาณ (Reserved จากใบขอซื้อ PR รอดำเนินการ)
-                  </span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-purple-500" /><span>กันงบประมาณ (Reserved จากใบขอซื้อ PR รอดำเนินการ)</span></span>
                   <span className="text-slate-900">
                     {formatMillion(totalReserved)} ({reservedPct}%)
                   </span>
@@ -355,9 +342,7 @@ export default function BudgetDashboardPage() {
               <div>
                 <div className="flex justify-between text-xs font-bold mb-1.5">
                   <span className="flex items-center gap-2 text-emerald-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                    งบประมาณคงเหลือใช้ได้สุทธิ (Available Budget)
-                  </span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /><span>งบประมาณคงเหลือใช้ได้สุทธิ (Available Budget)</span></span>
                   <span className="text-emerald-700">
                     {formatMillion(totalAvailable)} ({availablePct}%)
                   </span>

@@ -1,9 +1,8 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
 import { useHR } from '@/context/HRContext';
 import { ScrollText } from 'lucide-react';
+import Link from 'next/link';
 
 export default function HRAuditPage() {
   const { audits } = useHR();

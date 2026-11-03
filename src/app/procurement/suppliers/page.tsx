@@ -1,31 +1,28 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import {
   Building2,
-  Plus,
-  Search,
-  Phone,
+  CheckCircle2,
+  Copy,
+  CreditCard,
+  Eye,
   Mail,
   MapPin,
-  RefreshCw,
-  CreditCard,
-  CheckCircle,
-  Eye,
-  Copy,
+  Phone,
+  Plus,
   Printer,
-  X,
-  ShoppingCart,
+  RefreshCw,
+  Search,
   ShieldCheck,
-  FileText,
-  Layers,
-  DollarSign,
-  CheckCircle2,
+  ShoppingCart,
+  X
 } from 'lucide-react';
+import Link from 'next/link';
+import React, { useEffect, useId, useState } from 'react';
 
 export default function SuppliersPage() {
+  const formId = useId();
   const { addToast, refreshKey, triggerRefresh } = useApp();
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +30,7 @@ export default function SuppliersPage() {
 
   // Full-screen Supplier Detail Modal State
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedSupplierDetail, setSelectedSupplierDetail] = useState<any | null>(null);
+  const [selectedSupplierDetail, setSelectedSupplierDetail] = useState<any>(null);
 
   // Modal
   const [showModal, setShowModal] = useState(false);
@@ -42,7 +39,7 @@ export default function SuppliersPage() {
   const [taxId, setTaxId] = useState('');
   const [contactPerson, setContactPerson] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  const email = '';
   const [paymentTerm, setPaymentTerm] = useState('Credit 30 Days');
 
   const loadSuppliers = () => {
@@ -94,7 +91,7 @@ export default function SuppliersPage() {
     return (
       s.code.toLowerCase().includes(search.toLowerCase()) ||
       s.name.toLowerCase().includes(search.toLowerCase()) ||
-      (s.contactPerson && s.contactPerson.toLowerCase().includes(search.toLowerCase()))
+      s.contactPerson?.toLowerCase().includes(search.toLowerCase())
     );
   });
 
@@ -120,14 +117,14 @@ export default function SuppliersPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => triggerRefresh()}
             className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>รีเฟรช</span>
           </button>
-          <button
+          <button type="button"
             onClick={() => setShowModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-[#F28C28] hover:bg-[#D97706] text-white rounded-xl text-xs font-semibold shadow-sm shadow-blue-500/20 transition-all"
           >
@@ -153,84 +150,7 @@ export default function SuppliersPage() {
 
       {/* Suppliers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {loading ? (
-          <div className="col-span-full py-12 text-center text-slate-400 text-xs">
-            กำลังโหลดข้อมูลผู้จัดจำหน่าย...
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="col-span-full py-12 text-center text-slate-400 text-xs">
-            ไม่พบข้อมูลผู้จัดจำหน่าย
-          </div>
-        ) : (
-          filtered.map((s) => (
-            <div
-              key={s.id}
-              onClick={() => {
-                setSelectedSupplierDetail(s);
-                setShowDetailModal(true);
-              }}
-              className="bg-white p-5 rounded-2xl border border-[#E2EAF4] shadow-sm space-y-3 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedSupplierDetail(s);
-                      setShowDetailModal(true);
-                    }}
-                    className="font-mono text-xs font-bold text-[#D97706] bg-[#FFF7ED] group-hover:bg-[#F28C28] group-hover:text-white px-2 py-0.5 rounded transition-all"
-                    title="คลิกเพื่อดูโปรไฟล์คู่ค้าแบบเต็มจอ"
-                  >
-                    {s.code}
-                  </button>
-                  <h3 className="font-bold text-sm text-[#14213D] mt-1.5 group-hover:text-[#F28C28] transition-colors">
-                    {s.name}
-                  </h3>
-                </div>
-                <span className="text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded-full border border-emerald-200">
-                  คู่ค้าอนุมัติ
-                </span>
-              </div>
-
-              <div className="space-y-1.5 text-xs text-slate-600 pt-2 border-t border-[#E2EAF4]">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-3.5 h-3.5 text-slate-400" />
-                  <span>เครดิต: {s.paymentTerm || 'Credit 30 Days'}</span>
-                </div>
-                {s.contactPerson && (
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                    <span>ผู้ติดต่อ: {s.contactPerson}</span>
-                  </div>
-                )}
-                {s.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" />
-                    <span>โทร: {s.phone}</span>
-                  </div>
-                )}
-                {s.email && (
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-3.5 h-3.5 text-slate-400" />
-                    <span>อีเมล: {s.email}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="pt-2 border-t border-[#E2EAF4] flex items-center justify-between text-xs text-[#F28C28] font-semibold group-hover:underline">
-                <span className="flex items-center gap-1">
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>ดูประวัติและข้อมูล 360°</span>
-                </span>
-                <span className="text-slate-400 text-[11px] font-normal">
-                  {s.purchaseOrders?.length || 0} ใบสั่งซื้อ
-                </span>
-              </div>
-            </div>
-          ))
-        )}
+        {renderTableRows(loading, filtered, setSelectedSupplierDetail, setShowDetailModal)}
       </div>
 
       {/* Modal: Create Supplier */}
@@ -242,7 +162,7 @@ export default function SuppliersPage() {
                 <Plus className="w-5 h-5 text-[#F28C28]" />
                 <span>เพิ่มผู้จัดจำหน่ายใหม่</span>
               </h3>
-              <button
+              <button type="button"
                 onClick={() => setShowModal(false)}
                 className="text-slate-400 hover:text-slate-600 text-lg"
               >
@@ -252,8 +172,8 @@ export default function SuppliersPage() {
 
             <form onSubmit={handleCreate} className="space-y-3 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">รหัสคู่ค้า (Supplier Code) *</label>
-                <input
+                <label htmlFor={`${formId}-field-165`} className="block font-semibold text-slate-700 mb-1">รหัสคู่ค้า (Supplier Code) *</label>
+                <input id={`${formId}-field-165`}
                   type="text"
                   placeholder="เช่น SUP-004"
                   value={code}
@@ -263,8 +183,8 @@ export default function SuppliersPage() {
                 />
               </div>
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">ชื่อบริษัท / ผู้จัดจำหน่าย *</label>
-                <input
+                <label htmlFor={`${formId}-field-166`} className="block font-semibold text-slate-700 mb-1">ชื่อบริษัท / ผู้จัดจำหน่าย *</label>
+                <input id={`${formId}-field-166`}
                   type="text"
                   placeholder="เช่น บริษัท สยามเมดิคอล จำกัด"
                   value={name}
@@ -275,8 +195,8 @@ export default function SuppliersPage() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">เลขประจำตัวผู้เสียภาษี</label>
-                  <input
+                  <label htmlFor={`${formId}-field-167`} className="block font-semibold text-slate-700 mb-1">เลขประจำตัวผู้เสียภาษี</label>
+                  <input id={`${formId}-field-167`}
                     type="text"
                     value={taxId}
                     onChange={(e) => setTaxId(e.target.value)}
@@ -284,8 +204,8 @@ export default function SuppliersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">เงื่อนไขการชำระเงิน</label>
-                  <input
+                  <label htmlFor={`${formId}-field-168`} className="block font-semibold text-slate-700 mb-1">เงื่อนไขการชำระเงิน</label>
+                  <input id={`${formId}-field-168`}
                     type="text"
                     value={paymentTerm}
                     onChange={(e) => setPaymentTerm(e.target.value)}
@@ -295,8 +215,8 @@ export default function SuppliersPage() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">ชื่อผู้ติดต่อ</label>
-                  <input
+                  <label htmlFor={`${formId}-field-169`} className="block font-semibold text-slate-700 mb-1">ชื่อผู้ติดต่อ</label>
+                  <input id={`${formId}-field-169`}
                     type="text"
                     value={contactPerson}
                     onChange={(e) => setContactPerson(e.target.value)}
@@ -304,8 +224,8 @@ export default function SuppliersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">เบอร์โทรศัพท์</label>
-                  <input
+                  <label htmlFor={`${formId}-field-170`} className="block font-semibold text-slate-700 mb-1">เบอร์โทรศัพท์</label>
+                  <input id={`${formId}-field-170`}
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -614,4 +534,83 @@ export default function SuppliersPage() {
       )}
     </div>
   );
+}
+
+function renderTableRows(loading: boolean, filtered: any[], setSelectedSupplierDetail: React.Dispatch<any>, setShowDetailModal: React.Dispatch<React.SetStateAction<boolean>>): React.ReactNode {
+  if (loading) {
+    return <div className="col-span-full py-12 text-center text-slate-400 text-xs">
+      กำลังโหลดข้อมูลผู้จัดจำหน่าย...
+    </div>;
+  }
+  if (filtered.length === 0) {
+    return <div className="col-span-full py-12 text-center text-slate-400 text-xs">
+      ไม่พบข้อมูลผู้จัดจำหน่าย
+    </div>;
+  }
+  return filtered.map((s) => (
+    <div
+      key={s.id}
+
+      className="relative bg-white p-5 rounded-2xl border border-[#E2EAF4] shadow-sm space-y-3 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedSupplierDetail(s);
+              setShowDetailModal(true);
+            }}
+            className="font-mono text-xs font-bold text-[#D97706] bg-[#FFF7ED] group-hover:bg-[#F28C28] group-hover:text-white px-2 py-0.5 rounded transition-all after:absolute after:inset-0 after:rounded-2xl"
+            title="คลิกเพื่อดูโปรไฟล์คู่ค้าแบบเต็มจอ"
+          >
+            {s.code}
+          </button>
+          <h3 className="font-bold text-sm text-[#14213D] mt-1.5 group-hover:text-[#F28C28] transition-colors">
+            {s.name}
+          </h3>
+        </div>
+        <span className="text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded-full border border-emerald-200">
+          คู่ค้าอนุมัติ
+        </span>
+      </div>
+
+      <div className="space-y-1.5 text-xs text-slate-600 pt-2 border-t border-[#E2EAF4]">
+        <div className="flex items-center gap-2">
+          <CreditCard className="w-3.5 h-3.5 text-slate-400" />
+          <span>เครดิต: {s.paymentTerm || 'Credit 30 Days'}</span>
+        </div>
+        {s.contactPerson && (
+          <div className="flex items-center gap-2">
+            <Building2 className="w-3.5 h-3.5 text-slate-400" />
+            <span>ผู้ติดต่อ: {s.contactPerson}</span>
+          </div>
+        )}
+        {s.phone && (
+          <div className="flex items-center gap-2">
+            <Phone className="w-3.5 h-3.5 text-slate-400" />
+            <span>โทร: {s.phone}</span>
+          </div>
+        )}
+        {s.email && (
+          <div className="flex items-center gap-2">
+            <Mail className="w-3.5 h-3.5 text-slate-400" />
+            <span>อีเมล: {s.email}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="pt-2 border-t border-[#E2EAF4] flex items-center justify-between text-xs text-[#F28C28] font-semibold group-hover:underline">
+        <span className="flex items-center gap-1">
+          <Eye className="w-3.5 h-3.5" />
+          <span>ดูประวัติและข้อมูล 360°</span>
+        </span>
+        <span className="text-slate-400 text-[11px] font-normal">
+          {s.purchaseOrders?.length || 0} ใบสั่งซื้อ
+        </span>
+      </div>
+    </div>
+  ));
+
 }

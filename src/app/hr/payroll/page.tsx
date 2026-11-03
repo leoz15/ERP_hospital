@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useHR, HRPayrollRecord } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { Wallet, Printer, Eye, CheckCircle2, RefreshCw, X } from 'lucide-react';
+import { HRPayrollRecord, useHR } from '@/context/HRContext';
+import { Eye, Printer, RefreshCw, Wallet, X } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 export default function HRPayrollPage() {
   const { payrolls, runPayrollBatch } = useHR();
@@ -35,7 +35,7 @@ export default function HRPayrollPage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => {
             runPayrollBatch('2026-10');
             addToast('success', 'ประมวลผล Batch เงินเดือนและออก e-Payslip ประจำเดือนตุลาคม 2569 สำเร็จ');
@@ -109,7 +109,7 @@ export default function HRPayrollPage() {
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <button
+                    <button type="button"
                       onClick={() => setSelectedSlip(p)}
                       className="px-3 py-1 bg-teal-50 hover:bg-teal-100 text-[#0D9488] rounded-lg font-bold text-[11px] inline-flex items-center gap-1"
                     >
@@ -134,7 +134,7 @@ export default function HRPayrollPage() {
                 <h3 className="text-base font-extrabold text-[#14213D]">ใบแจ้งเงินเดือนและค่าตอบแทนวิชาชีพ</h3>
                 <p className="text-[11px] text-[#64748B]">งวดประจำเดือน: {selectedSlip.period}</p>
               </div>
-              <button onClick={() => setSelectedSlip(null)} className="p-1.5 text-slate-400 hover:text-slate-700">
+              <button type="button" onClick={() => setSelectedSlip(null)} className="p-1.5 text-slate-400 hover:text-slate-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -174,11 +174,11 @@ export default function HRPayrollPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => window.print()} className="px-4 py-2 border rounded-xl font-bold flex items-center gap-1.5">
+              <button type="button" onClick={() => window.print()} className="px-4 py-2 border rounded-xl font-bold flex items-center gap-1.5">
                 <Printer className="w-3.5 h-3.5" />
                 <span>พิมพ์ e-Payslip</span>
               </button>
-              <button onClick={() => setSelectedSlip(null)} className="px-4 py-2 bg-[#0D9488] text-white font-bold rounded-xl">
+              <button type="button" onClick={() => setSelectedSlip(null)} className="px-4 py-2 bg-[#0D9488] text-white font-bold rounded-xl">
                 ปิดหน้าต่าง
               </button>
             </div>

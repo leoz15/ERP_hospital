@@ -1,28 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useHR, HREmployee } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
+import { HREmployee, useHR } from '@/context/HRContext';
 import {
-  Users,
-  Plus,
-  Search,
-  Phone,
-  Mail,
-  ShieldCheck,
+  Briefcase,
   Building2,
   Eye,
-  Printer,
-  Copy,
-  X,
-  Briefcase,
   GraduationCap,
-  Wallet,
-  Calendar,
+  Phone,
+  Plus,
+  Printer,
+  Search,
+  ShieldCheck,
+  Users,
+  X
 } from 'lucide-react';
+import Link from 'next/link';
+import React, { useId, useState } from 'react';
 
 export default function HREmployeesPage() {
+  const formId = useId();
   const { employees, addEmployee } = useHR();
   const { addToast } = useApp();
 
@@ -40,12 +37,12 @@ export default function HREmployeesPage() {
   const [position, setPosition] = useState('');
   const [departmentName, setDepartmentName] = useState('หอผู้ป่วยวิกฤต (ICU)');
   const [staffCategory, setStaffCategory] = useState<HREmployee['staffCategory']>('พยาบาล (Nurse)');
-  const [employmentType, setEmploymentType] = useState<HREmployee['employmentType']>('พนักงานประจำ');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  const employmentType: HREmployee['employmentType'] = 'พนักงานประจำ';
+  const phone = '';
+  const email = '';
   const [licenseNo, setLicenseNo] = useState('');
   const [baseSalary, setBaseSalary] = useState(35000);
-  const [education, setEducation] = useState('');
+  const education = '';
 
   const filtered = employees.filter((e) => {
     const matchSearch =
@@ -53,7 +50,7 @@ export default function HREmployeesPage() {
       e.fullName.toLowerCase().includes(search.toLowerCase()) ||
       e.empCode.toLowerCase().includes(search.toLowerCase()) ||
       e.position.toLowerCase().includes(search.toLowerCase()) ||
-      (e.licenseNo && e.licenseNo.toLowerCase().includes(search.toLowerCase()));
+      e.licenseNo?.toLowerCase().includes(search.toLowerCase());
     const matchCat = !selectedCategory || e.staffCategory === selectedCategory;
     const matchDept = !selectedDept || e.departmentName === selectedDept;
     return matchSearch && matchCat && matchDept;
@@ -122,7 +119,7 @@ export default function HREmployeesPage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => {
             setEmpCode(`EMP-6700${employees.length + 1}`);
             setShowAddModal(true);
@@ -177,9 +174,10 @@ export default function HREmployeesPage() {
         {filtered.map((emp) => (
           <div
             key={emp.id}
-            onClick={() => setSelectedEmpModal(emp)}
-            className="bg-white p-5 rounded-2xl border border-[#E2EAF4] shadow-xs hover:border-[#0D9488] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+
+            className="relative bg-white p-5 rounded-2xl border border-[#E2EAF4] shadow-xs hover:border-[#0D9488] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
           >
+            <button type="button" onClick={() => setSelectedEmpModal(emp)} aria-label={emp.fullName} className="absolute inset-0 z-10 rounded-2xl focus-visible:outline-2 focus-visible:outline-blue-600" />
             <div>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-3">
@@ -201,11 +199,10 @@ export default function HREmployeesPage() {
                   </div>
                 </div>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                    emp.status === 'PROBATION'
-                      ? 'bg-amber-50 text-amber-700 border-amber-200'
-                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  }`}
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${emp.status === 'PROBATION'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    }`}
                 >
                   {emp.status === 'PROBATION' ? 'ทดลองงาน' : 'ปฏิบัติงาน'}
                 </span>
@@ -272,14 +269,14 @@ export default function HREmployeesPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <button
+                <button type="button"
                   onClick={() => window.print()}
                   className="px-3 py-2 border border-[#E2EAF4] rounded-xl text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>พิมพ์ประวัติ</span>
                 </button>
-                <button
+                <button type="button"
                   onClick={() => setSelectedEmpModal(null)}
                   className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100"
                 >
@@ -352,7 +349,7 @@ export default function HREmployeesPage() {
             </div>
 
             <div className="p-4 bg-white border-t border-[#E2EAF4] flex justify-end gap-2">
-              <button
+              <button type="button"
                 onClick={() => setSelectedEmpModal(null)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#14213D] rounded-xl text-xs font-bold"
               >
@@ -369,15 +366,15 @@ export default function HREmployeesPage() {
           <div className="bg-white rounded-3xl border border-[#E2EAF4] shadow-2xl max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#E2EAF4] pb-3">
               <h3 className="font-extrabold text-base text-[#14213D]">ขึ้นทะเบียนบุคลากรใหม่</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600">
+              <button type="button" onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600">
                 ✕
               </button>
             </div>
             <form onSubmit={handleCreate} className="space-y-3 text-xs">
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">รหัสพนักงาน</label>
-                  <input
+                  <label htmlFor={`${formId}-field-37`} className="block font-bold mb-1">รหัสพนักงาน</label>
+                  <input id={`${formId}-field-37`}
                     type="text"
                     value={empCode}
                     onChange={(e) => setEmpCode(e.target.value)}
@@ -386,8 +383,8 @@ export default function HREmployeesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">คำนำหน้าวิชาชีพ</label>
-                  <select
+                  <label htmlFor={`${formId}-field-38`} className="block font-bold mb-1">คำนำหน้าวิชาชีพ</label>
+                  <select id={`${formId}-field-38`}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]"
@@ -404,8 +401,8 @@ export default function HREmployeesPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">สายวิชาชีพ</label>
-                  <select
+                  <label htmlFor={`${formId}-field-39`} className="block font-bold mb-1">สายวิชาชีพ</label>
+                  <select id={`${formId}-field-39`}
                     value={staffCategory}
                     onChange={(e) => setStaffCategory(e.target.value as any)}
                     className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]"
@@ -421,8 +418,8 @@ export default function HREmployeesPage() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">ชื่อจริง *</label>
-                  <input
+                  <label htmlFor={`${formId}-field-40`} className="block font-bold mb-1">ชื่อจริง *</label>
+                  <input id={`${formId}-field-40`}
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
@@ -432,8 +429,8 @@ export default function HREmployeesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">นามสกุล *</label>
-                  <input
+                  <label htmlFor={`${formId}-field-41`} className="block font-bold mb-1">นามสกุล *</label>
+                  <input id={`${formId}-field-41`}
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
@@ -446,8 +443,8 @@ export default function HREmployeesPage() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">ตำแหน่งงาน *</label>
-                  <input
+                  <label htmlFor={`${formId}-field-42`} className="block font-bold mb-1">ตำแหน่งงาน *</label>
+                  <input id={`${formId}-field-42`}
                     type="text"
                     value={position}
                     onChange={(e) => setPosition(e.target.value)}
@@ -457,8 +454,8 @@ export default function HREmployeesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">แผนก / กลุ่มงาน</label>
-                  <input
+                  <label htmlFor={`${formId}-field-43`} className="block font-bold mb-1">แผนก / กลุ่มงาน</label>
+                  <input id={`${formId}-field-43`}
                     type="text"
                     value={departmentName}
                     onChange={(e) => setDepartmentName(e.target.value)}
@@ -470,8 +467,8 @@ export default function HREmployeesPage() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">เลขใบประกอบวิชาชีพ (ถ้ามี)</label>
-                  <input
+                  <label htmlFor={`${formId}-field-44`} className="block font-bold mb-1">เลขใบประกอบวิชาชีพ (ถ้ามี)</label>
+                  <input id={`${formId}-field-44`}
                     type="text"
                     value={licenseNo}
                     onChange={(e) => setLicenseNo(e.target.value)}
@@ -480,8 +477,8 @@ export default function HREmployeesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">ฐานเงินเดือน (บาท)</label>
-                  <input
+                  <label htmlFor={`${formId}-field-45`} className="block font-bold mb-1">ฐานเงินเดือน (บาท)</label>
+                  <input id={`${formId}-field-45`}
                     type="number"
                     value={baseSalary}
                     onChange={(e) => setBaseSalary(Number(e.target.value))}

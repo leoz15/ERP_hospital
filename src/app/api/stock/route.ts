@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,13 +17,13 @@ export async function GET(request: Request) {
         ...(categoryId ? { item: { categoryId } } : {}),
         ...(search
           ? {
-              OR: [
-                { item: { itemCode: { contains: search } } },
-                { item: { itemName: { contains: search } } },
-                { item: { genericName: { contains: search } } },
-                { warehouse: { name: { contains: search } } },
-              ],
-            }
+            OR: [
+              { item: { itemCode: { contains: search } } },
+              { item: { itemName: { contains: search } } },
+              { item: { genericName: { contains: search } } },
+              { warehouse: { name: { contains: search } } },
+            ],
+          }
           : {}),
       },
       include: {
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
       orderBy: [{ warehouse: { code: 'asc' } }, { item: { itemCode: 'asc' } }],
     });
 
-    const now = new Date();
+
 
     // Map each balance and calculate exact status
     const result = balances

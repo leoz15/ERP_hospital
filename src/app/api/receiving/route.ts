@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { generateDocumentNumber } from '@/lib/doc-sequence';
 import { logAudit } from '@/lib/audit';
+import { generateDocumentNumber } from '@/lib/doc-sequence';
+import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,16 +46,16 @@ export async function POST(request: Request) {
           create: (body.lines || []).map((l: any) => ({
             poLineId: l.poLineId || null,
             itemId: l.itemId,
-            orderedQty: parseFloat(l.orderedQty || '0'),
-            previouslyReceived: parseFloat(l.previouslyReceived || '0'),
-            remainingQty: parseFloat(l.remainingQty || '0'),
-            receivedQty: parseFloat(l.receivedQty || '0'),
-            acceptedQty: parseFloat(l.acceptedQty || l.receivedQty || '0'),
-            rejectedQty: parseFloat(l.rejectedQty || '0'),
-            quarantineQty: parseFloat(l.quarantineQty || '0'),
+            orderedQty: Number.parseFloat(l.orderedQty || '0'),
+            previouslyReceived: Number.parseFloat(l.previouslyReceived || '0'),
+            remainingQty: Number.parseFloat(l.remainingQty || '0'),
+            receivedQty: Number.parseFloat(l.receivedQty || '0'),
+            acceptedQty: Number.parseFloat(l.acceptedQty || l.receivedQty || '0'),
+            rejectedQty: Number.parseFloat(l.rejectedQty || '0'),
+            quarantineQty: Number.parseFloat(l.quarantineQty || '0'),
             lotNumber: l.lotNumber || `LOT-${Date.now().toString().slice(-6)}`,
             expiryDate: new Date(l.expiryDate || Date.now() + 365 * 24 * 3600 * 1000),
-            unitPrice: parseFloat(l.unitPrice || '0'),
+            unitPrice: Number.parseFloat(l.unitPrice || '0'),
             locationId: l.locationId || null,
             remark: l.remark,
           })),

@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import { FileSpreadsheet } from 'lucide-react';
 import Link from 'next/link';
-import { FileSpreadsheet, CheckCircle2 } from 'lucide-react';
 
 export default function BudgetCommitmentsPage() {
   const commitments = [

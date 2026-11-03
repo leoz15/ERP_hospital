@@ -1,27 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useApp } from '@/context/AppContext';
 import {
-  Layers,
-  Search,
-  Filter,
+  CalendarClock,
   Download,
   Eye,
   History,
-  AlertTriangle,
+  Layers,
   RefreshCw,
-  Building,
-  CheckCircle2,
-  Calendar,
-  CalendarClock,
-  Copy,
-  X,
-  Printer,
-  Package,
+  Search,
+  X
 } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function StockOverviewPage() {
   const { selectedWarehouse, refreshKey } = useApp();
@@ -37,7 +29,7 @@ export default function StockOverviewPage() {
   const [filterStatus, setFilterStatus] = useState('ALL');
 
   // Selected item for Lot Detail Modal
-  const [selectedItemLots, setSelectedItemLots] = useState<any | null>(null);
+  const [selectedItemLots, setSelectedItemLots] = useState<any>(null);
 
   useEffect(() => {
     setFilterWarehouse(selectedWarehouse || '');
@@ -127,7 +119,7 @@ export default function StockOverviewPage() {
     link.setAttribute('download', `Stock_Overview_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    link.remove();
   };
 
   return (
@@ -145,7 +137,7 @@ export default function StockOverviewPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={exportCSV}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-[#334155] rounded-lg text-xs font-semibold transition-colors"
           >
@@ -219,14 +211,13 @@ export default function StockOverviewPage() {
             { id: 'OUT_OF_STOCK', label: 'หมดคลัง (Out of Stock)' },
             { id: 'OVER_STOCK', label: 'เกินเกณฑ์ (Over Stock)' },
           ].map((tab) => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setFilterStatus(tab.id)}
-              className={`px-3 py-1 rounded-md font-medium transition-all ${
-                filterStatus === tab.id
-                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                  : 'bg-slate-100 hover:bg-slate-200 text-[#64748B]'
-              }`}
+              className={`px-3 py-1 rounded-md font-medium transition-all ${filterStatus === tab.id
+                ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 text-[#64748B]'
+                }`}
             >
               {tab.label}
             </button>
@@ -258,109 +249,7 @@ export default function StockOverviewPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={12} className="py-12 text-center text-[#94A3B8]">
-                    <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
-                    กำลังดึงข้อมูลสินค้าคงคลัง...
-                  </td>
-                </tr>
-              ) : balances.length === 0 ? (
-                <tr>
-                  <td colSpan={12} className="py-12 text-center text-[#94A3B8]">
-                    ไม่พบรายการสินค้าตามเงื่อนไขที่เลือก
-                  </td>
-                </tr>
-              ) : (
-                balances.map((b) => (
-                  <tr key={b.id} className="hover:bg-[#F5F8FC] transition-colors">
-                    {/* Item Name & Code */}
-                    <td className="py-3 px-4">
-                      <Link href={`/items/${b.itemId}`} className="hover:text-[#2563EB]">
-                        <div className="font-semibold text-[#14213D]">{b.itemName}</div>
-                        <div className="text-[11px] text-[#94A3B8] font-mono">{b.itemCode}</div>
-                      </Link>
-                    </td>
-
-                    {/* Category */}
-                    <td className="py-3 px-3 text-[#64748B] whitespace-nowrap">
-                      {b.categoryName}
-                    </td>
-
-                    {/* Warehouse */}
-                    <td className="py-3 px-3 whitespace-nowrap">
-                      <span className="font-medium text-[#14213D]">{b.warehouseCode}</span>
-                      <div className="text-[10px] text-[#94A3B8] truncate max-w-[120px]">
-                        {b.warehouseName}
-                      </div>
-                    </td>
-
-                    {/* On Hand */}
-                    <td className="py-3 px-3 text-right font-semibold text-[#14213D] tabular-nums">
-                      {b.onHand.toLocaleString()} <span className="text-[10px] text-[#94A3B8]">{b.unit}</span>
-                    </td>
-
-                    {/* Reserved */}
-                    <td className="py-3 px-3 text-right text-amber-700 font-medium tabular-nums">
-                      {b.reserved > 0 ? b.reserved.toLocaleString() : '-'}
-                    </td>
-
-                    {/* Available */}
-                    <td className="py-3 px-3 text-right font-bold text-blue-700 tabular-nums bg-blue-50/40">
-                      {b.available.toLocaleString()} {b.unit}
-                    </td>
-
-                    {/* In Transit */}
-                    <td className="py-3 px-3 text-right text-indigo-600 font-medium tabular-nums">
-                      {b.inTransit > 0 ? (
-                        <span className="font-semibold text-indigo-700">+{b.inTransit}</span>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
-
-                    {/* Quarantine */}
-                    <td className="py-3 px-3 text-right text-purple-700 font-medium tabular-nums">
-                      {b.quarantine > 0 ? b.quarantine.toLocaleString() : '-'}
-                    </td>
-
-                    {/* Damaged / Expired */}
-                    <td className="py-3 px-3 text-right text-red-600 font-medium tabular-nums">
-                      {b.damaged + b.expired > 0 ? (b.damaged + b.expired).toLocaleString() : '-'}
-                    </td>
-
-                    {/* Total Value */}
-                    <td className="py-3 px-3 text-right font-semibold text-[#14213D] tabular-nums">
-                      ฿{b.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </td>
-
-                    {/* Status */}
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <StatusBadge status={b.status} />
-                    </td>
-
-                    {/* Action buttons */}
-                    <td className="py-3 px-4 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <button
-                          onClick={() => openLotsModal(b.itemId, b.warehouseId, b.itemName)}
-                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#334155] transition-colors"
-                          title="ดูรายละเอียด Lot และวันหมดอายุ"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
-                        <Link
-                          href={`/stock-card?itemId=${b.itemId}&warehouseId=${b.warehouseId}`}
-                          className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#2563EB] transition-colors"
-                          title="ดูประวัติความเคลื่อนไหว (Stock Card)"
-                        >
-                          <History className="w-3.5 h-3.5" />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableRows(loading, balances, openLotsModal)}
             </tbody>
           </table>
         </div>
@@ -388,7 +277,7 @@ export default function StockOverviewPage() {
                   </h3>
                 </div>
               </div>
-              <button
+              <button type="button"
                 onClick={() => setSelectedItemLots(null)}
                 className="p-2 text-[#94A3B8] hover:text-[#0F172A] hover:bg-slate-100 rounded-xl transition-colors"
                 title="ปิดหน้าต่าง"
@@ -468,7 +357,7 @@ export default function StockOverviewPage() {
               <span className="text-xs text-[#64748B]">
                 จำนวนล็อตทั้งหมด: <strong className="text-[#0F172A]">{selectedItemLots.lots.length}</strong> ล็อต
               </span>
-              <button
+              <button type="button"
                 onClick={() => setSelectedItemLots(null)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#334155] rounded-xl text-xs font-semibold transition-colors"
               >
@@ -480,4 +369,111 @@ export default function StockOverviewPage() {
       )}
     </div>
   );
+}
+
+function renderTableRows(loading: boolean, balances: any[], openLotsModal: (itemId: string, warehouseId: string, itemName: string) => Promise<void>) {
+  if (loading) {
+    return <tr>
+      <td colSpan={12} className="py-12 text-center text-[#94A3B8]">
+        <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
+        กำลังดึงข้อมูลสินค้าคงคลัง...
+      </td>
+    </tr>;
+  }
+  if (balances.length === 0) {
+    return <tr>
+      <td colSpan={12} className="py-12 text-center text-[#94A3B8]">
+        ไม่พบรายการสินค้าตามเงื่อนไขที่เลือก
+      </td>
+    </tr>;
+  }
+  return balances.map((b) => (
+    <tr key={b.id} className="hover:bg-[#F5F8FC] transition-colors">
+      {/* Item Name & Code */}
+      <td className="py-3 px-4">
+        <Link href={`/items/${b.itemId}`} className="hover:text-[#2563EB]">
+          <div className="font-semibold text-[#14213D]">{b.itemName}</div>
+          <div className="text-[11px] text-[#94A3B8] font-mono">{b.itemCode}</div>
+        </Link>
+      </td>
+
+      {/* Category */}
+      <td className="py-3 px-3 text-[#64748B] whitespace-nowrap">
+        {b.categoryName}
+      </td>
+
+      {/* Warehouse */}
+      <td className="py-3 px-3 whitespace-nowrap">
+        <span className="font-medium text-[#14213D]">{b.warehouseCode}</span>
+        <div className="text-[10px] text-[#94A3B8] truncate max-w-[120px]">
+          {b.warehouseName}
+        </div>
+      </td>
+
+      {/* On Hand */}
+      <td className="py-3 px-3 text-right font-semibold text-[#14213D] tabular-nums">
+        {b.onHand.toLocaleString()} <span className="text-[10px] text-[#94A3B8]">{b.unit}</span>
+      </td>
+
+      {/* Reserved */}
+      <td className="py-3 px-3 text-right text-amber-700 font-medium tabular-nums">
+        {b.reserved > 0 ? b.reserved.toLocaleString() : '-'}
+      </td>
+
+      {/* Available */}
+      <td className="py-3 px-3 text-right font-bold text-blue-700 tabular-nums bg-blue-50/40">
+        {b.available.toLocaleString()} {b.unit}
+      </td>
+
+      {/* In Transit */}
+      <td className="py-3 px-3 text-right text-indigo-600 font-medium tabular-nums">
+        {b.inTransit > 0 ? (
+          <span className="font-semibold text-indigo-700">+{b.inTransit}</span>
+        ) : (
+          '-'
+        )}
+      </td>
+
+      {/* Quarantine */}
+      <td className="py-3 px-3 text-right text-purple-700 font-medium tabular-nums">
+        {b.quarantine > 0 ? b.quarantine.toLocaleString() : '-'}
+      </td>
+
+      {/* Damaged / Expired */}
+      <td className="py-3 px-3 text-right text-red-600 font-medium tabular-nums">
+        {b.damaged + b.expired > 0 ? (b.damaged + b.expired).toLocaleString() : '-'}
+      </td>
+
+      {/* Total Value */}
+      <td className="py-3 px-3 text-right font-semibold text-[#14213D] tabular-nums">
+        ฿{b.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      </td>
+
+      {/* Status */}
+      <td className="py-3 px-3 text-center whitespace-nowrap">
+        <StatusBadge status={b.status} />
+      </td>
+
+      {/* Action buttons */}
+      <td className="py-3 px-4 text-center whitespace-nowrap">
+        <div className="flex items-center justify-center gap-1.5">
+          <button type="button"
+            onClick={() => openLotsModal(b.itemId, b.warehouseId, b.itemName)}
+            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#334155] transition-colors"
+            title="ดูรายละเอียด Lot และวันหมดอายุ"
+          >
+            <Eye className="w-3.5 h-3.5" />
+          </button>
+          <Link
+            href={`/stock-card?itemId=${b.itemId}&warehouseId=${b.warehouseId}`}
+            className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#2563EB] transition-colors"
+            title="ดูประวัติความเคลื่อนไหว (Stock Card)"
+          >
+            <History className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </td>
+    </tr>
+  ));
+
 }

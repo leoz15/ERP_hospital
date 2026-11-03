@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { prisma } from '@/lib/prisma';
 import { rfqInclude } from '@/lib/rfq';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,12 +56,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
           data: { status: 'CANCELLED', remarks: reason ? `ยกเลิก: ${reason}` : rfq.remarks },
         });
       });
+      const cancellationReason = reason ? ' (' + reason + ')' : '';
       await logAudit({
         action: 'CANCEL',
         module: 'RFQ',
         entityId: rfq.id,
         user: userName,
-        remarks: `ยกเลิกคำขอใบเสนอราคา ${rfq.rfqNumber}${reason ? ` (${reason})` : ''}`,
+        remarks: `ยกเลิกคำขอใบเสนอราคา ${rfq.rfqNumber}${cancellationReason}`,
       });
       return NextResponse.json(updated);
     }

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
 
 export default function ERPPortalHomePage() {
   const router = useRouter();
@@ -615,7 +615,7 @@ export default function ERPPortalHomePage() {
               <div className="hidden lg:block leading-tight">
                 <div className="text-xs font-bold text-slate-900 flex items-center gap-1">
                   สมชาย วงศ์สวัสดิ์
-                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">
+                  {" "}<span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">
                     ADMIN
                   </span>
                 </div>
@@ -671,8 +671,20 @@ export default function ERPPortalHomePage() {
 
             {/* Right Column: Interactive Rotating Cube on the far right */}
             <div className="lg:col-span-5 xl:col-span-4 flex flex-col items-center lg:items-end justify-center lg:pr-4">
-              <div
+              <button type="button" onClick={(event) => {
+                if (event.detail !== 0) {
+                  return;
+                }
+                rotYRef.current += 90;
+                if (cubeRef.current) {
+                  cubeRef.current.style.transform = `rotateX(${rotXRef.current}deg) rotateY(${rotYRef.current}deg)`;
+                }
+              }}
                 className="cube-scene"
+
+                tabIndex={0}
+                aria-label="หมุนลูกบาศก์ระบบงาน กด Enter หรือ Space เพื่อหมุน"
+
                 onMouseDown={handleCubeMouseDown}
                 onTouchStart={handleCubeTouchStart}
                 title="คลิกค้างแล้วลากเพื่อหมุนดูลูกบาศก์ระบบงาน"
@@ -791,7 +803,7 @@ export default function ERPPortalHomePage() {
                   </div>
                   <div className="cube-face face-bottom"></div>
                 </div>
-              </div>
+              </button>
               <span className="text-[11px] text-slate-500 font-medium mt-1 flex items-center gap-1">
                 <svg
                   className="w-3.5 h-3.5 text-blue-600"
@@ -827,13 +839,12 @@ export default function ERPPortalHomePage() {
 
           {/* View Switcher Buttons */}
           <div className="inline-flex items-center p-1.5 rounded-2xl bg-white border border-slate-200/90 shadow-xs self-start sm:self-auto">
-            <button
+            <button type="button"
               onClick={() => setCurrentView("grid")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-                currentView === "grid"
-                  ? "bg-blue-600 text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${currentView === "grid"
+                ? "bg-blue-600 text-white shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+                }`}
             >
               <svg
                 className="w-4 h-4"
@@ -849,13 +860,12 @@ export default function ERPPortalHomePage() {
               </svg>
               <span>มุมมองการ์ด</span>
             </button>
-            <button
+            <button type="button"
               onClick={() => setCurrentView("list")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-                currentView === "list"
-                  ? "bg-blue-600 text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${currentView === "list"
+                ? "bg-blue-600 text-white shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+                }`}
             >
               <svg
                 className="w-4 h-4"
@@ -889,12 +899,11 @@ export default function ERPPortalHomePage() {
                 }
               >
                 <article
-                  onClick={() => navigateToModule(mod.route, mod.isReady)}
-                  className={`module-card p-6 sm:p-7 h-full flex flex-col justify-between ${
-                    mod.isReady
-                      ? "cursor-pointer group"
-                      : "cursor-not-allowed opacity-85"
-                  }`}
+
+                  className={`module-card p-6 sm:p-7 h-full flex flex-col justify-between ${mod.isReady
+                    ? "cursor-pointer group"
+                    : "cursor-not-allowed opacity-85"
+                    }`}
                 >
                   <div>
                     <div className="mb-5 flex items-center justify-between gap-2">
@@ -935,11 +944,10 @@ export default function ERPPortalHomePage() {
                           {mod.code}
                         </span>
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
-                            mod.isReady
-                              ? "bg-blue-50 text-blue-700 border-blue-200/60"
-                              : "bg-slate-100 text-slate-500 border-slate-200"
-                          }`}
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${mod.isReady
+                            ? "bg-blue-50 text-blue-700 border-blue-200/60"
+                            : "bg-slate-100 text-slate-500 border-slate-200"
+                            }`}
                         >
                           {mod.kpiBadge}
                         </span>
@@ -949,11 +957,10 @@ export default function ERPPortalHomePage() {
                     {/* Module Title & Description */}
                     <div className="space-y-2">
                       <h3
-                        className={`text-xl font-extrabold transition-colors ${
-                          mod.isReady
-                            ? "text-slate-900 group-hover:text-blue-600"
-                            : "text-slate-700"
-                        }`}
+                        className={`text-xl font-extrabold transition-colors ${mod.isReady
+                          ? "text-slate-900 group-hover:text-blue-600"
+                          : "text-slate-700"
+                          }`}
                       >
                         {mod.title}
                       </h3>
@@ -968,9 +975,8 @@ export default function ERPPortalHomePage() {
                     <div className="flex items-center justify-between text-[11px] text-slate-500">
                       <span className="flex items-center gap-1.5 font-medium">
                         <span
-                          className={`w-2 h-2 rounded-full ${
-                            mod.isReady ? "bg-emerald-500" : "bg-slate-400"
-                          }`}
+                          className={`w-2 h-2 rounded-full ${mod.isReady ? "bg-emerald-500" : "bg-slate-400"
+                            }`}
                         ></span>
                         {mod.statusText}
                       </span>
@@ -980,12 +986,12 @@ export default function ERPPortalHomePage() {
                     </div>
 
                     {mod.isReady ? (
-                      <button
+                      <button type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigateToModule(mod.route, mod.isReady);
                         }}
-                        className="w-full py-3 px-4 rounded-2xl bg-[#f1f6fe] group-hover:bg-blue-600 text-blue-800 group-hover:text-white font-bold text-xs sm:text-sm flex items-center justify-between border border-blue-100 group-hover:border-blue-700 shadow-2xs group-hover:shadow-md transition-all"
+                        className="w-full py-3 px-4 rounded-2xl bg-[#f1f6fe] group-hover:bg-blue-600 text-blue-800 group-hover:text-white font-bold text-xs sm:text-sm flex items-center justify-between border border-blue-100 group-hover:border-blue-700 shadow-2xs group-hover:shadow-md transition-all after:absolute after:inset-0 after:rounded-3xl focus-visible:outline-2 focus-visible:outline-blue-600"
                       >
                         <div className="flex items-center gap-2.5">
                           <span className="w-6 h-6 rounded-full bg-blue-700 group-hover:bg-white text-white group-hover:text-blue-700 flex items-center justify-center transition-colors">
@@ -1048,12 +1054,11 @@ export default function ERPPortalHomePage() {
             {filteredModules.map((mod) => (
               <div
                 key={mod.id}
-                onClick={() => navigateToModule(mod.route, mod.isReady)}
-                className={`module-card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
-                  mod.isReady
-                    ? "cursor-pointer"
-                    : "cursor-not-allowed opacity-85"
-                }`}
+
+                className={`module-card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${mod.isReady
+                  ? "cursor-pointer"
+                  : "cursor-not-allowed opacity-85"
+                  }`}
               >
                 <div className="flex items-center gap-4">
                   <span
@@ -1080,9 +1085,8 @@ export default function ERPPortalHomePage() {
                         {mod.code}
                       </span>
                       <span
-                        className={`text-[11px] font-bold ${
-                          mod.isReady ? "text-blue-600" : "text-slate-400"
-                        }`}
+                        className={`text-[11px] font-bold ${mod.isReady ? "text-blue-600" : "text-slate-400"
+                          }`}
                       >
                         {mod.kpiBadge}
                       </span>
@@ -1099,12 +1103,12 @@ export default function ERPPortalHomePage() {
                   </div>
                 </div>
                 {mod.isReady ? (
-                  <button
+                  <button type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigateToModule(mod.route, mod.isReady);
                     }}
-                    className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs hover:shadow-md shrink-0 flex items-center gap-2 transition-all"
+                    className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs hover:shadow-md shrink-0 flex items-center gap-2 transition-all after:absolute after:inset-0 after:rounded-3xl focus-visible:outline-2 focus-visible:outline-blue-600"
                   >
                     <span>เข้าสู่ระบบงาน</span>
                     <svg

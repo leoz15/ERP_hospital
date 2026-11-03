@@ -1,31 +1,24 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useApp } from '@/context/AppContext';
 import {
-  FileCheck2,
-  CheckCircle,
-  XCircle,
-  Search,
-  Filter,
-  RefreshCw,
-  Clock,
-  ShieldCheck,
-  Building,
-  UserCheck,
-  Eye,
-  Copy,
-  Printer,
-  X,
-  Layers,
-  DollarSign,
-  CheckCircle2,
   AlertCircle,
-  FileText,
+  CheckCircle,
+  Copy,
+  FileCheck2,
+  Layers,
+  Printer,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  X,
+  XCircle
 } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useEffect, useId, useState } from 'react';
 
 export default function ApprovalCenterPage() {
+  const formId = useId();
   const { currentUser, addToast, refreshKey, triggerRefresh } = useApp();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +27,7 @@ export default function ApprovalCenterPage() {
 
   // Full-screen Detail Modal State
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedDocDetail, setSelectedDocDetail] = useState<any | null>(null);
+  const [selectedDocDetail, setSelectedDocDetail] = useState<any>(null);
 
   // Comment modal for approval/rejection
   const [selectedActionItem, setSelectedActionItem] = useState<{
@@ -132,7 +125,7 @@ export default function ApprovalCenterPage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => triggerRefresh()}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-[#334155] rounded-lg text-xs font-semibold"
         >
@@ -170,14 +163,13 @@ export default function ApprovalCenterPage() {
                 activeClass = 'bg-[#F28C28] text-white font-semibold shadow-xs';
               }
               return (
-                <button
+                <button type="button"
                   key={tab.id}
                   onClick={() => setModuleFilter(tab.id)}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
-                    isSelected
-                      ? activeClass
-                      : 'bg-[#F5F8FC] hover:bg-slate-200 text-[#64748B] border border-[#E2EAF4]'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-all ${isSelected
+                    ? activeClass
+                    : 'bg-[#F5F8FC] hover:bg-slate-200 text-[#64748B] border border-[#E2EAF4]'
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -204,89 +196,7 @@ export default function ApprovalCenterPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center text-[#94A3B8]">
-                    <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
-                    กำลังดึงรายการรออนุมัติ...
-                  </td>
-                </tr>
-              ) : filteredItems.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center text-[#94A3B8]">
-                    ไม่มีรายการเอกสารค้างรอการอนุมัติในระบบ
-                  </td>
-                </tr>
-              ) : (
-                filteredItems.map((item) => {
-                  const isPR = item.module === 'PR';
-                  return (
-                    <tr key={item.id} className="hover:bg-[#F5F8FC] transition-colors">
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedDocDetail(item);
-                            setShowDetailModal(true);
-                          }}
-                          className={`font-mono font-bold hover:underline ${
-                            isPR
-                              ? 'text-[#F28C28] hover:text-[#D97706]'
-                              : 'text-[#2563EB] hover:text-[#164EAB]'
-                          }`}
-                          title="คลิกเพื่อตรวจดูรายละเอียดเอกสารและรายการพัสดุแบบเต็มจอ"
-                        >
-                          {item.documentNumber}
-                        </button>
-                      </td>
-                      <td className="py-3 px-3 font-medium whitespace-nowrap">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                            isPR
-                              ? 'bg-orange-50 text-[#F28C28] border-orange-200'
-                              : 'bg-blue-50 text-[#2563EB] border-blue-200'
-                          }`}
-                        >
-                          {item.typeLabel}
-                        </span>
-                      </td>
-                    <td className="py-3 px-3 text-[#334155] whitespace-nowrap">
-                      {item.requester}
-                    </td>
-                    <td className="py-3 px-3 text-[#64748B] whitespace-nowrap">
-                      {item.department}
-                    </td>
-                    <td className="py-3 px-3 text-[#64748B] whitespace-nowrap">
-                      {new Date(item.date).toLocaleDateString('th-TH')}
-                    </td>
-                    <td className="py-3 px-3 text-[#64748B] max-w-[240px] truncate" title={item.details}>
-                      {item.details}
-                    </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <StatusBadge status={item.status} />
-                    </td>
-                    <td className="py-3 px-4 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => setSelectedActionItem({ item, action: 'REJECT' })}
-                          className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
-                        >
-                          <XCircle className="w-3.5 h-3.5" />
-                          <span>ปฏิเสธ</span>
-                        </button>
-                        <button
-                          onClick={() => setSelectedActionItem({ item, action: 'APPROVE' })}
-                          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors flex items-center gap-1"
-                        >
-                          <CheckCircle className="w-3.5 h-3.5" />
-                          <span>อนุมัติ (Approve)</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-              )}
+              {renderTableRows(loading, filteredItems, setSelectedDocDetail, setShowDetailModal, setSelectedActionItem)}
             </tbody>
           </table>
         </div>
@@ -305,7 +215,7 @@ export default function ApprovalCenterPage() {
                 )}
                 {selectedActionItem.action === 'APPROVE' ? 'ยืนยันการอนุมัติ' : 'ยืนยันการปฏิเสธ'}
               </h3>
-              <button
+              <button type="button"
                 onClick={() => setSelectedActionItem(null)}
                 className="text-[#94A3B8] hover:text-[#64748B] text-lg font-bold"
               >
@@ -320,10 +230,10 @@ export default function ApprovalCenterPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-5`} className="block text-xs font-semibold text-[#334155] mb-1">
                 ความเห็นผู้อนุมัติ (Approval Comment)
               </label>
-              <textarea
+              <textarea id={`${formId}-field-5`}
                 rows={3}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
@@ -343,11 +253,10 @@ export default function ApprovalCenterPage() {
               <button
                 type="button"
                 onClick={handleConfirmAction}
-                className={`px-5 py-2 text-white rounded-xl text-xs font-semibold shadow-sm ${
-                  selectedActionItem.action === 'APPROVE'
-                    ? 'bg-emerald-600 hover:bg-emerald-700'
-                    : 'bg-rose-600 hover:bg-rose-700'
-                }`}
+                className={`px-5 py-2 text-white rounded-xl text-xs font-semibold shadow-sm ${selectedActionItem.action === 'APPROVE'
+                  ? 'bg-emerald-600 hover:bg-emerald-700'
+                  : 'bg-rose-600 hover:bg-rose-700'
+                  }`}
               >
                 ยืนยันการ{selectedActionItem.action === 'APPROVE' ? 'อนุมัติ' : 'ปฏิเสธ'}
               </button>
@@ -364,11 +273,10 @@ export default function ApprovalCenterPage() {
             <div className="bg-white p-5 sm:p-6 flex items-center justify-between border-b border-[#E2EAF4] shrink-0">
               <div className="flex items-center gap-4">
                 <div
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xs shrink-0 ${
-                    selectedDocDetail.module === 'PR'
-                      ? 'bg-orange-50 border border-orange-100 text-[#F28C28]'
-                      : 'bg-blue-50 border border-blue-100 text-[#2563EB]'
-                  }`}
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xs shrink-0 ${selectedDocDetail.module === 'PR'
+                    ? 'bg-orange-50 border border-orange-100 text-[#F28C28]'
+                    : 'bg-blue-50 border border-blue-100 text-[#2563EB]'
+                    }`}
                 >
                   <FileCheck2 className="w-6 h-6" />
                 </div>
@@ -636,4 +544,87 @@ export default function ApprovalCenterPage() {
       )}
     </div>
   );
+}
+
+function renderTableRows(loading: boolean, filteredItems: any[], setSelectedDocDetail, setShowDetailModal, setSelectedActionItem) {
+  if (loading) {
+    return <tr>
+      <td colSpan={8} className="py-12 text-center text-[#94A3B8]">
+        <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
+        กำลังดึงรายการรออนุมัติ...
+      </td>
+    </tr>;
+  }
+  if (filteredItems.length === 0) {
+    return <tr>
+      <td colSpan={8} className="py-12 text-center text-[#94A3B8]">
+        ไม่มีรายการเอกสารค้างรอการอนุมัติในระบบ
+      </td>
+    </tr>;
+  }
+  return filteredItems.map((item) => {
+    const isPR = item.module === 'PR';
+    return (
+      <tr key={item.id} className="hover:bg-[#F5F8FC] transition-colors">
+        <td className="py-3 px-4 whitespace-nowrap">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedDocDetail(item);
+              setShowDetailModal(true);
+            }}
+            className={`font-mono font-bold hover:underline ${isPR
+              ? 'text-[#F28C28] hover:text-[#D97706]'
+              : 'text-[#2563EB] hover:text-[#164EAB]'}`}
+            title="คลิกเพื่อตรวจดูรายละเอียดเอกสารและรายการพัสดุแบบเต็มจอ"
+          >
+            {item.documentNumber}
+          </button>
+        </td>
+        <td className="py-3 px-3 font-medium whitespace-nowrap">
+          <span
+            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${isPR
+              ? 'bg-orange-50 text-[#F28C28] border-orange-200'
+              : 'bg-blue-50 text-[#2563EB] border-blue-200'}`}
+          >
+            {item.typeLabel}
+          </span>
+        </td>
+        <td className="py-3 px-3 text-[#334155] whitespace-nowrap">
+          {item.requester}
+        </td>
+        <td className="py-3 px-3 text-[#64748B] whitespace-nowrap">
+          {item.department}
+        </td>
+        <td className="py-3 px-3 text-[#64748B] whitespace-nowrap">
+          {new Date(item.date).toLocaleDateString('th-TH')}
+        </td>
+        <td className="py-3 px-3 text-[#64748B] max-w-[240px] truncate" title={item.details}>
+          {item.details}
+        </td>
+        <td className="py-3 px-3 text-center whitespace-nowrap">
+          <StatusBadge status={item.status} />
+        </td>
+        <td className="py-3 px-4 text-center whitespace-nowrap">
+          <div className="flex items-center justify-center gap-2">
+            <button type="button"
+              onClick={() => setSelectedActionItem({ item, action: 'REJECT' })}
+              className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+            >
+              <XCircle className="w-3.5 h-3.5" />
+              <span>ปฏิเสธ</span>
+            </button>
+            <button type="button"
+              onClick={() => setSelectedActionItem({ item, action: 'APPROVE' })}
+              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors flex items-center gap-1"
+            >
+              <CheckCircle className="w-3.5 h-3.5" />
+              <span>อนุมัติ (Approve)</span>
+            </button>
+          </div>
+        </td>
+      </tr>
+    );
+  });
+
 }

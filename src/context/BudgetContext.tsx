@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 export interface BudgetPlanItem {
   id: string;
@@ -459,14 +459,14 @@ interface BudgetContextType {
 
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 
-export function BudgetProvider({ children }: { children: React.ReactNode }) {
+export function BudgetProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [plans, setPlans] = useState<BudgetPlanItem[]>(INITIAL_PLANS);
   const [allocations, setAllocations] = useState<BudgetAllocationRecord[]>(INITIAL_ALLOCATIONS);
   const [adjustments, setAdjustments] = useState<BudgetAdjustmentRecord[]>(INITIAL_ADJUSTMENTS);
   const [transactions, setTransactions] = useState<BudgetTransactionItem[]>(INITIAL_TRANSACTIONS);
   const [audits, setAudits] = useState<BudgetAuditItem[]>(INITIAL_AUDITS);
 
-  const logBudgetAudit = (module: string, action: string, docNo: string, detail: string) => {
+  const logBudgetAudit = useCallback((module: string, action: string, docNo: string, detail: string) => {
     setAudits((prev) => [
       {
         id: `baud-${Date.now()}`,
@@ -479,9 +479,10 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       },
       ...prev,
     ]);
-  };
+  }, [setAudits]);
 
-  const addBudgetPlan = (plan: Omit<BudgetPlanItem, 'id'>) => {
+
+  const addBudgetPlan = useCallback((plan: Omit<BudgetPlanItem, 'id'>) => {
     const newPlan: BudgetPlanItem = { ...plan, id: `bp-${Date.now()}` };
     setPlans((prev) => [newPlan, ...prev]);
     logBudgetAudit(
@@ -490,9 +491,10 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       plan.budgetCode,
       `สร้างคำของบประมาณประจำปี ${plan.budgetYear}: ${plan.projectName} วงเงินขอ ฿${plan.requestedAmount.toLocaleString()}`
     );
-  };
+  }, [setPlans, logBudgetAudit]);
 
-  const updatePlanStatus = (id: string, status: BudgetPlanItem['status']) => {
+
+  const updatePlanStatus = useCallback((id: string, status: BudgetPlanItem['status']) => {
     setPlans((prev) =>
       prev.map((p) => {
         if (p.id === id) {
@@ -507,10 +509,11 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
         return p;
       })
     );
-  };
+  }, [setPlans, logBudgetAudit]);
+
 
   // Rule enforcement: ยอดจัดสรรรวมต้องไม่เกินวงเงินที่ได้รับอนุมัติ
-  const addAllocation = (alloc: Omit<BudgetAllocationRecord, 'id'>) => {
+  const addAllocation = useCallback((alloc: Omit<BudgetAllocationRecord, 'id'>) => {
     if (alloc.allocatedAmount > alloc.approvedBudget) {
       return {
         ok: false,
@@ -533,9 +536,10 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       `จัดสรรงบประมาณ ${alloc.budgetCode} ให้ ${alloc.departmentName} จำนวน ฿${alloc.allocatedAmount.toLocaleString()}`
     );
     return { ok: true };
-  };
+  }, [setAllocations, setPlans, logBudgetAudit]);
 
-  const addAdjustment = (adj: Omit<BudgetAdjustmentRecord, 'id'>) => {
+
+  const addAdjustment = useCallback((adj: Omit<BudgetAdjustmentRecord, 'id'>) => {
     const newAdj: BudgetAdjustmentRecord = { ...adj, id: `adj-${Date.now()}` };
     setAdjustments((prev) => [newAdj, ...prev]);
     logBudgetAudit(
@@ -544,9 +548,10 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       adj.adjNo,
       `ส่งคำขอ${adj.adjustmentType} จำนวน ฿${adj.transferAmount.toLocaleString()} (${adj.fromBudgetCode} → ${adj.toBudgetCode})`
     );
-  };
+  }, [setAdjustments, logBudgetAudit]);
 
-  const approveAdjustment = (id: string, approved: boolean) => {
+
+  const approveAdjustment = useCallback((id: string, approved: boolean) => {
     const target = adjustments.find((a) => a.id === id);
     if (!target) return;
 
@@ -590,10 +595,11 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
         `ไม่อนุมัติคำขอเปลี่ยนแปลงงบประมาณ ${target.adjNo}`
       );
     }
-  };
+  }, [adjustments, setAdjustments, setPlans, logBudgetAudit]);
+
 
   // Deduplicate Commitment when converting to Actual Expense
-  const convertCommitmentToActual = (budgetCode: string, amount: number, refDocNo: string) => {
+  const convertCommitmentToActual = useCallback((budgetCode: string, amount: number, refDocNo: string) => {
     setPlans((prev) =>
       prev.map((p) => {
         if (p.budgetCode === budgetCode) {
@@ -628,10 +634,11 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       refDocNo,
       `ตัดยอด Commitment ฿${amount.toLocaleString()} และบันทึกเป็น Actual Expense ของรหัสงบ ${budgetCode} สำเร็จ`
     );
-  };
+  }, [setPlans, setTransactions, plans, logBudgetAudit]);
+
 
   // Reserve budget when PR is created/approved
-  const reserveBudget = (budgetCode: string, amount: number, refDocNo: string, description: string) => {
+  const reserveBudget = useCallback((budgetCode: string, amount: number, refDocNo: string, description: string) => {
     setPlans((prev) =>
       prev.map((p) => {
         if (p.budgetCode === budgetCode) {
@@ -665,10 +672,11 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       refDocNo,
       `กันงบประมาณ (Reserved) ฿${amount.toLocaleString()} สำหรับ ${refDocNo} (${budgetCode})`
     );
-  };
+  }, [setPlans, setTransactions, plans, logBudgetAudit]);
+
 
   // Commit budget when PO is created/approved (moves from reserved to commitment)
-  const commitBudget = (budgetCode: string, amount: number, refDocNo: string, description: string) => {
+  const commitBudget = useCallback((budgetCode: string, amount: number, refDocNo: string, description: string) => {
     setPlans((prev) =>
       prev.map((p) => {
         if (p.budgetCode === budgetCode) {
@@ -703,10 +711,11 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       refDocNo,
       `บันทึกภาระผูกพัน (Commitment) ฿${amount.toLocaleString()} สำหรับใบสั่งซื้อ ${refDocNo} (${budgetCode})`
     );
-  };
+  }, [setPlans, setTransactions, plans, logBudgetAudit]);
+
 
   // Release budget if PR/PO is cancelled or reduced
-  const releaseBudget = (budgetCode: string, amount: number, refDocNo: string, description: string) => {
+  const releaseBudget = useCallback((budgetCode: string, amount: number, refDocNo: string, description: string) => {
     setPlans((prev) =>
       prev.map((p) => {
         if (p.budgetCode === budgetCode) {
@@ -740,10 +749,11 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       refDocNo,
       `คืนวงเงินกันงบประมาณ ฿${amount.toLocaleString()} สำหรับ ${refDocNo} (${budgetCode})`
     );
-  };
+  }, [setPlans, setTransactions, plans, logBudgetAudit]);
+
 
   // Query allocation details with available remaining budget
-  const getAllocationBudgetInfo = (allocNoOrBudgetCode: string) => {
+  const getAllocationBudgetInfo = useCallback((allocNoOrBudgetCode: string) => {
     const alloc = allocations.find(
       (a) => a.allocNo === allocNoOrBudgetCode || a.budgetCode === allocNoOrBudgetCode
     );
@@ -751,7 +761,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       (p) => p.budgetCode === alloc?.budgetCode || p.budgetCode === allocNoOrBudgetCode
     );
 
-    const allocatedAmount = alloc ? alloc.allocatedAmount : plan ? plan.allocatedAmount : 0;
+    const allocatedAmount = getAllocText(alloc, plan);
     const reservedAmount = plan ? plan.reservedAmount : 0;
     const commitmentAmount = plan ? plan.commitmentAmount : 0;
     const actualAmount = plan ? plan.actualAmount : 0;
@@ -770,32 +780,46 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       commitmentAmount,
       actualAmount,
     };
-  };
+  }, [allocations, plans]);
+
+  const value = useMemo(() => ({
+    plans,
+    addBudgetPlan,
+    updatePlanStatus,
+    allocations,
+    addAllocation,
+    adjustments,
+    addAdjustment,
+    approveAdjustment,
+    transactions,
+    convertCommitmentToActual,
+    reserveBudget,
+    commitBudget,
+    releaseBudget,
+    getAllocationBudgetInfo,
+    audits,
+    logBudgetAudit,
+  }), [plans, addBudgetPlan, updatePlanStatus, allocations, addAllocation, adjustments, addAdjustment, approveAdjustment, transactions, convertCommitmentToActual, reserveBudget, commitBudget, releaseBudget, getAllocationBudgetInfo, audits, logBudgetAudit]);
+
 
   return (
     <BudgetContext.Provider
-      value={{
-        plans,
-        addBudgetPlan,
-        updatePlanStatus,
-        allocations,
-        addAllocation,
-        adjustments,
-        addAdjustment,
-        approveAdjustment,
-        transactions,
-        convertCommitmentToActual,
-        reserveBudget,
-        commitBudget,
-        releaseBudget,
-        getAllocationBudgetInfo,
-        audits,
-        logBudgetAudit,
-      }}
+      value={value}
     >
       {children}
     </BudgetContext.Provider>
   );
+}
+
+function getAllocText(alloc: BudgetAllocationRecord, plan: BudgetPlanItem) {
+  if (alloc) {
+    return alloc.allocatedAmount;
+  }
+  if (plan) {
+    return plan.allocatedAmount;
+  }
+  return 0;
+
 }
 
 export function useBudget() {

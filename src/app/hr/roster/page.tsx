@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { CalendarDays, ArrowLeftRight, Plus, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
+import { HRShiftSwap, useHR } from '@/context/HRContext';
+import { ArrowLeftRight, CalendarDays, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
+import React, { useId, useState } from 'react';
 
 const DAYS = [
   { day: 1, label: 'จ. 26 ต.ค.' },
@@ -17,6 +17,7 @@ const DAYS = [
 ];
 
 export default function HRRosterPage() {
+  const formId = useId();
   const { shifts, swaps, employees, addSwapRequest, updateSwapStatus } = useHR();
   const { addToast } = useApp();
 
@@ -86,7 +87,7 @@ export default function HRRosterPage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => setShowSwapModal(true)}
           className="px-4 py-2.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-xl text-xs font-bold flex items-center gap-2 shrink-0"
         >
@@ -189,24 +190,12 @@ export default function HRRosterPage() {
                   </td>
                   <td className="py-3 px-4 text-[#64748B]">{sw.reason}</td>
                   <td className="py-3 px-4 text-center">
-                    {sw.status === 'PENDING_APPROVAL' ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                        รออนุมัติสลับเวร
-                      </span>
-                    ) : sw.status === 'APPROVED' ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        อนุมัติแล้ว
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                        ไม่อนุมัติ
-                      </span>
-                    )}
+                    {getStatusContent(sw)}
                   </td>
                   <td className="py-3 px-4 text-right">
                     {sw.status === 'PENDING_APPROVAL' && (
                       <div className="flex items-center justify-end gap-1.5">
-                        <button
+                        <button type="button"
                           onClick={() => {
                             updateSwapStatus(sw.id, 'APPROVED');
                             addToast('success', `อนุมัติคำขอสลับเวร ${sw.swapNo} เรียบร้อยแล้ว`);
@@ -215,7 +204,7 @@ export default function HRRosterPage() {
                         >
                           อนุมัติ
                         </button>
-                        <button
+                        <button type="button"
                           onClick={() => {
                             updateSwapStatus(sw.id, 'REJECTED');
                             addToast('warning', `ปฏิเสธคำขอสลับเวร ${sw.swapNo}`);
@@ -241,8 +230,8 @@ export default function HRRosterPage() {
             <h3 className="font-extrabold text-base text-[#14213D]">ยื่นคำขอสลับเวร / แลกเวร</h3>
             <form onSubmit={handleCreateSwap} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold mb-1">ผู้ขอสลับเวร</label>
-                <select
+                <label htmlFor={`${formId}-field-67`} className="block font-bold mb-1">ผู้ขอสลับเวร</label>
+                <select id={`${formId}-field-67`}
                   value={requesterCode}
                   onChange={(e) => setRequesterCode(e.target.value)}
                   className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]"
@@ -254,12 +243,12 @@ export default function HRRosterPage() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">วันที่เวรเดิม</label>
-                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-68`} className="block font-bold mb-1">วันที่เวรเดิม</label>
+                  <input id={`${formId}-field-68`} type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">ผลัดเวรเดิม</label>
-                  <select value={fromShift} onChange={(e) => setFromShift(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
+                  <label htmlFor={`${formId}-field-69`} className="block font-bold mb-1">ผลัดเวรเดิม</label>
+                  <select id={`${formId}-field-69`} value={fromShift} onChange={(e) => setFromShift(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
                     <option value="เวรเช้า (M)">เวรเช้า (M)</option>
                     <option value="เวรบ่าย (A)">เวรบ่าย (A)</option>
                     <option value="เวรดึก (N)">เวรดึก (N)</option>
@@ -267,8 +256,8 @@ export default function HRRosterPage() {
                 </div>
               </div>
               <div>
-                <label className="block font-bold mb-1">ผู้รับแลกเวรแทน</label>
-                <select
+                <label htmlFor={`${formId}-field-70`} className="block font-bold mb-1">ผู้รับแลกเวรแทน</label>
+                <select id={`${formId}-field-70`}
                   value={targetCode}
                   onChange={(e) => setTargetCode(e.target.value)}
                   className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]"
@@ -280,12 +269,12 @@ export default function HRRosterPage() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">วันที่เวรสลับ</label>
-                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-71`} className="block font-bold mb-1">วันที่เวรสลับ</label>
+                  <input id={`${formId}-field-71`} type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">ผลัดเวรที่สลับ</label>
-                  <select value={toShift} onChange={(e) => setToShift(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
+                  <label htmlFor={`${formId}-field-72`} className="block font-bold mb-1">ผลัดเวรที่สลับ</label>
+                  <select id={`${formId}-field-72`} value={toShift} onChange={(e) => setToShift(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
                     <option value="เวรเช้า (M)">เวรเช้า (M)</option>
                     <option value="เวรบ่าย (A)">เวรบ่าย (A)</option>
                     <option value="เวรดึก (N)">เวรดึก (N)</option>
@@ -293,8 +282,8 @@ export default function HRRosterPage() {
                 </div>
               </div>
               <div>
-                <label className="block font-bold mb-1">เหตุผลการขอสลับเวร</label>
-                <input
+                <label htmlFor={`${formId}-field-73`} className="block font-bold mb-1">เหตุผลการขอสลับเวร</label>
+                <input id={`${formId}-field-73`}
                   type="text"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
@@ -315,3 +304,20 @@ export default function HRRosterPage() {
   );
 }
 
+
+function getStatusContent(sw: HRShiftSwap): React.ReactNode {
+  if (sw.status === 'PENDING_APPROVAL') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+      รออนุมัติสลับเวร
+    </span>;
+  }
+  if (sw.status === 'APPROVED') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+      อนุมัติแล้ว
+    </span>;
+  }
+  return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+    ไม่อนุมัติ
+  </span>;
+
+}

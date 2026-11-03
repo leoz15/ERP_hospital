@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,12 +14,12 @@ export async function GET(request: Request) {
         ...(module ? { module } : {}),
         ...(search
           ? {
-              OR: [
-                { userName: { contains: search } },
-                { details: { contains: search } },
-                { action: { contains: search } },
-              ],
-            }
+            OR: [
+              { userName: { contains: search } },
+              { details: { contains: search } },
+              { action: { contains: search } },
+            ],
+          }
           : {}),
       },
       orderBy: { timestamp: 'desc' },

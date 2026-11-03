@@ -1,47 +1,49 @@
 'use client';
 
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useApp } from '@/context/AppContext';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import {
-  SourcingHeader,
-  StatCard,
   FilterTabs,
   ModalShell,
   SectionCard,
-  inputCls,
+  SourcingHeader,
+  StatCard,
   btnPrimary,
   btnSecondary,
   btnSuccess,
   fmtDate,
   fmtMoney,
+  inputCls,
 } from '@/components/procurement/SourcingUI';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useApp } from '@/context/AppContext';
+import { createFormRowId } from '@/lib/form-row';
 import {
-  FileSearch,
-  Plus,
-  Search,
-  Send,
-  Eye,
-  Users,
-  Package,
-  Inbox,
-  Trophy,
-  FileEdit,
-  Receipt,
-  Scale,
   Ban,
   Calendar,
   CheckCircle2,
   Circle,
+  Eye,
+  FileEdit,
+  FileSearch,
   FileText,
+  Inbox,
+  Package,
+  Plus,
+  Receipt,
+  Scale,
+  Search,
+  Send,
   Trash2,
+  Trophy,
+  Users,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import React, { Suspense, useEffect, useId, useMemo, useState } from 'react';
 
 type Tab = 'ALL' | 'DRAFT' | 'OPEN' | 'AWARDED' | 'CANCELLED';
 
 function RFQContent() {
+  const formId = useId();
   const searchParams = useSearchParams();
   const prIdParam = searchParams.get('prId') || '';
   const { addToast, refreshKey, triggerRefresh, currentUser } = useApp();
@@ -66,7 +68,7 @@ function RFQContent() {
   const [submitting, setSubmitting] = useState(false);
 
   // Detail
-  const [detail, setDetail] = useState<any | null>(null);
+  const [detail, setDetail] = useState<any>(null);
 
   const load = () => {
     setLoading(true);
@@ -119,7 +121,7 @@ function RFQContent() {
     setRemarks('');
     setSupplierIds([]);
     setManualLines(
-      items.length > 0 ? [{ itemId: items[0].id, quantity: 100, estimatedUnitPrice: items[0].standardCost || 0 }] : []
+      items.length > 0 ? [{ clientId: createFormRowId(), itemId: items[0].id, quantity: 100, estimatedUnitPrice: items[0].standardCost || 0 }] : []
     );
     setShowCreate(true);
   };
@@ -129,10 +131,11 @@ function RFQContent() {
   const previewLines =
     source === 'PR'
       ? (selectedPR?.lines || []).map((l: any) => ({
-          item: l.item,
-          quantity: l.approvedQty || l.requestedQty,
-          estimatedUnitPrice: l.estimatedUnitPrice,
-        }))
+        id: l.id,
+        item: l.item,
+        quantity: l.approvedQty || l.requestedQty,
+        estimatedUnitPrice: l.estimatedUnitPrice,
+      }))
       : manualLines.map((l) => ({ ...l, item: items.find((i) => i.id === l.itemId) }));
 
   const previewTotal = previewLines.reduce(
@@ -261,9 +264,8 @@ function RFQContent() {
           <React.Fragment key={s.label}>
             <Link
               href={s.href}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                s.active ? 'bg-[#F28C28] shadow-md' : 'bg-white/10 hover:bg-white/20'
-              }`}
+              className={`px-3 py-1.5 rounded-lg transition-all ${s.active ? 'bg-[#F28C28] shadow-md' : 'bg-white/10 hover:bg-white/20'
+                }`}
             >
               {i + 1}. {s.label}
             </Link>
@@ -322,112 +324,7 @@ function RFQContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
-                    กำลังโหลดข้อมูล...
-                  </td>
-                </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="py-14 text-center text-slate-400">
-                    <FileSearch className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-                    ยังไม่มีคำขอใบเสนอราคาตามเงื่อนไขที่เลือก
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((r) => {
-                  const responded = r.suppliers?.filter((s: any) => s.status === 'RESPONDED').length || 0;
-                  const invited = r.suppliers?.length || 0;
-                  const overdue =
-                    r.dueDate && ['SENT', 'QUOTING'].includes(r.status) && new Date(r.dueDate) < new Date();
-                  return (
-                    <tr key={r.id} className="hover:bg-[#FFF7ED]/40 transition-colors">
-                      <td className="py-3 px-4 font-mono font-bold">
-                        <button
-                          type="button"
-                          onClick={() => setDetail(r)}
-                          className="text-[#D97706] hover:underline"
-                        >
-                          {r.rfqNumber}
-                        </button>
-                      </td>
-                      <td className="py-3 px-3 font-mono text-[11px]">
-                        {r.prNumber ? (
-                          <span className="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg">{r.prNumber}</span>
-                        ) : (
-                          <span className="text-slate-400 italic">ไม่อ้างอิง PR</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 max-w-[240px]">
-                        <div className="font-semibold text-[#14213D] truncate">{r.title}</div>
-                        <div className="text-[11px] text-slate-400">โดย {r.createdBy}</div>
-                      </td>
-                      <td className={`py-3 px-3 ${overdue ? 'text-rose-600 font-semibold' : 'text-slate-600'}`}>
-                        {fmtDate(r.dueDate)}
-                        {overdue && <div className="text-[10px]">เลยกำหนด</div>}
-                      </td>
-                      <td className="py-3 px-3 text-center">
-                        <div className="inline-flex items-center gap-1.5">
-                          <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-[#F28C28] to-emerald-500"
-                              style={{ width: `${invited ? (responded / invited) * 100 : 0}%` }}
-                            />
-                          </div>
-                          <span className="font-semibold tabular-nums">
-                            {responded}/{invited}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 text-right tabular-nums">{r.lines?.length || 0} รายการ</td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <StatusBadge status={r.status} />
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setDetail(r)}
-                            className="px-2.5 py-1 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold border border-slate-200 flex items-center gap-1"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-slate-500" />
-                            <span>ดูข้อมูล</span>
-                          </button>
-                          {r.status === 'DRAFT' && (
-                            <button
-                              type="button"
-                              onClick={() => handleAction(r, 'SEND')}
-                              className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1"
-                            >
-                              <Send className="w-3.5 h-3.5" />
-                              <span>ส่ง RFQ</span>
-                            </button>
-                          )}
-                          {['SENT', 'QUOTING'].includes(r.status) && (
-                            <Link
-                              href={`/procurement/quotations?rfqId=${r.id}`}
-                              className="px-2.5 py-1 bg-[#F28C28] hover:bg-[#D97706] text-white rounded-lg text-xs font-semibold flex items-center gap-1"
-                            >
-                              <Receipt className="w-3.5 h-3.5" />
-                              <span>บันทึกราคา</span>
-                            </Link>
-                          )}
-                          {(r.quotations?.length || 0) > 0 && r.status !== 'CANCELLED' && (
-                            <Link
-                              href={`/procurement/comparison?rfqId=${r.id}`}
-                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1"
-                            >
-                              <Scale className="w-3.5 h-3.5" />
-                              <span>เปรียบเทียบ</span>
-                            </Link>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
+              {renderTableRows(loading, filtered, setDetail, handleAction)}
             </tbody>
           </table>
         </div>
@@ -471,11 +368,10 @@ function RFQContent() {
                       key={s}
                       type="button"
                       onClick={() => setSource(s)}
-                      className={`flex-1 px-3 py-2 rounded-xl border font-semibold transition-all ${
-                        source === s
-                          ? 'border-[#F28C28] bg-orange-50 text-[#D97706]'
-                          : 'border-[#E2EAF4] text-slate-500 hover:bg-slate-50'
-                      }`}
+                      className={`flex-1 px-3 py-2 rounded-xl border font-semibold transition-all ${source === s
+                        ? 'border-[#F28C28] bg-orange-50 text-[#D97706]'
+                        : 'border-[#E2EAF4] text-slate-500 hover:bg-slate-50'
+                        }`}
                     >
                       {s === 'PR' ? 'อ้างอิงใบขอซื้อ (PR)' : 'ระบุรายการเอง'}
                     </button>
@@ -484,13 +380,13 @@ function RFQContent() {
 
                 {source === 'PR' && (
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">ใบขอซื้อที่อนุมัติแล้ว *</label>
+                    <label htmlFor={`${formId}-field-161`} className="block font-semibold text-slate-700 mb-1">ใบขอซื้อที่อนุมัติแล้ว *</label>
                     {eligiblePRs.length === 0 ? (
                       <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-700">
                         ไม่มีใบขอซื้อที่อนุมัติแล้วและยังไม่ได้เปิด RFQ
                       </div>
                     ) : (
-                      <select
+                      <select id={`${formId}-field-161`}
                         value={formPrId}
                         onChange={(e) => {
                           setFormPrId(e.target.value);
@@ -511,17 +407,17 @@ function RFQContent() {
                 )}
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">หัวข้อ *</label>
-                  <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="เช่น ขอใบเสนอราคาเวชภัณฑ์ไตรมาส 4" />
+                  <label htmlFor={`${formId}-field-162`} className="block font-semibold text-slate-700 mb-1">หัวข้อ *</label>
+                  <input id={`${formId}-field-162`} value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="เช่น ขอใบเสนอราคาเวชภัณฑ์ไตรมาส 4" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">กำหนดยื่นใบเสนอราคา</label>
-                    <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputCls} />
+                    <label htmlFor={`${formId}-field-163`} className="block font-semibold text-slate-700 mb-1">กำหนดยื่นใบเสนอราคา</label>
+                    <input id={`${formId}-field-163`} type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputCls} />
                   </div>
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">หมายเหตุ / เงื่อนไข</label>
-                    <input value={remarks} onChange={(e) => setRemarks(e.target.value)} className={inputCls} placeholder="เงื่อนไขการส่งมอบ, ยืนราคา..." />
+                    <label htmlFor={`${formId}-field-164`} className="block font-semibold text-slate-700 mb-1">หมายเหตุ / เงื่อนไข</label>
+                    <input id={`${formId}-field-164`} value={remarks} onChange={(e) => setRemarks(e.target.value)} className={inputCls} placeholder="เงื่อนไขการส่งมอบ, ยืนราคา..." />
                   </div>
                 </div>
               </div>
@@ -536,7 +432,7 @@ function RFQContent() {
                     type="button"
                     onClick={() =>
                       items.length &&
-                      setManualLines([...manualLines, { itemId: items[0].id, quantity: 100, estimatedUnitPrice: items[0].standardCost || 0 }])
+                      setManualLines([...manualLines, { clientId: createFormRowId(), itemId: items[0].id, quantity: 100, estimatedUnitPrice: items[0].standardCost || 0 }])
                     }
                     className="text-[11px] font-semibold text-[#D97706] hover:underline flex items-center gap-1"
                   >
@@ -545,89 +441,7 @@ function RFQContent() {
                 )
               }
             >
-              {previewLines.length === 0 ? (
-                <div className="text-center text-xs text-slate-400 py-6">เลือกใบขอซื้อเพื่อดึงรายการสินค้า</div>
-              ) : source === 'PR' ? (
-                <table className="w-full text-xs">
-                  <thead className="text-[11px] text-slate-500 border-b">
-                    <tr>
-                      <th className="py-2 text-left">สินค้า</th>
-                      <th className="py-2 text-right">จำนวน</th>
-                      <th className="py-2 text-right">ราคากลาง/หน่วย</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {previewLines.map((l: any, i: number) => (
-                      <tr key={i}>
-                        <td className="py-2">
-                          <div className="font-semibold text-[#14213D]">{l.item?.itemName}</div>
-                          <div className="text-[10px] font-mono text-slate-400">{l.item?.itemCode}</div>
-                        </td>
-                        <td className="py-2 text-right tabular-nums">
-                          {l.quantity} {l.item?.unit}
-                        </td>
-                        <td className="py-2 text-right tabular-nums">฿{fmtMoney(l.estimatedUnitPrice)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="space-y-2">
-                  {manualLines.map((l, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <select
-                        value={l.itemId}
-                        onChange={(e) => {
-                          const it = items.find((i) => i.id === e.target.value);
-                          const next = [...manualLines];
-                          next[idx] = { ...l, itemId: e.target.value, estimatedUnitPrice: it?.standardCost || 0 };
-                          setManualLines(next);
-                        }}
-                        className={`${inputCls} flex-1`}
-                      >
-                        {items.map((it) => (
-                          <option key={it.id} value={it.id}>
-                            [{it.itemCode}] {it.itemName}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        type="number"
-                        min={1}
-                        value={l.quantity}
-                        onChange={(e) => {
-                          const next = [...manualLines];
-                          next[idx] = { ...l, quantity: Number(e.target.value) };
-                          setManualLines(next);
-                        }}
-                        className={`${inputCls} w-24 text-right`}
-                        placeholder="จำนวน"
-                      />
-                      <input
-                        type="number"
-                        min={0}
-                        value={l.estimatedUnitPrice}
-                        onChange={(e) => {
-                          const next = [...manualLines];
-                          next[idx] = { ...l, estimatedUnitPrice: Number(e.target.value) };
-                          setManualLines(next);
-                        }}
-                        className={`${inputCls} w-28 text-right`}
-                        placeholder="ราคากลาง"
-                      />
-                      {manualLines.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => setManualLines(manualLines.filter((_, i) => i !== idx))}
-                          className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {getLengthContent(previewLines, source, manualLines, items, setManualLines)}
             </SectionCard>
           </div>
 
@@ -637,9 +451,8 @@ function RFQContent() {
               icon={Users}
               right={
                 <span
-                  className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
-                    supplierIds.length >= 3 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                  }`}
+                  className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${supplierIds.length >= 3 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                    }`}
                 >
                   เลือก {supplierIds.length} ราย {supplierIds.length < 3 && '(แนะนำ ≥ 3)'}
                 </span>
@@ -654,9 +467,8 @@ function RFQContent() {
                       type="button"
                       key={s.id}
                       onClick={() => toggleSupplier(s.id)}
-                      className={`w-full text-left p-2.5 rounded-xl border flex items-start gap-2.5 transition-all ${
-                        checked ? 'border-[#F28C28] bg-orange-50/60 shadow-2xs' : 'border-[#E2EAF4] hover:bg-slate-50'
-                      }`}
+                      className={`w-full text-left p-2.5 rounded-xl border flex items-start gap-2.5 transition-all ${checked ? 'border-[#F28C28] bg-orange-50/60 shadow-2xs' : 'border-[#E2EAF4] hover:bg-slate-50'
+                        }`}
                     >
                       {checked ? (
                         <CheckCircle2 className="w-4 h-4 text-[#F28C28] mt-0.5 shrink-0" />
@@ -775,34 +587,7 @@ function RFQContent() {
                           <div className="text-xs font-semibold text-[#14213D] truncate">{s.supplier?.name}</div>
                           <div className="text-[10px] text-slate-400 font-mono">{s.supplier?.code}</div>
                         </div>
-                        {q ? (
-                          <div className="flex items-center gap-2">
-                            <div className="text-right">
-                              <div className="text-xs font-bold text-emerald-700 tabular-nums">฿{fmtMoney(q.totalAmount)}</div>
-                              <div className="text-[10px] text-slate-400 font-mono">{q.quotationNumber}</div>
-                            </div>
-                            <Link
-                              href={`/procurement/quotations?rfqId=${detail.id}`}
-                              className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[10px] font-semibold transition-colors shrink-0"
-                              title="ดูรายละเอียดใบเสนอราคา"
-                            >
-                              ดูราคา
-                            </Link>
-                          </div>
-                        ) : ['SENT', 'QUOTING'].includes(detail.status) ? (
-                          <Link
-                            href={`/procurement/quotations?rfqId=${detail.id}&supplierId=${s.supplierId}`}
-                            className="px-2.5 py-1 bg-orange-50 hover:bg-[#F28C28] text-[#D97706] hover:text-white border border-orange-200 hover:border-[#F28C28] rounded-lg text-xs font-semibold flex items-center gap-1 transition-all shadow-2xs shrink-0"
-                            title={`บันทึกใบเสนอราคาสำหรับ ${s.supplier?.name}`}
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>บันทึกราคา</span>
-                          </Link>
-                        ) : (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500">
-                            รอเสนอราคา
-                          </span>
-                        )}
+                        {getQContent(q, detail, s)}
                       </div>
                     );
                   })}
@@ -832,6 +617,231 @@ function RFQContent() {
       </ModalShell>
     </div>
   );
+}
+
+function getQContent(q: any, detail: any, s: any): React.ReactNode {
+  if (q) {
+    return <div className="flex items-center gap-2">
+      <div className="text-right">
+        <div className="text-xs font-bold text-emerald-700 tabular-nums">฿{fmtMoney(q.totalAmount)}</div>
+        <div className="text-[10px] text-slate-400 font-mono">{q.quotationNumber}</div>
+      </div>
+      <Link
+        href={`/procurement/quotations?rfqId=${detail.id}`}
+        className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[10px] font-semibold transition-colors shrink-0"
+        title="ดูรายละเอียดใบเสนอราคา"
+      >
+        ดูราคา
+      </Link>
+    </div>;
+  }
+  if (['SENT', 'QUOTING'].includes(detail.status)) {
+    return <Link
+      href={`/procurement/quotations?rfqId=${detail.id}&supplierId=${s.supplierId}`}
+      className="px-2.5 py-1 bg-orange-50 hover:bg-[#F28C28] text-[#D97706] hover:text-white border border-orange-200 hover:border-[#F28C28] rounded-lg text-xs font-semibold flex items-center gap-1 transition-all shadow-2xs shrink-0"
+      title={`บันทึกใบเสนอราคาสำหรับ ${s.supplier?.name}`}
+    >
+      <Plus className="w-3.5 h-3.5" />
+      <span>บันทึกราคา</span>
+    </Link>;
+  }
+  return <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500">
+    รอเสนอราคา
+  </span>;
+
+}
+
+function getLengthContent(previewLines: any, source: string, manualLines: any[], items: any[], setManualLines: React.Dispatch<React.SetStateAction<any[]>>): React.ReactNode {
+  if (previewLines.length === 0) {
+    return <div className="text-center text-xs text-slate-400 py-6">เลือกใบขอซื้อเพื่อดึงรายการสินค้า</div>;
+  }
+  if (source === 'PR') {
+    return <table className="w-full text-xs">
+      <thead className="text-[11px] text-slate-500 border-b">
+        <tr>
+          <th className="py-2 text-left">สินค้า</th>
+          <th className="py-2 text-right">จำนวน</th>
+          <th className="py-2 text-right">ราคากลาง/หน่วย</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-slate-100">
+        {previewLines.map((l: any, i: number) => (
+          <tr key={l.id}>
+            <td className="py-2">
+              <div className="font-semibold text-[#14213D]">{l.item?.itemName}</div>
+              <div className="text-[10px] font-mono text-slate-400">{l.item?.itemCode}</div>
+            </td>
+            <td className="py-2 text-right tabular-nums">
+              {l.quantity} {l.item?.unit}
+            </td>
+            <td className="py-2 text-right tabular-nums">฿{fmtMoney(l.estimatedUnitPrice)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>;
+  }
+  return <div className="space-y-2">
+    {manualLines.map((l, idx) => (
+      <div key={l.clientId} className="flex items-center gap-2">
+        <select
+          value={l.itemId}
+          onChange={(e) => {
+            const it = items.find((i) => i.id === e.target.value);
+            const next = [...manualLines];
+            next[idx] = { ...l, itemId: e.target.value, estimatedUnitPrice: it?.standardCost || 0 };
+            setManualLines(next);
+          }}
+          className={`${inputCls} flex-1`}
+        >
+          {items.map((it) => (
+            <option key={it.id} value={it.id}>
+              [{it.itemCode}] {it.itemName}
+            </option>
+          ))}
+        </select>
+        <input
+          type="number"
+          min={1}
+          value={l.quantity}
+          onChange={(e) => {
+            const next = [...manualLines];
+            next[idx] = { ...l, quantity: Number(e.target.value) };
+            setManualLines(next);
+          }}
+          className={`${inputCls} w-24 text-right`}
+          placeholder="จำนวน" />
+        <input
+          type="number"
+          min={0}
+          value={l.estimatedUnitPrice}
+          onChange={(e) => {
+            const next = [...manualLines];
+            next[idx] = { ...l, estimatedUnitPrice: Number(e.target.value) };
+            setManualLines(next);
+          }}
+          className={`${inputCls} w-28 text-right`}
+          placeholder="ราคากลาง" />
+        {manualLines.length > 1 && (
+          <button
+            type="button"
+            onClick={() => setManualLines(manualLines.filter((_, i) => i !== idx))}
+            className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+    ))}
+  </div>;
+
+}
+
+function renderTableRows(loading: boolean, filtered: any[], setDetail: React.Dispatch<any>, handleAction: (rfq: any, action: "SEND" | "CANCEL") => Promise<void>): React.ReactNode {
+  if (loading) {
+    return <tr>
+      <td colSpan={8} className="py-12 text-center text-slate-400">
+        กำลังโหลดข้อมูล...
+      </td>
+    </tr>;
+  }
+  if (filtered.length === 0) {
+    return <tr>
+      <td colSpan={8} className="py-14 text-center text-slate-400">
+        <FileSearch className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+        ยังไม่มีคำขอใบเสนอราคาตามเงื่อนไขที่เลือก
+      </td>
+    </tr>;
+  }
+  return filtered.map((r) => {
+    const responded = r.suppliers?.filter((s: any) => s.status === 'RESPONDED').length || 0;
+    const invited = r.suppliers?.length || 0;
+    const overdue = r.dueDate && ['SENT', 'QUOTING'].includes(r.status) && new Date(r.dueDate) < new Date();
+    return (
+      <tr key={r.id} className="hover:bg-[#FFF7ED]/40 transition-colors">
+        <td className="py-3 px-4 font-mono font-bold">
+          <button
+            type="button"
+            onClick={() => setDetail(r)}
+            className="text-[#D97706] hover:underline"
+          >
+            {r.rfqNumber}
+          </button>
+        </td>
+        <td className="py-3 px-3 font-mono text-[11px]">
+          {r.prNumber ? (
+            <span className="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg">{r.prNumber}</span>
+          ) : (
+            <span className="text-slate-400 italic">ไม่อ้างอิง PR</span>
+          )}
+        </td>
+        <td className="py-3 px-3 max-w-[240px]">
+          <div className="font-semibold text-[#14213D] truncate">{r.title}</div>
+          <div className="text-[11px] text-slate-400">โดย {r.createdBy}</div>
+        </td>
+        <td className={`py-3 px-3 ${overdue ? 'text-rose-600 font-semibold' : 'text-slate-600'}`}>
+          {fmtDate(r.dueDate)}
+          {overdue && <div className="text-[10px]">เลยกำหนด</div>}
+        </td>
+        <td className="py-3 px-3 text-center">
+          <div className="inline-flex items-center gap-1.5">
+            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-[#F28C28] to-emerald-500"
+                style={{ width: `${invited ? (responded / invited) * 100 : 0}%` }} />
+            </div>
+            <span className="font-semibold tabular-nums">
+              {responded}/{invited}
+            </span>
+          </div>
+        </td>
+        <td className="py-3 px-3 text-right tabular-nums">{r.lines?.length || 0} รายการ</td>
+        <td className="py-3 px-3 text-center whitespace-nowrap">
+          <StatusBadge status={r.status} />
+        </td>
+        <td className="py-3 px-4 whitespace-nowrap">
+          <div className="flex items-center justify-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setDetail(r)}
+              className="px-2.5 py-1 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold border border-slate-200 flex items-center gap-1"
+            >
+              <Eye className="w-3.5 h-3.5 text-slate-500" />
+              <span>ดูข้อมูล</span>
+            </button>
+            {r.status === 'DRAFT' && (
+              <button
+                type="button"
+                onClick={() => handleAction(r, 'SEND')}
+                className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>ส่ง RFQ</span>
+              </button>
+            )}
+            {['SENT', 'QUOTING'].includes(r.status) && (
+              <Link
+                href={`/procurement/quotations?rfqId=${r.id}`}
+                className="px-2.5 py-1 bg-[#F28C28] hover:bg-[#D97706] text-white rounded-lg text-xs font-semibold flex items-center gap-1"
+              >
+                <Receipt className="w-3.5 h-3.5" />
+                <span>บันทึกราคา</span>
+              </Link>
+            )}
+            {(r.quotations?.length || 0) > 0 && r.status !== 'CANCELLED' && (
+              <Link
+                href={`/procurement/comparison?rfqId=${r.id}`}
+                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1"
+              >
+                <Scale className="w-3.5 h-3.5" />
+                <span>เปรียบเทียบ</span>
+              </Link>
+            )}
+          </div>
+        </td>
+      </tr>
+    );
+  });
+
 }
 
 export default function RFQPage() {

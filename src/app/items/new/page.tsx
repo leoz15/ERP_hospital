@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
-import { Package, ArrowLeft, Save, Building } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useId, useState } from 'react';
 
 export default function NewItemPage() {
+  const formId = useId();
   const router = useRouter();
   const { addToast, currentUser, triggerRefresh } = useApp();
   const [categories, setCategories] = useState<any[]>([]);
@@ -99,10 +100,10 @@ export default function NewItemPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-90`} className="block text-xs font-semibold text-[#334155] mb-1">
                 รหัสสินค้า (Item Code) *
               </label>
-              <input
+              <input id={`${formId}-field-90`}
                 type="text"
                 required
                 placeholder="เช่น MED-004, SUP-006"
@@ -113,10 +114,10 @@ export default function NewItemPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-91`} className="block text-xs font-semibold text-[#334155] mb-1">
                 ชื่อสินค้าทางการค้า (Item Name) *
               </label>
-              <input
+              <input id={`${formId}-field-91`}
                 type="text"
                 required
                 placeholder="เช่น Ceftriaxone 1g Powder for Injection"
@@ -127,10 +128,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-92`} className="block text-xs font-semibold text-[#334155] mb-1">
                 ชื่อสามัญทางยา/เวชภัณฑ์ (Generic Name)
               </label>
-              <input
+              <input id={`${formId}-field-92`}
                 type="text"
                 placeholder="เช่น Ceftriaxone Sodium"
                 value={formData.genericName}
@@ -140,10 +141,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-93`} className="block text-xs font-semibold text-[#334155] mb-1">
                 กลุ่มหมวดหมู่หลัก *
               </label>
-              <select
+              <select id={`${formId}-field-93`}
                 required
                 value={formData.categoryId}
                 onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
@@ -158,10 +159,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-94`} className="block text-xs font-semibold text-[#334155] mb-1">
                 หมวดหมู่ย่อย (Sub Category)
               </label>
-              <input
+              <input id={`${formId}-field-94`}
                 type="text"
                 placeholder="เช่น ยาปฏิชีวนะ, วัสดุปลอดเชื้อ"
                 value={formData.subCategory}
@@ -171,10 +172,10 @@ export default function NewItemPage() {
             </div>
 
             <div className="md:col-span-3">
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-95`} className="block text-xs font-semibold text-[#334155] mb-1">
                 คำอธิบายคุณลักษณะ (Specification / Description)
               </label>
-              <textarea
+              <textarea id={`${formId}-field-95`}
                 rows={2}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -192,10 +193,10 @@ export default function NewItemPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-96`} className="block text-xs font-semibold text-[#334155] mb-1">
                 หน่วยนับหลักในคลัง (Base Unit) *
               </label>
-              <input
+              <input id={`${formId}-field-96`}
                 type="text"
                 required
                 placeholder="เช่น Box, Piece, Bottle, Vial"
@@ -206,10 +207,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-97`} className="block text-xs font-semibold text-[#334155] mb-1">
                 หน่วยที่ซื้อจากคู่ค้า (Purchase Unit)
               </label>
-              <input
+              <input id={`${formId}-field-97`}
                 type="text"
                 placeholder="เช่น Carton, Pack"
                 value={formData.purchaseUnit}
@@ -219,10 +220,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-98`} className="block text-xs font-semibold text-[#334155] mb-1">
                 อัตราแปลงหน่วย (Conversion Rate)
               </label>
-              <input
+              <input id={`${formId}-field-98`}
                 type="number"
                 min="1"
                 placeholder="เช่น 1 Carton = 10 Box"
@@ -233,10 +234,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-99`} className="block text-xs font-semibold text-[#334155] mb-1">
                 ราคาทุนมาตรฐาน (Standard Cost) *
               </label>
-              <input
+              <input id={`${formId}-field-99`}
                 type="number"
                 step="0.01"
                 min="0"
@@ -256,10 +257,10 @@ export default function NewItemPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-100`} className="block text-xs font-semibold text-[#334155] mb-1">
                 ปริมาณขั้นต่ำ (Minimum Stock) *
               </label>
-              <input
+              <input id={`${formId}-field-100`}
                 type="number"
                 min="0"
                 required
@@ -270,10 +271,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-101`} className="block text-xs font-semibold text-[#334155] mb-1">
                 จุดสั่งซื้อซ้ำ (Reorder Point) *
               </label>
-              <input
+              <input id={`${formId}-field-101`}
                 type="number"
                 min="0"
                 required
@@ -284,10 +285,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-102`} className="block text-xs font-semibold text-[#334155] mb-1">
                 ปริมาณสูงสุด (Maximum Stock) *
               </label>
-              <input
+              <input id={`${formId}-field-102`}
                 type="number"
                 min="0"
                 required
@@ -298,10 +299,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-103`} className="block text-xs font-semibold text-[#334155] mb-1">
                 สต็อกสำรอง (Safety Stock)
               </label>
-              <input
+              <input id={`${formId}-field-103`}
                 type="number"
                 min="0"
                 value={formData.safetyStock}
@@ -319,10 +320,10 @@ export default function NewItemPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-104`} className="block text-xs font-semibold text-[#334155] mb-1">
                 เงื่อนไขอุณหภูมิ (Temperature Requirement)
               </label>
-              <input
+              <input id={`${formId}-field-104`}
                 type="text"
                 placeholder="เช่น อุณหภูมิห้อง 20-25°C หรือ แช่เย็น 2-8°C"
                 value={formData.temperatureReq}
@@ -332,10 +333,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
+              <label htmlFor={`${formId}-field-105`} className="block text-xs font-semibold text-[#334155] mb-1">
                 บาร์โค้ด (Barcode)
               </label>
-              <input
+              <input id={`${formId}-field-105`}
                 type="text"
                 placeholder="เช่น 8850123400..."
                 value={formData.barcode}

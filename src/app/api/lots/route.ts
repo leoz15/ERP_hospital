@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,12 +20,12 @@ export async function GET(request: Request) {
         ...(warehouseId ? { warehouseId } : {}),
         ...(search
           ? {
-              OR: [
-                { lotNumber: { contains: search } },
-                { item: { itemCode: { contains: search } } },
-                { item: { itemName: { contains: search } } },
-              ],
-            }
+            OR: [
+              { lotNumber: { contains: search } },
+              { item: { itemCode: { contains: search } } },
+              { item: { itemName: { contains: search } } },
+            ],
+          }
           : {}),
       },
       include: {
@@ -52,10 +52,10 @@ export async function GET(request: Request) {
       const availableInLot = Math.max(
         0,
         lot.currentQty -
-          (lot.reservedQty || 0) -
-          (lot.quarantineQty || 0) -
-          (lot.damagedQty || 0) -
-          (lot.expiredQty || 0)
+        (lot.reservedQty || 0) -
+        (lot.quarantineQty || 0) -
+        (lot.damagedQty || 0) -
+        (lot.expiredQty || 0)
       );
 
       return {

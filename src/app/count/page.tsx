@@ -1,28 +1,27 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useApp } from '@/context/AppContext';
 import {
-  ClipboardCheck,
-  Plus,
-  CheckCircle,
-  AlertTriangle,
-  RefreshCw,
-  Search,
-  Eye,
   Building,
-  Copy,
-  Printer,
-  X,
-  CheckCircle2,
-  Clock,
   Calendar,
-  ShieldCheck,
+  CheckCircle,
+  CheckCircle2,
+  ClipboardCheck,
+  Clock,
+  Copy,
+  Eye,
   Package,
+  Plus,
+  Printer,
+  RefreshCw,
+  ShieldCheck,
+  X
 } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import React, { useEffect, useId, useState } from 'react';
 
 export default function StockCountPage() {
+  const formId = useId();
   const { currentUser, addToast, refreshKey, triggerRefresh } = useApp();
   const [counts, setCounts] = useState<any[]>([]);
   const [warehouses, setWarehouses] = useState<any[]>([]);
@@ -30,7 +29,7 @@ export default function StockCountPage() {
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [activeCount, setActiveCount] = useState<any | null>(null);
+  const [activeCount, setActiveCount] = useState<any>(null);
 
   // New Count form
   const [warehouseId, setWarehouseId] = useState('');
@@ -173,7 +172,7 @@ export default function StockCountPage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
         >
@@ -200,70 +199,7 @@ export default function StockCountPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
-                    <RefreshCw className="w-6 h-6 mx-auto animate-spin text-emerald-600 mb-2" />
-                    กำลังดึงข้อมูลแผนตรวจนับ...
-                  </td>
-                </tr>
-              ) : counts.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
-                    ยังไม่มีข้อมูลแผนตรวจนับสินค้า
-                  </td>
-                </tr>
-              ) : (
-                counts.map((cnt) => (
-                  <tr
-                    key={cnt.id}
-                    className="hover:bg-emerald-50/40 transition-colors group cursor-pointer"
-                    onClick={() => openCountDetail(cnt)}
-                  >
-                    <td className="py-3 px-4 font-mono font-bold text-emerald-700">
-                      <span className="hover:underline bg-emerald-50 group-hover:bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded transition-colors">
-                        {cnt.countNumber}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-semibold text-[#14213D]">
-                      {cnt.countPlanName}
-                    </td>
-                    <td className="py-3 px-3 text-[#334155]">
-                      {cnt.warehouse.name}
-                    </td>
-                    <td className="py-3 px-3 text-right font-semibold tabular-nums">
-                      {cnt.lines.length} รายการ
-                    </td>
-                    <td className="py-3 px-3 text-[#64748B]">
-                      {cnt.counterName}
-                    </td>
-                    <td className="py-3 px-3 text-[#64748B] whitespace-nowrap">
-                      {new Date(cnt.countDate).toLocaleDateString('th-TH')}
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      {cnt.isBlindCount ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                          Blind Count
-                        </span>
-                      ) : (
-                        <span className="text-[#94A3B8] text-[11px]">แสดงยอด</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <StatusBadge status={cnt.status} />
-                    </td>
-                    <td className="py-3 px-4 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => openCountDetail(cnt)}
-                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-[#334155] rounded-lg text-xs font-medium transition-colors flex items-center gap-1 mx-auto"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>บันทึกผล & ปิดยอด</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableRows(loading, counts, openCountDetail)}
             </tbody>
           </table>
         </div>
@@ -275,7 +211,7 @@ export default function StockCountPage() {
           <div className="bg-white rounded-2xl shadow-2xl border border-[#E2EAF4] max-w-md w-full p-6 animate-scale-up space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E2EAF4]">
               <h3 className="text-sm font-bold text-[#14213D]">เปิดแผนตรวจนับสินค้าคงคลังใหม่</h3>
-              <button
+              <button type="button"
                 onClick={() => setShowCreateModal(false)}
                 className="text-[#94A3B8] hover:text-[#64748B] font-bold"
               >
@@ -285,8 +221,8 @@ export default function StockCountPage() {
 
             <form onSubmit={handleCreateCount} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">คลังสินค้าที่ตรวจนับ *</label>
-                <select
+                <label htmlFor={`${formId}-field-27`} className="block text-xs font-semibold text-[#334155] mb-1">คลังสินค้าที่ตรวจนับ *</label>
+                <select id={`${formId}-field-27`}
                   required
                   value={warehouseId}
                   onChange={(e) => setWarehouseId(e.target.value)}
@@ -301,8 +237,8 @@ export default function StockCountPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">ชื่อแผนตรวจนับ *</label>
-                <input
+                <label htmlFor={`${formId}-field-28`} className="block text-xs font-semibold text-[#334155] mb-1">ชื่อแผนตรวจนับ *</label>
+                <input id={`${formId}-field-28`}
                   type="text"
                   required
                   value={countPlanName}
@@ -312,8 +248,8 @@ export default function StockCountPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">ชื่อผู้ตรวจนับ (Counter) *</label>
-                <input
+                <label htmlFor={`${formId}-field-29`} className="block text-xs font-semibold text-[#334155] mb-1">ชื่อผู้ตรวจนับ (Counter) *</label>
+                <input id={`${formId}-field-29`}
                   type="text"
                   required
                   value={counterName}
@@ -551,7 +487,7 @@ export default function StockCountPage() {
                                 disabled={activeCount.status === 'CLOSED'}
                                 value={line.countedQty}
                                 onChange={(e) => {
-                                  const val = parseFloat(e.target.value) || 0;
+                                  const val = Number.parseFloat(e.target.value) || 0;
                                   const updated = [...editLines];
                                   updated[idx].countedQty = val;
                                   updated[idx].varianceQty = val - updated[idx].systemQty;
@@ -562,13 +498,7 @@ export default function StockCountPage() {
                             </td>
 
                             <td className="py-2.5 px-3 text-right tabular-nums font-bold">
-                              {variance === 0 ? (
-                                <span className="text-[#94A3B8]">0</span>
-                              ) : variance > 0 ? (
-                                <span className="text-emerald-600">+{variance}</span>
-                              ) : (
-                                <span className="text-rose-600">{variance}</span>
-                              )}
+                              {getVarianceContent(variance)}
                             </td>
 
                             <td className="py-2.5 px-3 text-center">
@@ -635,11 +565,10 @@ export default function StockCountPage() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
-                      activeCount.status === 'CLOSED'
-                        ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                        : 'bg-amber-50/60 border-amber-200 text-amber-900'
-                    }`}
+                    className={`p-3 rounded-xl border ${activeCount.status === 'CLOSED'
+                      ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
+                      : 'bg-amber-50/60 border-amber-200 text-amber-900'
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       {activeCount.status === 'CLOSED' ? (
@@ -655,11 +584,10 @@ export default function StockCountPage() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
-                      activeCount.status === 'CLOSED'
-                        ? 'bg-blue-50/60 border-blue-200 text-blue-900'
-                        : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
-                    }`}
+                    className={`p-3 rounded-xl border ${activeCount.status === 'CLOSED'
+                      ? 'bg-blue-50/60 border-blue-200 text-blue-900'
+                      : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#94A3B8]" />
@@ -727,4 +655,83 @@ export default function StockCountPage() {
       )}
     </div>
   );
+}
+
+function getVarianceContent(variance: number): React.ReactNode {
+  if (variance === 0) {
+    return <span className="text-[#94A3B8]">0</span>;
+  }
+  if (variance > 0) {
+    return <span className="text-emerald-600">+{variance}</span>;
+  }
+  return <span className="text-rose-600">{variance}</span>;
+
+}
+
+function renderTableRows(loading: boolean, counts: any[], openCountDetail: (cnt: any) => void): React.ReactNode {
+  if (loading) {
+    return <tr>
+      <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
+        <RefreshCw className="w-6 h-6 mx-auto animate-spin text-emerald-600 mb-2" />
+        กำลังดึงข้อมูลแผนตรวจนับ...
+      </td>
+    </tr>;
+  }
+  if (counts.length === 0) {
+    return <tr>
+      <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
+        ยังไม่มีข้อมูลแผนตรวจนับสินค้า
+      </td>
+    </tr>;
+  }
+  return counts.map((cnt) => (
+    <tr
+      key={cnt.id}
+      className="hover:bg-emerald-50/40 transition-colors group cursor-pointer"
+      onClick={() => openCountDetail(cnt)}
+    >
+      <td className="py-3 px-4 font-mono font-bold text-emerald-700">
+        <span className="hover:underline bg-emerald-50 group-hover:bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded transition-colors">
+          {cnt.countNumber}
+        </span>
+      </td>
+      <td className="py-3 px-3 font-semibold text-[#14213D]">
+        {cnt.countPlanName}
+      </td>
+      <td className="py-3 px-3 text-[#334155]">
+        {cnt.warehouse.name}
+      </td>
+      <td className="py-3 px-3 text-right font-semibold tabular-nums">
+        {cnt.lines.length} รายการ
+      </td>
+      <td className="py-3 px-3 text-[#64748B]">
+        {cnt.counterName}
+      </td>
+      <td className="py-3 px-3 text-[#64748B] whitespace-nowrap">
+        {new Date(cnt.countDate).toLocaleDateString('th-TH')}
+      </td>
+      <td className="py-3 px-3 text-center">
+        {cnt.isBlindCount ? (
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+            Blind Count
+          </span>
+        ) : (
+          <span className="text-[#94A3B8] text-[11px]">แสดงยอด</span>
+        )}
+      </td>
+      <td className="py-3 px-3 text-center whitespace-nowrap">
+        <StatusBadge status={cnt.status} />
+      </td>
+      <td className="py-3 px-4 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+        <button type="button"
+          onClick={() => openCountDetail(cnt)}
+          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-[#334155] rounded-lg text-xs font-medium transition-colors flex items-center gap-1 mx-auto"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          <span>บันทึกผล & ปิดยอด</span>
+        </button>
+      </td>
+    </tr>
+  ));
+
 }

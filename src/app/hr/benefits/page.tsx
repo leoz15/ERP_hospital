@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { HeartHandshake, Plus, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { useHR } from '@/context/HRContext';
+import { HeartHandshake, Plus } from 'lucide-react';
+import Link from 'next/link';
+import React, { useId, useState } from 'react';
 
 export default function HRBenefitsPage() {
+  const formId = useId();
   const { employees } = useHR();
   const { addToast } = useApp();
 
@@ -56,7 +57,7 @@ export default function HRBenefitsPage() {
             บริหารสิทธิประกันสังคม (ม.33) กองทุนสำรองเลี้ยงชีพ (PVD) สิทธิรักษาพยาบาลพนักงานและครอบครัว วัคซีนประจำปี และตรวจสุขภาพ
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={() => setShowModal(true)}
           className="px-4 py-2.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-xl text-xs font-bold flex items-center gap-2 shrink-0"
         >
@@ -127,16 +128,16 @@ export default function HRBenefitsPage() {
             <h3 className="font-extrabold text-base text-[#14213D]">ยื่นเบิกสวัสดิการพนักงาน</h3>
             <form onSubmit={handleCreateClaim} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold mb-1">บุคลากร</label>
-                <select value={empName} onChange={(e) => setEmpName(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
+                <label htmlFor={`${formId}-field-34`} className="block font-bold mb-1">บุคลากร</label>
+                <select id={`${formId}-field-34`} value={empName} onChange={(e) => setEmpName(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
                   {employees.map((e) => (
                     <option key={e.id} value={e.fullName}>{e.fullName}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block font-bold mb-1">ประเภทสวัสดิการ</label>
-                <select value={type} onChange={(e) => setType(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
+                <label htmlFor={`${formId}-field-35`} className="block font-bold mb-1">ประเภทสวัสดิการ</label>
+                <select id={`${formId}-field-35`} value={type} onChange={(e) => setType(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
                   <option value="สวัสดิการทำฟันและทันตกรรม">สวัสดิการทำฟันและทันตกรรม</option>
                   <option value="สวัสดิการตัดแว่นสายตาบุคลากร">สวัสดิการตัดแว่นสายตาบุคลากร</option>
                   <option value="ส่วนลดค่ารักษาพยาบาลครอบครัว (OPD/IPD)">ส่วนลดค่ารักษาพยาบาลครอบครัว (OPD/IPD)</option>
@@ -144,8 +145,8 @@ export default function HRBenefitsPage() {
                 </select>
               </div>
               <div>
-                <label className="block font-bold mb-1">จำนวนเงินที่ขอเบิก (บาท)</label>
-                <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
+                <label htmlFor={`${formId}-field-36`} className="block font-bold mb-1">จำนวนเงินที่ขอเบิก (บาท)</label>
+                <input id={`${formId}-field-36`} type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-xl">ยกเลิก</button>

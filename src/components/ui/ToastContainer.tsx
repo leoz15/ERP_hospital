@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
 import { useApp } from '@/context/AppContext';
-import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from 'lucide-react';
 
 export function ToastContainer() {
   const { toasts, removeToast } = useApp();
@@ -33,7 +32,7 @@ export function ToastContainer() {
           >
             <div className="flex-shrink-0 mt-0.5">{icon}</div>
             <div className="flex-1 text-sm font-medium leading-relaxed">{toast.message}</div>
-            <button
+            <button type="button"
               onClick={() => removeToast(toast.id)}
               className="text-slate-400 hover:text-slate-600 transition-colors"
             >

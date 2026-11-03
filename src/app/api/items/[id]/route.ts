@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,13 +65,13 @@ export async function PUT(
         unit: body.unit,
         purchaseUnit: body.purchaseUnit,
         issueUnit: body.issueUnit,
-        conversionRate: body.conversionRate ? parseFloat(body.conversionRate) : 1.0,
+        conversionRate: body.conversionRate ? Number.parseFloat(body.conversionRate) : 1.0,
         barcode: body.barcode,
-        minStock: parseFloat(body.minStock || '0'),
-        maxStock: parseFloat(body.maxStock || '0'),
-        reorderPoint: parseFloat(body.reorderPoint || '0'),
-        safetyStock: parseFloat(body.safetyStock || '0'),
-        standardCost: parseFloat(body.standardCost || '0'),
+        minStock: Number.parseFloat(body.minStock || '0'),
+        maxStock: Number.parseFloat(body.maxStock || '0'),
+        reorderPoint: Number.parseFloat(body.reorderPoint || '0'),
+        safetyStock: Number.parseFloat(body.safetyStock || '0'),
+        standardCost: Number.parseFloat(body.standardCost || '0'),
         temperatureReq: body.temperatureReq,
       },
     });

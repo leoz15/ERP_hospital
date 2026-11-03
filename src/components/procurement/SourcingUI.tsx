@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import { RefreshCw, X } from 'lucide-react';
 import Link from 'next/link';
-import { X, RefreshCw } from 'lucide-react';
+import React from 'react';
 
 /* ------------------------------------------------------------------ */
 /* Shared UI building blocks for sourcing pages (RFQ / QT / Compare)  */
@@ -15,14 +15,14 @@ export function SourcingHeader({
   icon: Icon,
   onRefresh,
   actions,
-}: {
+}: Readonly<{
   crumb: string;
   title: string;
   subtitle: string;
   icon: React.ElementType;
   onRefresh?: () => void;
   actions?: React.ReactNode;
-}) {
+}>) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E2EAF4] shadow-sm">
       <div>
@@ -62,13 +62,13 @@ export function StatCard({
   hint,
   icon: Icon,
   tone = 'orange',
-}: {
+}: Readonly<{
   label: string;
   value: React.ReactNode;
   hint?: string;
   icon: React.ElementType;
   tone?: 'orange' | 'sky' | 'emerald' | 'violet' | 'amber' | 'slate';
-}) {
+}>) {
   const tones: Record<string, string> = {
     orange: 'bg-orange-50 text-[#F28C28] border-orange-100',
     sky: 'bg-sky-50 text-sky-600 border-sky-100',
@@ -95,11 +95,11 @@ export function FilterTabs<T extends string>({
   tabs,
   value,
   onChange,
-}: {
+}: Readonly<{
   tabs: { id: T; label: string; count?: number }[];
   value: T;
   onChange: (v: T) => void;
-}) {
+}>) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       {tabs.map((tab) => (
@@ -107,18 +107,16 @@ export function FilterTabs<T extends string>({
           key={tab.id}
           type="button"
           onClick={() => onChange(tab.id)}
-          className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
-            value === tab.id
-              ? 'bg-[#F28C28] text-white font-semibold shadow-xs'
-              : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-          }`}
+          className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${value === tab.id
+            ? 'bg-[#F28C28] text-white font-semibold shadow-xs'
+            : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+            }`}
         >
           <span>{tab.label}</span>
           {typeof tab.count === 'number' && (
             <span
-              className={`px-1.5 rounded-md text-[10px] font-bold ${
-                value === tab.id ? 'bg-white/25 text-white' : 'bg-white text-slate-500'
-              }`}
+              className={`px-1.5 rounded-md text-[10px] font-bold ${value === tab.id ? 'bg-white/25 text-white' : 'bg-white text-slate-500'
+                }`}
             >
               {tab.count}
             </span>
@@ -139,7 +137,7 @@ export function ModalShell({
   headerRight,
   footer,
   children,
-}: {
+}: Readonly<{
   open: boolean;
   onClose: () => void;
   title: string;
@@ -149,9 +147,9 @@ export function ModalShell({
   headerRight?: React.ReactNode;
   footer?: React.ReactNode;
   children: React.ReactNode;
-}) {
+}>) {
   if (!open) return null;
-  const width = size === 'md' ? 'max-w-2xl' : size === 'lg' ? 'max-w-4xl' : 'max-w-6xl';
+  const width = getSizeText(size);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-3 sm:p-6 animate-fade-in">
       <div
@@ -190,19 +188,30 @@ export function ModalShell({
   );
 }
 
+function getSizeText(size: string) {
+  if (size === 'md') {
+    return 'max-w-2xl';
+  }
+  if (size === 'lg') {
+    return 'max-w-4xl';
+  }
+  return 'max-w-6xl';
+
+}
+
 export function SectionCard({
   title,
   icon: Icon,
   right,
   children,
   className = '',
-}: {
+}: Readonly<{
   title: string;
   icon?: React.ElementType;
   right?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
-}) {
+}>) {
   return (
     <div className={`bg-white rounded-2xl border border-[#E2EAF4] shadow-2xs overflow-hidden ${className}`}>
       <div className="px-4 py-3 border-b border-[#E2EAF4] flex items-center justify-between gap-2 bg-[#F8FAFC]">

@@ -1,10 +1,9 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { FileSignature, CheckCircle2, Clock, Award, ArrowUpRight } from 'lucide-react';
+import { useHR } from '@/context/HRContext';
+import { ArrowUpRight, Award, CheckCircle2, Clock, FileSignature } from 'lucide-react';
+import Link from 'next/link';
 
 export default function HRContractsPage() {
   const { employees } = useHR();
@@ -82,7 +81,7 @@ export default function HRContractsPage() {
                     )}
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <button
+                    <button type="button"
                       onClick={() => addToast('info', `เปิดเอกสารสัญญาจ้างอิเล็กทรอนิกส์ของ ${e.fullName}`)}
                       className="text-[#0D9488] font-bold hover:underline inline-flex items-center gap-1"
                     >

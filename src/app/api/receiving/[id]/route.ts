@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,32 +58,7 @@ export async function PUT(
 
     // Update lines if provided
     if (body.lines && Array.isArray(body.lines)) {
-      for (const l of body.lines) {
-        const accepted = parseFloat(l.acceptedQty || '0');
-        const rejected = parseFloat(l.rejectedQty || '0');
-        const quarantine = parseFloat(l.quarantineQty || '0');
-        const received = parseFloat(l.receivedQty || (accepted + rejected + quarantine).toString());
-
-        totalAccepted += accepted;
-        totalRejected += rejected;
-        totalQuarantine += quarantine;
-
-        if (l.id) {
-          await prisma.goodsReceiptLine.update({
-            where: { id: l.id },
-            data: {
-              receivedQty: received,
-              acceptedQty: accepted,
-              rejectedQty: rejected,
-              quarantineQty: quarantine,
-              lotNumber: l.lotNumber || `LOT-${Date.now().toString().slice(-6)}`,
-              expiryDate: l.expiryDate ? new Date(l.expiryDate) : new Date(Date.now() + 365 * 24 * 3600 * 1000),
-              locationId: l.locationId || null,
-              remark: l.remark || null,
-            },
-          });
-        }
-      }
+      ({ totalAccepted, totalRejected, totalQuarantine } = await updateReceiptLines(body.lines));
     } else {
       totalAccepted = gr.totalAccepted;
       totalRejected = gr.totalRejected;
@@ -118,3 +93,36 @@ export async function PUT(
   }
 }
 
+
+async function updateReceiptLines(lines: any[]) {
+  let totalAccepted = 0;
+  let totalRejected = 0;
+  let totalQuarantine = 0;
+  for (const l of lines) {
+    const accepted = Number.parseFloat(l.acceptedQty || '0');
+    const rejected = Number.parseFloat(l.rejectedQty || '0');
+    const quarantine = Number.parseFloat(l.quarantineQty || '0');
+    const received = Number.parseFloat(l.receivedQty || (accepted + rejected + quarantine).toString());
+
+    totalAccepted += accepted;
+    totalRejected += rejected;
+    totalQuarantine += quarantine;
+
+    if (l.id) {
+      await prisma.goodsReceiptLine.update({
+        where: { id: l.id },
+        data: {
+          receivedQty: received,
+          acceptedQty: accepted,
+          rejectedQty: rejected,
+          quarantineQty: quarantine,
+          lotNumber: l.lotNumber || `LOT-${Date.now().toString().slice(-6)}`,
+          expiryDate: l.expiryDate ? new Date(l.expiryDate) : new Date(Date.now() + 365 * 24 * 3600 * 1000),
+          locationId: l.locationId || null,
+          remark: l.remark || null,
+        },
+      });
+    }
+  }
+  return { totalAccepted, totalRejected, totalQuarantine };
+}

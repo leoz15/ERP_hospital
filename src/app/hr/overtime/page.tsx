@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { Timer, Plus } from 'lucide-react';
+import { HROTRequest, useHR } from '@/context/HRContext';
+import { Plus, Timer } from 'lucide-react';
+import Link from 'next/link';
+import React, { useId, useState } from 'react';
 
 export default function HROvertimePage() {
+  const formId = useId();
   const { otRequests, employees, addOTRequest, updateOTStatus } = useHR();
   const { addToast } = useApp();
 
@@ -58,7 +59,7 @@ export default function HROvertimePage() {
             บริหารจัดการชั่วโมง OT (1.5x / 2.0x / 3.0x) และค่าตอบแทนเวรเสริมวิชาชีพ (On-Call) เพื่อส่งคำนวณเงินเดือนอัตโนมัติ
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={() => setShowModal(true)}
           className="px-4 py-2.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-xl text-xs font-bold flex items-center gap-2 shrink-0"
         >
@@ -99,24 +100,12 @@ export default function HROvertimePage() {
                   </td>
                   <td className="py-3 px-4 text-[#64748B] max-w-[200px] truncate">{ot.reason}</td>
                   <td className="py-3 px-4 text-center">
-                    {ot.status === 'PENDING_APPROVAL' ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                        รออนุมัติ
-                      </span>
-                    ) : ot.status === 'APPROVED' ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        อนุมัติแล้ว
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                        ปฏิเสธ
-                      </span>
-                    )}
+                    {getStatusContent(ot)}
                   </td>
                   <td className="py-3 px-4 text-right">
                     {ot.status === 'PENDING_APPROVAL' && (
                       <div className="flex justify-end gap-1.5">
-                        <button
+                        <button type="button"
                           onClick={() => {
                             updateOTStatus(ot.id, 'APPROVED');
                             addToast('success', `อนุมัติรายการ OT ${ot.otNo} เรียบร้อยแล้ว`);
@@ -125,7 +114,7 @@ export default function HROvertimePage() {
                         >
                           อนุมัติ
                         </button>
-                        <button
+                        <button type="button"
                           onClick={() => {
                             updateOTStatus(ot.id, 'REJECTED');
                             addToast('warning', `ปฏิเสธรายการ OT ${ot.otNo}`);
@@ -150,16 +139,16 @@ export default function HROvertimePage() {
             <h3 className="font-extrabold text-base text-[#14213D]">ขออนุมัติทำงานล่วงเวลา (OT Request)</h3>
             <form onSubmit={handleCreateOT} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold mb-1">บุคลากร</label>
-                <select value={empCode} onChange={(e) => setEmpCode(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
+                <label htmlFor={`${formId}-field-57`} className="block font-bold mb-1">บุคลากร</label>
+                <select id={`${formId}-field-57`} value={empCode} onChange={(e) => setEmpCode(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
                   {employees.map((e) => (
                     <option key={e.id} value={e.empCode}>{e.fullName}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block font-bold mb-1">ประเภทอัตรา OT</label>
-                <select value={otType} onChange={(e) => setOtType(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
+                <label htmlFor={`${formId}-field-58`} className="block font-bold mb-1">ประเภทอัตรา OT</label>
+                <select id={`${formId}-field-58`} value={otType} onChange={(e) => setOtType(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
                   <option value="เวรเสริมวิชาชีพ (On-Call)">เวรเสริมวิชาชีพ (On-Call)</option>
                   <option value="OT วันทำงานปกติ (1.5x)">OT วันทำงานปกติ (1.5x)</option>
                   <option value="OT วันหยุดประจำสัปดาห์ (2.0x)">OT วันหยุดประจำสัปดาห์ (2.0x)</option>
@@ -168,17 +157,17 @@ export default function HROvertimePage() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">จำนวนชั่วโมง</label>
-                  <input type="number" value={hours} onChange={(e) => setHours(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-59`} className="block font-bold mb-1">จำนวนชั่วโมง</label>
+                  <input id={`${formId}-field-59`} type="number" value={hours} onChange={(e) => setHours(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">อัตราต่อชั่วโมง (บาท)</label>
-                  <input type="number" value={ratePerHour} onChange={(e) => setRatePerHour(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-60`} className="block font-bold mb-1">อัตราต่อชั่วโมง (บาท)</label>
+                  <input id={`${formId}-field-60`} type="number" value={ratePerHour} onChange={(e) => setRatePerHour(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
               </div>
               <div>
-                <label className="block font-bold mb-1">รายละเอียดภาระงาน</label>
-                <input type="text" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="เช่น อยู่เวรเสริมห้องผ่าตัดฉุกเฉิน" className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
+                <label htmlFor={`${formId}-field-61`} className="block font-bold mb-1">รายละเอียดภาระงาน</label>
+                <input id={`${formId}-field-61`} type="text" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="เช่น อยู่เวรเสริมห้องผ่าตัดฉุกเฉิน" className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-xl">ยกเลิก</button>
@@ -192,3 +181,20 @@ export default function HROvertimePage() {
   );
 }
 
+
+function getStatusContent(ot: HROTRequest): React.ReactNode {
+  if (ot.status === 'PENDING_APPROVAL') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+      รออนุมัติ
+    </span>;
+  }
+  if (ot.status === 'APPROVED') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+      อนุมัติแล้ว
+    </span>;
+  }
+  return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+    ปฏิเสธ
+  </span>;
+
+}

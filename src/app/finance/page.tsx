@@ -1,29 +1,24 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { useApp } from '@/context/AppContext';
 import {
-  Landmark,
-  CreditCard,
-  TrendingUp,
-  BookOpen,
-  Sparkles,
   ChevronRight,
+  CreditCard,
   Printer,
+  Sparkles
 } from 'lucide-react';
+import Link from 'next/link';
 import {
-  BarChart,
   Bar,
+  BarChart,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
 } from 'recharts';
 
 export default function FinanceDashboardPage() {
-  const { addToast } = useApp();
+
 
   const cashflowData = [
     { month: 'พ.ค. 69', revenue: 18500000, expense: 14200000 },
@@ -65,7 +60,7 @@ export default function FinanceDashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <button
+            <button type="button"
               onClick={() => window.print()}
               className="px-3.5 py-2.5 bg-white border border-[#E2EAF4] rounded-xl text-xs font-bold text-[#14213D] flex items-center gap-1.5"
             >

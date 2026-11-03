@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
-import { CreditCard, CheckCircle2 } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 export default function FinancePayablesPage() {
   const { addToast } = useApp();
@@ -53,7 +53,7 @@ export default function FinancePayablesPage() {
                   <td className="py-3 px-4 text-right font-mono font-extrabold text-[#14213D]">฿{ap.amount.toLocaleString()}</td>
                   <td className="py-3 px-4 text-right">
                     {ap.status === 'PENDING_PAYMENT' ? (
-                      <button
+                      <button type="button"
                         onClick={() => {
                           setPayables((prev) => prev.map((x) => (x.id === ap.id ? { ...x, status: 'PAID' } : x)));
                           addToast('success', `อนุมัติใบสำคัญจ่ายและโอนเงินชำระ ${ap.invNo} เรียบร้อยแล้ว`);

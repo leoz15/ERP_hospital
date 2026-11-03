@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import { Network } from 'lucide-react';
 import Link from 'next/link';
-import { Network, Building2, Users, Stethoscope, ShieldCheck, HeartPulse } from 'lucide-react';
 
 export default function HROrganizationPage() {
   const divisions = [
@@ -83,7 +82,7 @@ export default function HROrganizationPage() {
       {/* 4 Main Divisions Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {divisions.map((div, idx) => (
-          <div key={idx} className={`rounded-3xl border-2 p-5 space-y-4 bg-white ${div.color}`}>
+          <div key={div.name} className={`rounded-3xl border-2 p-5 space-y-4 bg-white ${div.color}`}>
             <div className="flex items-start justify-between gap-2 border-b border-[#E2EAF4] pb-3">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white text-[#0D9488] border border-teal-200">

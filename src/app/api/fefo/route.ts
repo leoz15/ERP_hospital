@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { allocateLotsFEFO } from '@/lib/fefo';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const result = await allocateLotsFEFO(
       itemId,
       warehouseId,
-      parseFloat(requiredQty)
+      Number.parseFloat(requiredQty)
     );
 
     return NextResponse.json(result);

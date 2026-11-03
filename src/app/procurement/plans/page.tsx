@@ -1,47 +1,44 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useApp } from '@/context/AppContext';
+import { useBudget } from '@/context/BudgetContext';
+import { createFormRowId } from '@/lib/form-row';
 import {
-  PieChart,
-  Plus,
-  Search,
-  RefreshCw,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  FileCheck2,
-  CheckCircle2,
   AlertCircle,
   Building2,
-  Layers,
+  CheckCircle2,
   ChevronRight,
-  ShieldCheck,
-  Eye,
   Copy,
-  Printer,
-  X,
+  DollarSign,
+  FileCheck2,
+  Layers,
   Maximize2,
-  FileText,
-  Check,
-  ExternalLink,
+  PieChart,
+  Plus,
+  Printer,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  TrendingUp,
+  X
 } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import { useBudget } from '@/context/BudgetContext';
+import Link from 'next/link';
+import React, { useEffect, useId, useState } from 'react';
 
 export default function ProcurementPlansPage() {
+  const formId = useId();
   const { addToast, refreshKey, triggerRefresh, currentUser } = useApp();
   const { allocations, getAllocationBudgetInfo } = useBudget();
   const [plans, setPlans] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedPlan, setSelectedPlan] = useState<any | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
 
   // Full-screen Detail Modal State
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedPlanDetail, setSelectedPlanDetail] = useState<any | null>(null);
+  const [selectedPlanDetail, setSelectedPlanDetail] = useState<any>(null);
 
   // Modal & Form State linked to Budget Allocation
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -53,7 +50,7 @@ export default function ProcurementPlansPage() {
   const [targetBudget, setTargetBudget] = useState('500000');
   const [remarks, setRemarks] = useState('');
   const [planLines, setPlanLines] = useState<any[]>([
-    { itemId: '', targetQuantity: 1000, estimatedUnitPrice: 50 },
+    { clientId: "initial-1766", itemId: '', targetQuantity: 1000, estimatedUnitPrice: 50 },
   ]);
 
   const loadPlans = () => {
@@ -83,7 +80,7 @@ export default function ProcurementPlansPage() {
         if (Array.isArray(data)) {
           setItems(data);
           if (data.length > 0) {
-            setPlanLines([{ itemId: data[0].id, targetQuantity: 1000, estimatedUnitPrice: data[0].standardCost || 50 }]);
+            setPlanLines([{ clientId: createFormRowId(), itemId: data[0].id, targetQuantity: 1000, estimatedUnitPrice: data[0].standardCost || 50 }]);
           }
         }
       });
@@ -93,7 +90,7 @@ export default function ProcurementPlansPage() {
     if (items.length > 0) {
       setPlanLines([
         ...planLines,
-        { itemId: items[0].id, targetQuantity: 500, estimatedUnitPrice: items[0].standardCost || 50 },
+        { clientId: createFormRowId(), itemId: items[0].id, targetQuantity: 500, estimatedUnitPrice: items[0].standardCost || 50 },
       ]);
     }
   };
@@ -127,9 +124,9 @@ export default function ProcurementPlansPage() {
   const allocBudgetInfo = currentAlloc
     ? getAllocationBudgetInfo(currentAlloc.allocNo)
     : {
-        allocatedAmount: 1000000,
-        remainingBudget: 750000,
-      };
+      allocatedAmount: 1000000,
+      remainingBudget: 750000,
+    };
 
   const isBudgetExceeded = Number(targetBudget) > allocBudgetInfo.remainingBudget;
 
@@ -195,7 +192,7 @@ export default function ProcurementPlansPage() {
   });
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div aria-busy={loading} className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E2EAF4] shadow-sm">
         <div>
@@ -216,14 +213,14 @@ export default function ProcurementPlansPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => triggerRefresh()}
             className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>รีเฟรช</span>
           </button>
-          <button
+          <button type="button"
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-[#F28C28] hover:bg-[#D97706] text-white rounded-xl text-xs font-semibold shadow-sm shadow-blue-500/20 transition-all"
           >
@@ -276,9 +273,8 @@ export default function ProcurementPlansPage() {
           <div className="text-xl font-bold text-purple-700 mt-2 tabular-nums">{percentUsed}%</div>
           <div className="w-full bg-slate-100 rounded-full h-2 mt-2 overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all ${
-                percentUsed > 90 ? 'bg-rose-500' : percentUsed > 70 ? 'bg-amber-500' : 'bg-[#F28C28]'
-              }`}
+              className={`h-full rounded-full transition-all ${getPercentUsedClassName(percentUsed)
+                }`}
               style={{ width: `${Math.min(percentUsed, 100)}%` }}
             />
           </div>
@@ -317,13 +313,13 @@ export default function ProcurementPlansPage() {
                 return (
                   <div
                     key={p.id}
-                    onClick={() => setSelectedPlan(p)}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-[#F28C28] bg-[#FFF7ED]/50 shadow-sm'
-                        : 'border-[#E2EAF4] hover:bg-[#F5F8FC]'
-                    }`}
+
+                    className={`relative p-3.5 rounded-xl border cursor-pointer transition-all ${isSelected
+                      ? 'border-[#F28C28] bg-[#FFF7ED]/50 shadow-sm'
+                      : 'border-[#E2EAF4] hover:bg-[#F5F8FC]'
+                      }`}
                   >
+                    <button type="button" onClick={() => setSelectedPlan(p)} aria-label={p.name} className="absolute inset-0 z-10 rounded-2xl focus-visible:outline-2 focus-visible:outline-blue-600" />
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <button
@@ -334,7 +330,7 @@ export default function ProcurementPlansPage() {
                             setSelectedPlanDetail(p);
                             setShowDetailModal(true);
                           }}
-                          className="font-mono text-xs font-bold text-[#D97706] bg-blue-100/60 hover:bg-[#F28C28] hover:text-white px-2 py-0.5 rounded transition-all"
+                          className="relative z-20 font-mono text-xs font-bold text-[#D97706] bg-blue-100/60 hover:bg-[#F28C28] hover:text-white px-2 py-0.5 rounded transition-all"
                           title="คลิกเพื่อดูรายละเอียดแผนจัดซื้อแบบเต็มจอ"
                         >
                           {p.planNumber}
@@ -528,7 +524,7 @@ export default function ProcurementPlansPage() {
                 <Plus className="w-5 h-5 text-[#F28C28]" />
                 <span>สร้างแผนการจัดซื้อจัดจ้างใหม่ (Procurement Plan)</span>
               </h3>
-              <button
+              <button type="button"
                 onClick={() => setShowCreateModal(false)}
                 className="text-slate-400 hover:text-slate-600 text-lg"
               >
@@ -539,10 +535,10 @@ export default function ProcurementPlansPage() {
             <form onSubmit={handleCreatePlan} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-122`} className="block font-semibold text-slate-700 mb-1">
                     ปีงบประมาณ <span className="text-rose-500">*</span>
                   </label>
-                  <select
+                  <select id={`${formId}-field-122`}
                     value={fiscalYear}
                     onChange={(e) => setFiscalYear(e.target.value)}
                     className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC] focus:bg-white focus:ring-2 focus:ring-[#F28C28] font-bold"
@@ -553,10 +549,10 @@ export default function ProcurementPlansPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-123`} className="block font-semibold text-slate-700 mb-1">
                     หน่วยงาน / กลุ่มงาน (เจ้าของงบประมาณ) <span className="text-rose-500">*</span>
                   </label>
-                  <select
+                  <select id={`${formId}-field-123`}
                     value={selectedDepartment}
                     onChange={(e) => {
                       setSelectedDepartment(e.target.value);
@@ -576,10 +572,10 @@ export default function ProcurementPlansPage() {
 
               {/* รายการจัดสรรงบประมาณ (Allocation ID) */}
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label htmlFor={`${formId}-field-124`} className="block font-semibold text-slate-700 mb-1">
                   รายการจัดสรรงบประมาณ (Allocation ID · Budget Code) <span className="text-rose-500">*</span>
                 </label>
-                <select
+                <select id={`${formId}-field-124`}
                   value={selectedAllocNo}
                   onChange={(e) => setSelectedAllocNo(e.target.value)}
                   className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC] focus:bg-white focus:ring-2 focus:ring-[#F28C28] font-mono text-emerald-800 font-bold cursor-pointer"
@@ -618,8 +614,8 @@ export default function ProcurementPlansPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">หมวดหมู่สินค้า</label>
-                  <select
+                  <label htmlFor={`${formId}-field-125`} className="block font-semibold text-slate-700 mb-1">หมวดหมู่สินค้า</label>
+                  <select id={`${formId}-field-125`}
                     value={categoryCode}
                     onChange={(e) => setCategoryCode(e.target.value)}
                     className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC] focus:bg-white focus:ring-2 focus:ring-[#F28C28] cursor-pointer"
@@ -632,18 +628,17 @@ export default function ProcurementPlansPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-126`} className="block font-semibold text-slate-700 mb-1">
                     กรอบวงเงินแผนจัดซื้อ (บาท) <span className="text-rose-500">*</span>
                   </label>
-                  <input
+                  <input id={`${formId}-field-126`}
                     type="number"
                     value={targetBudget}
                     onChange={(e) => setTargetBudget(e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-xl font-bold text-sm tabular-nums focus:outline-none focus:ring-2 ${
-                      isBudgetExceeded
-                        ? 'border-rose-400 bg-rose-50 text-rose-700 focus:ring-rose-500'
-                        : 'border-[#E2EAF4] bg-[#F5F8FC] text-[#D97706] focus:ring-[#F28C28]'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-xl font-bold text-sm tabular-nums focus:outline-none focus:ring-2 ${isBudgetExceeded
+                      ? 'border-rose-400 bg-rose-50 text-rose-700 focus:ring-rose-500'
+                      : 'border-[#E2EAF4] bg-[#F5F8FC] text-[#D97706] focus:ring-[#F28C28]'
+                      }`}
                     required
                   />
                 </div>
@@ -672,10 +667,10 @@ export default function ProcurementPlansPage() {
               )}
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label htmlFor={`${formId}-field-127`} className="block font-semibold text-slate-700 mb-1">
                   ชื่อแผนการจัดซื้อ <span className="text-rose-500">*</span>
                 </label>
-                <input
+                <input id={`${formId}-field-127`}
                   type="text"
                   placeholder="เช่น แผนจัดซื้อเวชภัณฑ์ประจำปี 2569"
                   value={name}
@@ -688,7 +683,7 @@ export default function ProcurementPlansPage() {
               {/* Items List in Plan */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-semibold text-slate-700">รายการสินค้าเป้าหมายในแผน</label>
+                  <div className="font-semibold text-slate-700">รายการสินค้าเป้าหมายในแผน</div>
                   <button
                     type="button"
                     onClick={handleAddLine}
@@ -701,7 +696,7 @@ export default function ProcurementPlansPage() {
 
                 <div className="space-y-2 max-h-48 overflow-y-auto border p-2 rounded-xl bg-[#F5F8FC]">
                   {planLines.map((line, idx) => (
-                    <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded-lg border">
+                    <div key={line.clientId} className="flex items-center gap-2 bg-white p-2 rounded-lg border">
                       <select
                         value={line.itemId}
                         onChange={(e) => handleLineChange(idx, 'itemId', e.target.value)}
@@ -753,8 +748,8 @@ export default function ProcurementPlansPage() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">หมายเหตุ / วัตถุประสงค์</label>
-                <textarea
+                <label htmlFor={`${formId}-field-128`} className="block font-semibold text-slate-700 mb-1">หมายเหตุ / วัตถุประสงค์</label>
+                <textarea id={`${formId}-field-128`}
                   rows={2}
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
@@ -774,11 +769,10 @@ export default function ProcurementPlansPage() {
                 <button
                   type="submit"
                   disabled={isBudgetExceeded}
-                  className={`px-5 py-2 font-semibold rounded-xl shadow-sm transition-all ${
-                    isBudgetExceeded
-                      ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                      : 'bg-[#F28C28] hover:bg-[#D97706] text-white'
-                  }`}
+                  className={`px-5 py-2 font-semibold rounded-xl shadow-sm transition-all ${isBudgetExceeded
+                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                    : 'bg-[#F28C28] hover:bg-[#D97706] text-white'
+                    }`}
                 >
                   บันทึกแผนจัดซื้อ (Save Plan)
                 </button>
@@ -915,10 +909,10 @@ export default function ProcurementPlansPage() {
                     const pct =
                       selectedPlanDetail.allocatedBudget > 0
                         ? Math.round(
-                            (selectedPlanDetail.committedBudget /
-                              selectedPlanDetail.allocatedBudget) *
-                              100
-                          )
+                          (selectedPlanDetail.committedBudget /
+                            selectedPlanDetail.allocatedBudget) *
+                          100
+                        )
                         : 0;
                     return (
                       <>
@@ -927,9 +921,8 @@ export default function ProcurementPlansPage() {
                         </div>
                         <div className="w-full bg-slate-100 rounded-full h-2 mt-2 overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all ${
-                              pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-amber-500' : 'bg-[#F28C28]'
-                            }`}
+                            className={`h-full rounded-full transition-all ${getPctClassName(pct)
+                              }`}
                             style={{ width: `${Math.min(pct, 100)}%` }}
                           />
                         </div>
@@ -1120,4 +1113,26 @@ export default function ProcurementPlansPage() {
       )}
     </div>
   );
+}
+
+function getPctClassName(pct: number) {
+  if (pct > 90) {
+    return 'bg-rose-500';
+  }
+  if (pct > 70) {
+    return 'bg-amber-500';
+  }
+  return 'bg-[#F28C28]';
+
+}
+
+function getPercentUsedClassName(percentUsed: number) {
+  if (percentUsed > 90) {
+    return 'bg-rose-500';
+  }
+  if (percentUsed > 70) {
+    return 'bg-amber-500';
+  }
+  return 'bg-[#F28C28]';
+
 }

@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { generateDocumentNumber } from '@/lib/doc-sequence';
 import { logAudit } from '@/lib/audit';
+import { generateDocumentNumber } from '@/lib/doc-sequence';
+import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,14 +58,14 @@ export async function POST(request: Request) {
           create: linesData.map((l: any) => ({
             itemId: l.itemId,
             lotNumber: l.lotNumber || null,
-            systemQty: parseFloat(l.systemQty || '0'),
-            countedQty: parseFloat(l.countedQty || '0'),
-            varianceQty: parseFloat(l.countedQty || '0') - parseFloat(l.systemQty || '0'),
+            systemQty: Number.parseFloat(l.systemQty || '0'),
+            countedQty: Number.parseFloat(l.countedQty || '0'),
+            varianceQty: Number.parseFloat(l.countedQty || '0') - Number.parseFloat(l.systemQty || '0'),
             variancePercentage:
-              parseFloat(l.systemQty || '0') > 0
-                ? ((parseFloat(l.countedQty || '0') - parseFloat(l.systemQty || '0')) /
-                    parseFloat(l.systemQty || '0')) *
-                  100
+              Number.parseFloat(l.systemQty || '0') > 0
+                ? ((Number.parseFloat(l.countedQty || '0') - Number.parseFloat(l.systemQty || '0')) /
+                  Number.parseFloat(l.systemQty || '0')) *
+                100
                 : 0,
             notes: l.notes,
           })),

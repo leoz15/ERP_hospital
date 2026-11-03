@@ -1,17 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import {
-  ScrollText,
-  Search,
-  Filter,
-  Download,
   RefreshCw,
-  ShieldCheck,
-  User,
-  Clock,
+  ScrollText,
+  Search
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function AuditTrailPage() {
   const { refreshKey, triggerRefresh } = useApp();
@@ -56,7 +51,7 @@ export default function AuditTrailPage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => triggerRefresh()}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-[#334155] rounded-lg text-xs font-semibold"
         >
@@ -113,46 +108,51 @@ export default function AuditTrailPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-[#94A3B8]">
-                    <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
-                    กำลังดึงข้อมูล Audit Trail...
-                  </td>
-                </tr>
-              ) : logs.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-[#94A3B8]">
-                    ไม่พบข้อมูลประวัติการทำงาน
-                  </td>
-                </tr>
-              ) : (
-                logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-[#F5F8FC] transition-colors">
-                    <td className="py-3 px-4 whitespace-nowrap text-[#64748B] font-mono text-[11px]">
-                      {new Date(log.timestamp).toLocaleString('th-TH')}
-                    </td>
-                    <td className="py-3 px-3 font-semibold text-[#14213D] whitespace-nowrap">
-                      {log.userName}
-                    </td>
-                    <td className="py-3 px-3 whitespace-nowrap">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-[#334155] border border-[#E2EAF4]">
-                        {log.action}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 whitespace-nowrap font-mono text-[11px] text-[#2563EB] font-bold">
-                      {log.module}
-                    </td>
-                    <td className="py-3 px-4 text-[#334155] leading-relaxed">
-                      {log.details}
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableRows(loading, logs)}
             </tbody>
           </table>
         </div>
       </div>
     </div>
   );
+}
+
+function renderTableRows(loading: boolean, logs: any[]) {
+  if (loading) {
+    return <tr>
+      <td colSpan={5} className="py-12 text-center text-[#94A3B8]">
+        <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
+        กำลังดึงข้อมูล Audit Trail...
+      </td>
+    </tr>;
+  }
+  if (logs.length === 0) {
+    return <tr>
+      <td colSpan={5} className="py-12 text-center text-[#94A3B8]">
+        ไม่พบข้อมูลประวัติการทำงาน
+      </td>
+    </tr>;
+  }
+  return logs.map((log) => (
+    <tr key={log.id} className="hover:bg-[#F5F8FC] transition-colors">
+      <td className="py-3 px-4 whitespace-nowrap text-[#64748B] font-mono text-[11px]">
+        {new Date(log.timestamp).toLocaleString('th-TH')}
+      </td>
+      <td className="py-3 px-3 font-semibold text-[#14213D] whitespace-nowrap">
+        {log.userName}
+      </td>
+      <td className="py-3 px-3 whitespace-nowrap">
+        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-[#334155] border border-[#E2EAF4]">
+          {log.action}
+        </span>
+      </td>
+      <td className="py-3 px-3 whitespace-nowrap font-mono text-[11px] text-[#2563EB] font-bold">
+        {log.module}
+      </td>
+      <td className="py-3 px-4 text-[#334155] leading-relaxed">
+        {log.details}
+      </td>
+    </tr>
+  ));
+
 }

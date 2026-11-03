@@ -1,40 +1,31 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import {
-  Package,
-  Search,
-  Plus,
-  Eye,
-  Edit3,
-  RefreshCw,
+  CalendarClock,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ThermometerSnowflake,
+  Clock,
   Copy,
-  Printer,
-  X,
-  Maximize2,
-  Building2,
-  CalendarClock,
-  ShieldAlert,
-  DollarSign,
-  CheckCircle2,
+  Edit3,
+  Eye,
   History,
-  ShoppingCart,
-  ArrowUpRight,
-  ExternalLink,
+  Package,
+  Plus,
+  Printer,
+  RefreshCw,
   Scale,
+  Search,
+  ShieldAlert,
   Sliders,
   Tag,
-  Clock,
-  ArrowUpDown,
-  Check,
+  ThermometerSnowflake,
   Warehouse,
+  X
 } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function ItemMasterPage() {
   const { addToast, refreshKey } = useApp();
@@ -48,7 +39,7 @@ export default function ItemMasterPage() {
 
   // Full-screen Item Detail Modal
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedItemDetail, setSelectedItemDetail] = useState<any | null>(null);
+  const [selectedItemDetail, setSelectedItemDetail] = useState<any>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
   // Filters
@@ -186,82 +177,7 @@ export default function ItemMasterPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
-                    <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
-                    กำลังดึงข้อมูลสินค้า...
-                  </td>
-                </tr>
-              ) : paginatedItems.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
-                    ไม่พบข้อมูลสินค้าตามเงื่อนไข
-                  </td>
-                </tr>
-              ) : (
-                paginatedItems.map((it) => (
-                  <tr key={it.id} className="hover:bg-[#F5F8FC] transition-colors">
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenDetail(it.id)}
-                        className="font-mono font-bold text-[#2563EB] hover:text-[#164EAB] hover:underline"
-                        title="คลิกเพื่อดูข้อมูลสินค้า"
-                      >
-                        {it.itemCode}
-                      </button>
-                    </td>
-                    <td className="py-3 px-3">
-                      <div className="font-semibold text-[#14213D]">{it.itemName}</div>
-                      {it.genericName && (
-                        <div className="text-[11px] text-[#64748B] italic">{it.genericName}</div>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 whitespace-nowrap text-[#64748B]">
-                      {it.category?.name}
-                    </td>
-                    <td className="py-3 px-3 text-right font-medium text-[#14213D] tabular-nums whitespace-nowrap">
-                      ฿{it.standardCost.toLocaleString(undefined, { minimumFractionDigits: 2 })} / {it.unit}
-                    </td>
-                    <td className="py-3 px-3 text-right text-[#64748B] tabular-nums whitespace-nowrap">
-                      {it.minStock?.toLocaleString()} - {it.maxStock?.toLocaleString()} {it.unit}
-                    </td>
-                    <td className="py-3 px-3 text-right font-bold text-amber-600 tabular-nums whitespace-nowrap">
-                      {it.reorderPoint?.toLocaleString()} {it.unit}
-                    </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1">
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                          Lot
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-                          Exp
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap text-[#64748B] text-[11px]">
-                      {it.purchaseUnit && it.conversionRate > 1 ? (
-                        <span className="px-2 py-0.5 bg-slate-100 rounded text-[#334155] font-medium border border-[#E2EAF4]">
-                          1 {it.purchaseUnit} = {it.conversionRate} {it.unit}
-                        </span>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-center whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenDetail(it.id)}
-                        className="px-3 py-1 bg-blue-50/80 hover:bg-blue-100 text-[#2563EB] rounded-lg text-xs font-semibold transition-all inline-flex items-center gap-1.5 border border-blue-200 shadow-2xs"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>ดูข้อมูล</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableRows(loading, paginatedItems, handleOpenDetail)}
             </tbody>
           </table>
         </div>
@@ -294,11 +210,10 @@ export default function ItemMasterPage() {
                 key={page}
                 type="button"
                 onClick={() => setCurrentPage(page)}
-                className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
-                  currentPage === page
-                    ? 'bg-[#2563EB] text-white shadow-2xs'
-                    : 'border border-[#E2EAF4] hover:bg-[#F5F8FC] text-[#334155]'
-                }`}
+                className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${currentPage === page
+                  ? 'bg-[#2563EB] text-white shadow-2xs'
+                  : 'border border-[#E2EAF4] hover:bg-[#F5F8FC] text-[#334155]'
+                  }`}
               >
                 {page}
               </button>
@@ -461,9 +376,7 @@ export default function ItemMasterPage() {
                             ยอดพร้อมจ่ายสุทธิ
                           </span>
                           <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            พร้อมเบิก
-                          </span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /><span>พร้อมเบิก</span></span>
                         </div>
                         <div className="text-3xl font-extrabold text-[#2563EB] mt-2 tabular-nums">
                           {totalAvailable.toLocaleString()}{' '}
@@ -533,7 +446,7 @@ export default function ItemMasterPage() {
                   const min = selectedItemDetail.minStock || 100;
                   const rop = selectedItemDetail.reorderPoint || 250;
                   const max = selectedItemDetail.maxStock || 1200;
-                  const pctOfMax = max > 0 ? Math.min(100, Math.round((totalOnHand / max) * 100)) : 0;
+
                   const diffFromROP = totalOnHand - rop;
                   const isAboveROP = diffFromROP >= 0;
                   const isNearROP = diffFromROP < 0 && totalOnHand >= min;
@@ -555,24 +468,7 @@ export default function ItemMasterPage() {
                             </div>
 
                             {/* Status Badge with Check Circle */}
-                            {isAboveROP ? (
-                              <span className="bg-emerald-50/90 text-emerald-700 border border-emerald-200/80 px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 shrink-0">
-                                <span className="w-3.5 h-3.5 rounded-full border border-emerald-500 flex items-center justify-center text-emerald-600 text-[9px] font-bold">
-                                  ✓
-                                </span>
-                                <span>ปริมาณปกติ (+{diffFromROP} เหนือจุดสั่งซื้อ)</span>
-                              </span>
-                            ) : isNearROP ? (
-                              <span className="bg-amber-50/90 text-amber-700 border border-amber-200/80 px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 shrink-0">
-                                <span>⚠</span>
-                                <span>ใกล้จุดสั่งซื้อ ({diffFromROP})</span>
-                              </span>
-                            ) : (
-                              <span className="bg-rose-50/90 text-rose-700 border border-rose-200/80 px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 shrink-0">
-                                <span>✕</span>
-                                <span>ต่ำกว่าเกณฑ์ขั้นต่ำ</span>
-                              </span>
-                            )}
+                            {getIsAboveROPContent(isAboveROP, diffFromROP, isNearROP)}
                           </div>
 
                           {/* Current Level and Percentage */}
@@ -731,11 +627,10 @@ export default function ItemMasterPage() {
                             <div className="flex justify-between items-center">
                               <span className="text-[#64748B]">High Alert Drug</span>
                               <span
-                                className={`font-bold px-2.5 py-1 rounded-lg text-xs ${
-                                  selectedItemDetail.isHighAlert
-                                    ? 'bg-rose-100 text-rose-700 border border-rose-200'
-                                    : 'text-[#0F172A]'
-                                }`}
+                                className={`font-bold px-2.5 py-1 rounded-lg text-xs ${selectedItemDetail.isHighAlert
+                                  ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                                  : 'text-[#0F172A]'
+                                  }`}
                               >
                                 {selectedItemDetail.isHighAlert ? 'ยาความเสี่ยงสูง (HAD)' : 'ปกติ (No)'}
                               </span>
@@ -821,14 +716,10 @@ export default function ItemMasterPage() {
                                 <td className="py-3 px-5 text-center">
                                   {isLow ? (
                                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                                      ใกล้จุดสั่งซื้อ
-                                    </span>
+                                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /><span>ใกล้จุดสั่งซื้อ</span></span>
                                   ) : (
                                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                      สต็อกเพียงพอ
-                                    </span>
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /><span>สต็อกเพียงพอ</span></span>
                                   )}
                                 </td>
                               </tr>
@@ -919,19 +810,7 @@ export default function ItemMasterPage() {
                                   <span className="text-[11px] font-normal text-[#64748B]">{selectedItemDetail.unit}</span>
                                 </td>
                                 <td className="py-3 px-5 text-center">
-                                  {isExpired ? (
-                                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                                      หมดอายุแล้ว
-                                    </span>
-                                  ) : isNearExp ? (
-                                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                                      เหลือ {diffDays} วัน (ใกล้หมดอายุ)
-                                    </span>
-                                  ) : (
-                                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                      เหลือ {diffDays > 0 ? diffDays : 665} วัน (ปกติ)
-                                    </span>
-                                  )}
+                                  {getIsExpiredContent(isExpired, isNearExp, diffDays)}
                                 </td>
                               </tr>
                             );
@@ -999,4 +878,123 @@ export default function ItemMasterPage() {
       )}
     </div>
   );
+}
+
+function getIsExpiredContent(isExpired: boolean, isNearExp: boolean, diffDays: number) {
+  if (isExpired) {
+    return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+      หมดอายุแล้ว
+    </span>;
+  }
+  if (isNearExp) {
+    return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+      เหลือ {diffDays} วัน (ใกล้หมดอายุ)
+    </span>;
+  }
+  return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+    เหลือ {diffDays > 0 ? diffDays : 665} วัน (ปกติ)
+  </span>;
+
+}
+
+function getIsAboveROPContent(isAboveROP: boolean, diffFromROP: number, isNearROP: boolean) {
+  if (isAboveROP) {
+    return <span className="bg-emerald-50/90 text-emerald-700 border border-emerald-200/80 px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 shrink-0">
+      <span className="w-3.5 h-3.5 rounded-full border border-emerald-500 flex items-center justify-center text-emerald-600 text-[9px] font-bold">
+        ✓
+      </span>
+      <span>ปริมาณปกติ (+{diffFromROP} เหนือจุดสั่งซื้อ)</span>
+    </span>;
+  }
+  if (isNearROP) {
+    return <span className="bg-amber-50/90 text-amber-700 border border-amber-200/80 px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 shrink-0">
+      <span>⚠</span>
+      <span>ใกล้จุดสั่งซื้อ ({diffFromROP})</span>
+    </span>;
+  }
+  return <span className="bg-rose-50/90 text-rose-700 border border-rose-200/80 px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 shrink-0">
+    <span>✕</span>
+    <span>ต่ำกว่าเกณฑ์ขั้นต่ำ</span>
+  </span>;
+
+}
+
+function renderTableRows(loading: boolean, paginatedItems: any[], handleOpenDetail: (itemId: string) => Promise<void>) {
+  if (loading) {
+    return <tr>
+      <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
+        <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
+        กำลังดึงข้อมูลสินค้า...
+      </td>
+    </tr>;
+  }
+  if (paginatedItems.length === 0) {
+    return <tr>
+      <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
+        ไม่พบข้อมูลสินค้าตามเงื่อนไข
+      </td>
+    </tr>;
+  }
+  return paginatedItems.map((it) => (
+    <tr key={it.id} className="hover:bg-[#F5F8FC] transition-colors">
+      <td className="py-3 px-4 whitespace-nowrap">
+        <button
+          type="button"
+          onClick={() => handleOpenDetail(it.id)}
+          className="font-mono font-bold text-[#2563EB] hover:text-[#164EAB] hover:underline"
+          title="คลิกเพื่อดูข้อมูลสินค้า"
+        >
+          {it.itemCode}
+        </button>
+      </td>
+      <td className="py-3 px-3">
+        <div className="font-semibold text-[#14213D]">{it.itemName}</div>
+        {it.genericName && (
+          <div className="text-[11px] text-[#64748B] italic">{it.genericName}</div>
+        )}
+      </td>
+      <td className="py-3 px-3 whitespace-nowrap text-[#64748B]">
+        {it.category?.name}
+      </td>
+      <td className="py-3 px-3 text-right font-medium text-[#14213D] tabular-nums whitespace-nowrap">
+        ฿{it.standardCost.toLocaleString(undefined, { minimumFractionDigits: 2 })} / {it.unit}
+      </td>
+      <td className="py-3 px-3 text-right text-[#64748B] tabular-nums whitespace-nowrap">
+        {it.minStock?.toLocaleString()} - {it.maxStock?.toLocaleString()} {it.unit}
+      </td>
+      <td className="py-3 px-3 text-right font-bold text-amber-600 tabular-nums whitespace-nowrap">
+        {it.reorderPoint?.toLocaleString()} {it.unit}
+      </td>
+      <td className="py-3 px-3 text-center whitespace-nowrap">
+        <div className="flex items-center justify-center gap-1">
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+            Lot
+          </span>
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+            Exp
+          </span>
+        </div>
+      </td>
+      <td className="py-3 px-3 text-center whitespace-nowrap text-[#64748B] text-[11px]">
+        {it.purchaseUnit && it.conversionRate > 1 ? (
+          <span className="px-2 py-0.5 bg-slate-100 rounded text-[#334155] font-medium border border-[#E2EAF4]">
+            1 {it.purchaseUnit} = {it.conversionRate} {it.unit}
+          </span>
+        ) : (
+          '-'
+        )}
+      </td>
+      <td className="py-3 px-4 text-center whitespace-nowrap">
+        <button
+          type="button"
+          onClick={() => handleOpenDetail(it.id)}
+          className="px-3 py-1 bg-blue-50/80 hover:bg-blue-100 text-[#2563EB] rounded-lg text-xs font-semibold transition-all inline-flex items-center gap-1.5 border border-blue-200 shadow-2xs"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          <span>ดูข้อมูล</span>
+        </button>
+      </td>
+    </tr>
+  ));
+
 }

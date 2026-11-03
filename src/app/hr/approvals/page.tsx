@@ -1,10 +1,9 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { FileCheck2, CheckCircle2, ArrowLeftRight, Timer, Palmtree } from 'lucide-react';
+import { useHR } from '@/context/HRContext';
+import { ArrowLeftRight, FileCheck2, Palmtree, Timer } from 'lucide-react';
+import Link from 'next/link';
 
 export default function HRApprovalsPage() {
   const { swaps, updateSwapStatus, otRequests, updateOTStatus, leaves, updateLeaveStatus } = useHR();
@@ -45,7 +44,7 @@ export default function HRApprovalsPage() {
                 <div className="text-[#64748B]">วันที่ลา: {lv.startDate} ถึง {lv.endDate} ({lv.days} วัน) • ผู้แทนเวร: {lv.substitutePerson}</div>
               </div>
               <div className="flex gap-2 shrink-0">
-                <button
+                <button type="button"
                   onClick={() => {
                     updateLeaveStatus(lv.id, 'APPROVED');
                     addToast('success', `อนุมัติใบลา ${lv.leaveNo} แล้ว`);
@@ -54,7 +53,7 @@ export default function HRApprovalsPage() {
                 >
                   อนุมัติใบลา
                 </button>
-                <button
+                <button type="button"
                   onClick={() => {
                     updateLeaveStatus(lv.id, 'REJECTED');
                     addToast('warning', `ปฏิเสธใบลา ${lv.leaveNo}`);
@@ -84,7 +83,7 @@ export default function HRApprovalsPage() {
                 <div className="text-[#64748B]">วันที่ {ot.date} จำนวน {ot.hours} ชม. (฿{ot.totalAmount.toLocaleString()}) • {ot.reason}</div>
               </div>
               <div className="flex gap-2 shrink-0">
-                <button
+                <button type="button"
                   onClick={() => {
                     updateOTStatus(ot.id, 'APPROVED');
                     addToast('success', `อนุมัติ OT ${ot.otNo} แล้ว`);
@@ -93,7 +92,7 @@ export default function HRApprovalsPage() {
                 >
                   อนุมัติ OT
                 </button>
-                <button
+                <button type="button"
                   onClick={() => {
                     updateOTStatus(ot.id, 'REJECTED');
                     addToast('warning', `ปฏิเสธ OT ${ot.otNo}`);
@@ -123,7 +122,7 @@ export default function HRApprovalsPage() {
                 <div className="text-[#64748B]">จาก {sw.fromDate} ({sw.fromShift}) ↔ {sw.toDate} ({sw.toShift}) • {sw.reason}</div>
               </div>
               <div className="flex gap-2 shrink-0">
-                <button
+                <button type="button"
                   onClick={() => {
                     updateSwapStatus(sw.id, 'APPROVED');
                     addToast('success', `อนุมัติสลับเวร ${sw.swapNo} แล้ว`);
@@ -132,7 +131,7 @@ export default function HRApprovalsPage() {
                 >
                   อนุมัติสลับเวร
                 </button>
-                <button
+                <button type="button"
                   onClick={() => {
                     updateSwapStatus(sw.id, 'REJECTED');
                     addToast('warning', `ปฏิเสธสลับเวร ${sw.swapNo}`);

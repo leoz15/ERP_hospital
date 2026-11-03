@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import { Coins } from 'lucide-react';
 import Link from 'next/link';
-import { Coins, Stethoscope, ShieldCheck, Clock } from 'lucide-react';
 
 export default function HRAllowancesPage() {
   const rateCards = [
@@ -44,7 +43,7 @@ export default function HRAllowancesPage() {
             </thead>
             <tbody className="divide-y divide-[#E2EAF4]">
               {rateCards.map((r, i) => (
-                <tr key={i} className="hover:bg-[#F5F8FC]">
+                <tr key={r.group} className="hover:bg-[#F5F8FC]">
                   <td className="py-3.5 px-4 font-bold text-[#14213D]">{r.group}</td>
                   <td className="py-3.5 px-4 font-bold text-[#0D9488]">{r.licenseRate}</td>
                   <td className="py-3.5 px-4 font-semibold text-blue-600">{r.shiftAfternoon}</td>

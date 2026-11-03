@@ -1,41 +1,38 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
+import { HRAttendance, HRLicenseCredential, useHR } from '@/context/HRContext';
 import {
-  Users,
-  CalendarDays,
-  Clock,
-  ShieldCheck,
-  AlertTriangle,
-  Wallet,
-  UserPlus,
-  GraduationCap,
-  Target,
-  FileCheck2,
-  Sparkles,
-  ChevronRight,
-  CheckCircle2,
-  Stethoscope,
-  Timer,
-  Palmtree,
   BarChart3,
+  CalendarDays,
+  ChevronRight,
+  Clock,
+  FileCheck2,
+  GraduationCap,
+  Palmtree,
   PieChart as PieIcon,
-  TrendingUp,
+  ShieldCheck,
+  Sparkles,
+  Stethoscope,
+  Target,
+  Timer,
+  UserPlus,
+  Users,
+  Wallet
 } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 import {
-  BarChart,
   Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
+  BarChart,
   Cell,
   Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
 
 const STAFF_COLORS = ['#0D9488', '#2563EB', '#F28C28', '#8B5CF6', '#EC4899'];
@@ -54,7 +51,7 @@ export default function HRDashboardPage() {
   } = useHR();
   const { addToast } = useApp();
 
-  const [selectedLicenseModal, setSelectedLicenseModal] = useState<any | null>(null);
+  const [selectedLicenseModal, setSelectedLicenseModal] = useState<any>(null);
 
   // KPIs Calculation
   const activeEmployees = employees.filter((e) => e.status === 'ACTIVE' || e.status === 'PROBATION');
@@ -253,7 +250,7 @@ export default function HRDashboardPage() {
             const Icon = item.icon;
             return (
               <Link
-                key={i}
+                key={item.href}
                 href={item.href}
                 className={`p-3 rounded-xl border flex flex-col items-center text-center transition-all duration-150 hover:-translate-y-0.5 hover:shadow-xs ${item.color}`}
               >
@@ -306,11 +303,10 @@ export default function HRDashboardPage() {
           const Icon = kpi.icon;
           return (
             <Link
-              key={idx}
+              key={kpi.title}
               href={kpi.href}
-              className={`bg-white p-4 sm:p-5 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between group ${
-                kpi.highlight ? 'border-amber-300 ring-2 ring-amber-400/20' : 'border-[#E2EAF4] shadow-2xs'
-              }`}
+              className={`bg-white p-4 sm:p-5 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between group ${kpi.highlight ? 'border-amber-300 ring-2 ring-amber-400/20' : 'border-[#E2EAF4] shadow-2xs'
+                }`}
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
@@ -439,8 +435,8 @@ export default function HRDashboardPage() {
                     innerRadius={45}
                     paddingAngle={4}
                   >
-                    {staffCategoryData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={STAFF_COLORS[index % STAFF_COLORS.length]} />
+                    {staffCategoryData.map((entry, index) => (
+                      <Cell key={entry.name} fill={STAFF_COLORS[index % STAFF_COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
@@ -534,19 +530,7 @@ export default function HRDashboardPage() {
                         <span className="font-bold text-[#14213D]">{lic.cmeCreditsEarned}</span>/{lic.cmeCreditsRequired}
                       </td>
                       <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                        {lic.status === 'EXPIRED' ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
-                            หมดอายุ ({Math.abs(lic.daysRemaining)} วัน)
-                          </span>
-                        ) : lic.status === 'NEAR_EXPIRY' ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                            เหลือ {lic.daysRemaining} วัน
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            ปกติ
-                          </span>
-                        )}
+                        {getStatusContent(lic)}
                       </td>
                     </tr>
                   ))}
@@ -616,19 +600,7 @@ export default function HRDashboardPage() {
                         {att.checkIn} - {att.checkOut}
                       </td>
                       <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                        {att.status === 'LATE' ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                            สาย ({att.lateMinutes} นาที)
-                          </span>
-                        ) : att.status === 'OT' ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-300">
-                            ควบเวร OT (+{att.otHours} ชม.)
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            ตรงเวลา
-                          </span>
-                        )}
+                        {getStatusContent2(att)}
                       </td>
                     </tr>
                   ))}
@@ -655,7 +627,7 @@ export default function HRDashboardPage() {
                 <span className="text-[11px] font-bold text-[#0D9488] uppercase">Professional Credential</span>
                 <h3 className="text-base font-extrabold text-[#14213D]">{selectedLicenseModal.licenseType}</h3>
               </div>
-              <button
+              <button type="button"
                 onClick={() => setSelectedLicenseModal(null)}
                 className="text-slate-400 hover:text-slate-700 text-lg"
               >
@@ -691,7 +663,7 @@ export default function HRDashboardPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-3 border-t border-[#E2EAF4]">
-              <button
+              <button type="button"
                 onClick={() => {
                   addToast('success', `ส่งแจ้งเตือนต่ออายุใบอนุญาตให้ ${selectedLicenseModal.empName} แล้ว`);
                   setSelectedLicenseModal(null);
@@ -700,7 +672,7 @@ export default function HRDashboardPage() {
               >
                 แจ้งเตือนต่ออายุทันที
               </button>
-              <button
+              <button type="button"
                 onClick={() => setSelectedLicenseModal(null)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#14213D] rounded-xl text-xs font-semibold"
               >
@@ -714,3 +686,37 @@ export default function HRDashboardPage() {
   );
 }
 
+
+function getStatusContent2(att: HRAttendance) {
+  if (att.status === 'LATE') {
+    return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+      สาย ({att.lateMinutes} นาที)
+    </span>;
+  }
+  if (att.status === 'OT') {
+    return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-300">
+      ควบเวร OT (+{att.otHours} ชม.)
+    </span>;
+  }
+  return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+    ตรงเวลา
+  </span>;
+
+}
+
+function getStatusContent(lic: HRLicenseCredential) {
+  if (lic.status === 'EXPIRED') {
+    return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
+      หมดอายุ ({Math.abs(lic.daysRemaining)} วัน)
+    </span>;
+  }
+  if (lic.status === 'NEAR_EXPIRY') {
+    return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+      เหลือ {lic.daysRemaining} วัน
+    </span>;
+  }
+  return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+    ปกติ
+  </span>;
+
+}

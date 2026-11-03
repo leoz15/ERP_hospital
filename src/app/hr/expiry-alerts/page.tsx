@@ -1,10 +1,9 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { AlertTriangle, Bell, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { useHR } from '@/context/HRContext';
+import { AlertTriangle, Bell, CheckCircle2, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
 
 export default function HRExpiryAlertsPage() {
   const { licenses, renewLicense } = useHR();
@@ -32,7 +31,7 @@ export default function HRExpiryAlertsPage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => addToast('info', 'ส่ง SMS และอีเมลแจ้งเตือนบุคลากรและหัวหน้าแผนกครบทุกรายการแล้ว')}
           className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shrink-0"
         >
@@ -76,7 +75,7 @@ export default function HRExpiryAlertsPage() {
                     )}
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <button
+                    <button type="button"
                       onClick={() => {
                         renewLicense(lic.id, '2031-10-28');
                         addToast('success', `บันทึกการต่ออายุใบอนุญาต ${lic.licenseNo} เรียบร้อยแล้ว`);

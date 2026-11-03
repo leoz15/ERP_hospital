@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { logAudit } from '@/lib/audit';
 import { prisma } from '@/lib/prisma';
 import { syncStockBalance } from '@/lib/stock-service';
-import { logAudit } from '@/lib/audit';
+import type { Prisma } from '@prisma/client';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,8 +40,8 @@ export async function PUT(
       // Update lines
       for (const l of body.lines || []) {
         if (l.id) {
-          const sys = parseFloat(l.systemQty || '0');
-          const cnt = parseFloat(l.countedQty || '0');
+          const sys = Number.parseFloat(l.systemQty || '0');
+          const cnt = Number.parseFloat(l.countedQty || '0');
           const variance = cnt - sys;
           const variancePct = sys > 0 ? (variance / sys) * 100 : 0;
 
@@ -96,22 +97,7 @@ export async function PUT(
               });
             } else {
               // Deduct negative variance
-              let rem = Math.abs(line.varianceQty);
-              const lots = await tx.lot.findMany({
-                where: { itemId: line.itemId, warehouseId: count.warehouseId, currentQty: { gt: 0 } },
-              });
-              for (const lot of lots) {
-                if (rem <= 0) break;
-                const take = Math.min(lot.currentQty, rem);
-                await tx.lot.update({
-                  where: { id: lot.id },
-                  data: {
-                    currentQty: lot.currentQty - take,
-                    status: lot.currentQty - take === 0 ? 'DEPLETED' : lot.status,
-                  },
-                });
-                rem -= take;
-              }
+              await deductCountVariance(tx, line.itemId, count.warehouseId, Math.abs(line.varianceQty));
             }
 
             await syncStockBalance(tx, line.itemId, count.warehouseId);
@@ -165,5 +151,24 @@ export async function PUT(
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+}
+
+async function deductCountVariance(tx: Prisma.TransactionClient, itemId: string, warehouseId: string, quantity: number) {
+  let rem = quantity;
+  const lots = await tx.lot.findMany({
+    where: { itemId: itemId, warehouseId: warehouseId, currentQty: { gt: 0 } },
+  });
+  for (const lot of lots) {
+    if (rem <= 0) break;
+    const take = Math.min(lot.currentQty, rem);
+    await tx.lot.update({
+      where: { id: lot.id },
+      data: {
+        currentQty: lot.currentQty - take,
+        status: lot.currentQty - take === 0 ? 'DEPLETED' : lot.status,
+      },
+    });
+    rem -= take;
   }
 }

@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { Palmtree, Plus, FileText } from 'lucide-react';
+import { HRLeaveRequest, useHR } from '@/context/HRContext';
+import { Palmtree, Plus } from 'lucide-react';
+import Link from 'next/link';
+import React, { useId, useState } from 'react';
 
 export default function HRLeavesPage() {
+  const formId = useId();
   const { leaves, employees, addLeaveRequest, updateLeaveStatus } = useHR();
   const { addToast } = useApp();
 
@@ -60,7 +61,7 @@ export default function HRLeavesPage() {
             บริหารจัดการโควตาลาป่วย ลากิจ ลาพักร้อน ลาคลอด และลาประชุมวิชาการ พร้อมระบบระบุผู้ขึ้นเวรปฏิบัติงานแทน
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={() => setShowModal(true)}
           className="px-4 py-2.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-xl text-xs font-bold flex items-center gap-2 shrink-0"
         >
@@ -131,24 +132,12 @@ export default function HRLeavesPage() {
                   <td className="py-3 px-4 text-center font-bold">{lv.days} วัน</td>
                   <td className="py-3 px-4 font-medium text-[#0D9488]">{lv.substitutePerson}</td>
                   <td className="py-3 px-4 text-center">
-                    {lv.status === 'PENDING_APPROVAL' ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                        รออนุมัติ
-                      </span>
-                    ) : lv.status === 'APPROVED' ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        อนุมัติแล้ว
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                        ไม่อนุมัติ
-                      </span>
-                    )}
+                    {getStatusContent(lv)}
                   </td>
                   <td className="py-3 px-4 text-right">
                     {lv.status === 'PENDING_APPROVAL' && (
                       <div className="flex justify-end gap-1.5">
-                        <button
+                        <button type="button"
                           onClick={() => {
                             updateLeaveStatus(lv.id, 'APPROVED');
                             addToast('success', `อนุมัติใบลา ${lv.leaveNo} เรียบร้อยแล้ว`);
@@ -157,7 +146,7 @@ export default function HRLeavesPage() {
                         >
                           อนุมัติ
                         </button>
-                        <button
+                        <button type="button"
                           onClick={() => {
                             updateLeaveStatus(lv.id, 'REJECTED');
                             addToast('warning', `ปฏิเสธใบลา ${lv.leaveNo}`);
@@ -182,16 +171,16 @@ export default function HRLeavesPage() {
             <h3 className="font-extrabold text-base text-[#14213D]">ยื่นใบลาอิเล็กทรอนิกส์ (e-Leave Request)</h3>
             <form onSubmit={handleCreateLeave} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold mb-1">บุคลากรผู้ลา</label>
-                <select value={empCode} onChange={(e) => setEmpCode(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
+                <label htmlFor={`${formId}-field-46`} className="block font-bold mb-1">บุคลากรผู้ลา</label>
+                <select id={`${formId}-field-46`} value={empCode} onChange={(e) => setEmpCode(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
                   {employees.map((e) => (
                     <option key={e.id} value={e.empCode}>{e.fullName}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block font-bold mb-1">ประเภทการลา</label>
-                <select value={leaveType} onChange={(e) => setLeaveType(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
+                <label htmlFor={`${formId}-field-47`} className="block font-bold mb-1">ประเภทการลา</label>
+                <select id={`${formId}-field-47`} value={leaveType} onChange={(e) => setLeaveType(e.target.value as any)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]">
                   <option value="ลาป่วย (Sick Leave)">ลาป่วย (Sick Leave)</option>
                   <option value="ลากิจ (Personal Leave)">ลากิจ (Personal Leave)</option>
                   <option value="ลาพักร้อน (Annual Leave)">ลาพักร้อน (Annual Leave)</option>
@@ -201,25 +190,25 @@ export default function HRLeavesPage() {
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">ตั้งแต่วันที่</label>
-                  <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-2 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-48`} className="block font-bold mb-1">ตั้งแต่วันที่</label>
+                  <input id={`${formId}-field-48`} type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-2 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">ถึงวันที่</label>
-                  <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full px-2 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-49`} className="block font-bold mb-1">ถึงวันที่</label>
+                  <input id={`${formId}-field-49`} type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full px-2 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">จำนวนวัน</label>
-                  <input type="number" value={days} onChange={(e) => setDays(Number(e.target.value))} className="w-full px-2 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-50`} className="block font-bold mb-1">จำนวนวัน</label>
+                  <input id={`${formId}-field-50`} type="number" value={days} onChange={(e) => setDays(Number(e.target.value))} className="w-full px-2 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
               </div>
               <div>
-                <label className="block font-bold mb-1">ผู้ปฏิบัติงานแทนในเวร (Substitute Staff)</label>
-                <input type="text" value={substitutePerson} onChange={(e) => setSubstitutePerson(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
+                <label htmlFor={`${formId}-field-51`} className="block font-bold mb-1">ผู้ปฏิบัติงานแทนในเวร (Substitute Staff)</label>
+                <input id={`${formId}-field-51`} type="text" value={substitutePerson} onChange={(e) => setSubstitutePerson(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
               </div>
               <div>
-                <label className="block font-bold mb-1">เหตุผลการลา</label>
-                <input type="text" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="ระบุเหตุผลการลา..." className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
+                <label htmlFor={`${formId}-field-52`} className="block font-bold mb-1">เหตุผลการลา</label>
+                <input id={`${formId}-field-52`} type="text" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="ระบุเหตุผลการลา..." className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-xl">ยกเลิก</button>
@@ -233,3 +222,20 @@ export default function HRLeavesPage() {
   );
 }
 
+
+function getStatusContent(lv: HRLeaveRequest): React.ReactNode {
+  if (lv.status === 'PENDING_APPROVAL') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+      รออนุมัติ
+    </span>;
+  }
+  if (lv.status === 'APPROVED') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+      อนุมัติแล้ว
+    </span>;
+  }
+  return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+    ไม่อนุมัติ
+  </span>;
+
+}

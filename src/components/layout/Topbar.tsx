@@ -1,26 +1,26 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import {
   Bell,
-  Search,
   Building2,
-  ChevronDown,
-  ShoppingCart,
-  LayoutGrid,
-  Home,
   Check,
-  Package,
-  Users,
-  PieChart,
+  ChevronDown,
+  Home,
   Landmark,
+  LayoutGrid,
   Menu,
+  Package,
+  PieChart,
+  Search,
+  ShoppingCart,
+  Users,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-export function Topbar({ sidebarOpen = false, onMenuClick }: { sidebarOpen?: boolean; onMenuClick?: () => void }) {
+export function Topbar({ sidebarOpen = false, onMenuClick }: Readonly<{ sidebarOpen?: boolean; onMenuClick?: () => void }>) {
   const pathname = usePathname();
   const { currentUser, selectedWarehouse, setSelectedWarehouse } = useApp();
   const [warehouses, setWarehouses] = useState<any[]>([]);
@@ -83,66 +83,23 @@ export function Topbar({ sidebarOpen = false, onMenuClick }: { sidebarOpen?: boo
           <Menu />
         </button>
         <div className="relative">
-          <button
+          <button type="button"
             onClick={() => setShowAppSwitcher(!showAppSwitcher)}
             className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-[#E2EAF4] bg-[#F5F8FC] hover:bg-slate-100 text-xs font-semibold text-[#14213D] transition-all shadow-2xs"
             title="คลิกเพื่อสลับระบบงาน (App Switcher)"
           >
             <div
-              className={`w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-xs ${
-                isHome
-                  ? "bg-[#2563EB]"
-                  : isProcurement
-                    ? "bg-[#F28C28]"
-                    : isHR
-                      ? "bg-[#0D9488]"
-                      : isBudget
-                        ? "bg-[#059669]"
-                        : isFinance
-                          ? "bg-[#0284C7]"
-                          : "bg-[#2563EB]"
-              }`}
+              className={`w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-xs ${getIsHomeClassName(isHome, isProcurement, isHR, isBudget, isFinance)
+                }`}
             >
-              {isHome ? (
-                <LayoutGrid className="w-3.5 h-3.5" />
-              ) : isProcurement ? (
-                <ShoppingCart className="w-3.5 h-3.5" />
-              ) : isHR ? (
-                <Users className="w-3.5 h-3.5" />
-              ) : isBudget ? (
-                <PieChart className="w-3.5 h-3.5" />
-              ) : isFinance ? (
-                <Landmark className="w-3.5 h-3.5" />
-              ) : (
-                <Package className="w-3.5 h-3.5" />
-              )}
+              {getIsHomeContent(isHome, isProcurement, isHR, isBudget, isFinance)}
             </div>
             <div className="text-left hidden sm:block">
               <span className="font-bold text-xs text-[#14213D] block leading-tight">
-                {isHome
-                  ? "ERP Center"
-                  : isProcurement
-                    ? "ระบบจัดซื้อจัดจ้าง"
-                    : isHR
-                      ? "ระบบบริหารทรัพยากรบุคคล"
-                      : isBudget
-                        ? "ระบบบริหารงบประมาณ"
-                        : isFinance
-                          ? "ระบบบริหารการเงินและบัญชี"
-                          : "ระบบคลังสินค้าและพัสดุ"}
+                {getIsHomeText(isHome, isProcurement, isHR, isBudget, isFinance)}
               </span>
               <span className="text-[10px] text-[#94A3B8] font-normal block">
-                {isHome
-                  ? "หน้าหลักองค์กร"
-                  : isProcurement
-                    ? "Procurement"
-                    : isHR
-                      ? "Human Resource (HRM)"
-                      : isBudget
-                        ? "Budget Management"
-                        : isFinance
-                          ? "Finance & Accounting"
-                          : "Inventory"}
+                {getIsHomeText2(isHome, isProcurement, isHR, isBudget, isFinance)}
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-[#94A3B8] ml-0.5" />
@@ -150,7 +107,7 @@ export function Topbar({ sidebarOpen = false, onMenuClick }: { sidebarOpen?: boo
 
           {showAppSwitcher && (
             <>
-              <div
+              <button type="button" aria-label="ปิดรายการสลับระบบงาน"
                 className="fixed inset-0 z-40"
                 onClick={() => setShowAppSwitcher(false)}
               />
@@ -163,11 +120,10 @@ export function Topbar({ sidebarOpen = false, onMenuClick }: { sidebarOpen?: boo
                   <Link
                     href="/"
                     onClick={() => setShowAppSwitcher(false)}
-                    className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${
-                      isHome
-                        ? "bg-blue-50 font-bold text-[#2563EB]"
-                        : "hover:bg-[#F5F8FC] text-[#64748B]"
-                    }`}
+                    className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${isHome
+                      ? "bg-blue-50 font-bold text-[#2563EB]"
+                      : "hover:bg-[#F5F8FC] text-[#64748B]"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-xl bg-blue-100 text-[#2563EB] flex items-center justify-center">
@@ -189,11 +145,10 @@ export function Topbar({ sidebarOpen = false, onMenuClick }: { sidebarOpen?: boo
                   <Link
                     href="/inventory"
                     onClick={() => setShowAppSwitcher(false)}
-                    className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${
-                      isInventory
-                        ? "bg-blue-50 font-bold text-[#2563EB]"
-                        : "hover:bg-[#F5F8FC] text-[#64748B]"
-                    }`}
+                    className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${isInventory
+                      ? "bg-blue-50 font-bold text-[#2563EB]"
+                      : "hover:bg-[#F5F8FC] text-[#64748B]"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-xl bg-[#2563EB] text-white flex items-center justify-center shadow-xs">
@@ -217,11 +172,10 @@ export function Topbar({ sidebarOpen = false, onMenuClick }: { sidebarOpen?: boo
                   <Link
                     href="/procurement"
                     onClick={() => setShowAppSwitcher(false)}
-                    className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${
-                      isProcurement
-                        ? "bg-orange-50 font-bold text-[#F28C28]"
-                        : "hover:bg-[#F5F8FC] text-[#64748B]"
-                    }`}
+                    className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${isProcurement
+                      ? "bg-orange-50 font-bold text-[#F28C28]"
+                      : "hover:bg-[#F5F8FC] text-[#64748B]"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-xl bg-[#F28C28] text-white flex items-center justify-center shadow-xs">
@@ -245,11 +199,10 @@ export function Topbar({ sidebarOpen = false, onMenuClick }: { sidebarOpen?: boo
                   <Link
                     href="/hr"
                     onClick={() => setShowAppSwitcher(false)}
-                    className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${
-                      isHR
-                        ? "bg-teal-50 font-bold text-[#0D9488]"
-                        : "hover:bg-[#F5F8FC] text-[#64748B]"
-                    }`}
+                    className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${isHR
+                      ? "bg-teal-50 font-bold text-[#0D9488]"
+                      : "hover:bg-[#F5F8FC] text-[#64748B]"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-xl bg-[#0D9488] text-white flex items-center justify-center shadow-xs">
@@ -271,11 +224,10 @@ export function Topbar({ sidebarOpen = false, onMenuClick }: { sidebarOpen?: boo
                   <Link
                     href="/budget"
                     onClick={() => setShowAppSwitcher(false)}
-                    className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${
-                      isBudget
-                        ? "bg-emerald-50 font-bold text-[#059669]"
-                        : "hover:bg-[#F5F8FC] text-[#64748B]"
-                    }`}
+                    className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${isBudget
+                      ? "bg-emerald-50 font-bold text-[#059669]"
+                      : "hover:bg-[#F5F8FC] text-[#64748B]"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-xl bg-[#059669] text-white flex items-center justify-center shadow-xs">
@@ -391,4 +343,84 @@ export function Topbar({ sidebarOpen = false, onMenuClick }: { sidebarOpen?: boo
       </div>
     </header>
   );
+}
+
+function getIsHomeText2(isHome: boolean, isProcurement: boolean, isHR: boolean, isBudget: boolean, isFinance: boolean) {
+  if (isHome) {
+    return "หน้าหลักองค์กร";
+  }
+  if (isProcurement) {
+    return "Procurement";
+  }
+  if (isHR) {
+    return "Human Resource (HRM)";
+  }
+  if (isBudget) {
+    return "Budget Management";
+  }
+  if (isFinance) {
+    return "Finance & Accounting";
+  }
+  return "Inventory";
+
+}
+
+function getIsHomeText(isHome: boolean, isProcurement: boolean, isHR: boolean, isBudget: boolean, isFinance: boolean) {
+  if (isHome) {
+    return "ERP Center";
+  }
+  if (isProcurement) {
+    return "ระบบจัดซื้อจัดจ้าง";
+  }
+  if (isHR) {
+    return "ระบบบริหารทรัพยากรบุคคล";
+  }
+  if (isBudget) {
+    return "ระบบบริหารงบประมาณ";
+  }
+  if (isFinance) {
+    return "ระบบบริหารการเงินและบัญชี";
+  }
+  return "ระบบคลังสินค้าและพัสดุ";
+
+}
+
+function getIsHomeContent(isHome: boolean, isProcurement: boolean, isHR: boolean, isBudget: boolean, isFinance: boolean) {
+  if (isHome) {
+    return <LayoutGrid className="w-3.5 h-3.5" />;
+  }
+  if (isProcurement) {
+    return <ShoppingCart className="w-3.5 h-3.5" />;
+  }
+  if (isHR) {
+    return <Users className="w-3.5 h-3.5" />;
+  }
+  if (isBudget) {
+    return <PieChart className="w-3.5 h-3.5" />;
+  }
+  if (isFinance) {
+    return <Landmark className="w-3.5 h-3.5" />;
+  }
+  return <Package className="w-3.5 h-3.5" />;
+
+}
+
+function getIsHomeClassName(isHome: boolean, isProcurement: boolean, isHR: boolean, isBudget: boolean, isFinance: boolean) {
+  if (isHome) {
+    return "bg-[#2563EB]";
+  }
+  if (isProcurement) {
+    return "bg-[#F28C28]";
+  }
+  if (isHR) {
+    return "bg-[#0D9488]";
+  }
+  if (isBudget) {
+    return "bg-[#059669]";
+  }
+  if (isFinance) {
+    return "bg-[#0284C7]";
+  }
+  return "bg-[#2563EB]";
+
 }

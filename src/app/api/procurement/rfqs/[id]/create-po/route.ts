@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { generateDocumentNumber } from '@/lib/doc-sequence';
 import { logAudit } from '@/lib/audit';
+import { generateDocumentNumber } from '@/lib/doc-sequence';
+import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 

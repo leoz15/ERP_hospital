@@ -1,5 +1,6 @@
-import { prisma } from './prisma';
+import type { GoodsReceipt, GoodsReceiptLine, Prisma, ProcurementPO, StockAdjustment, StockAdjustmentLine, StockIssue, StockIssueLine } from '@prisma/client';
 import { logAudit } from './audit';
+import { prisma } from './prisma';
 
 // Helper to recalculate and update StockBalance
 export async function syncStockBalance(
@@ -25,7 +26,7 @@ export async function syncStockBalance(
     totalReserved += l.reservedQty || 0;
     totalQuarantine += l.quarantineQty || 0;
     totalDamaged += l.damagedQty || 0;
-    
+
     // Check if lot is expired
     if (new Date(l.expiryDate) < now) {
       totalExpired += Math.max(0, l.currentQty - (l.damagedQty || 0) - (l.quarantineQty || 0));
@@ -176,50 +177,14 @@ export async function postGoodsReceipt(grId: string, postedBy: string) {
         }
 
         // 3. Update PO lines if linked to PO
-        if (line.poLineId) {
-          const poLine = await tx.procurementPOLine.findUnique({
-            where: { id: line.poLineId },
-          });
-
-          if (poLine) {
-            const newRecQty = poLine.receivedQty + line.acceptedQty;
-            const newRemQty = Math.max(0, poLine.orderedQty - newRecQty);
-            await tx.procurementPOLine.update({
-              where: { id: line.poLineId },
-              data: {
-                receivedQty: newRecQty,
-                remainingQty: newRemQty,
-                status: newRemQty === 0 ? 'COMPLETED' : 'PARTIAL',
-              },
-            });
-          }
-        }
+        await updatePurchaseOrderReceiptLine(line, tx);
 
         // Recalculate balance for item in warehouse
         await syncStockBalance(tx, line.itemId, gr.warehouseId);
       }
 
       // Check PO status
-      if (gr.poId) {
-        const allLines = await tx.procurementPOLine.findMany({
-          where: { poId: gr.poId },
-        });
-        const allDone = allLines.every((l: any) => l.remainingQty === 0);
-        await tx.procurementPO.update({
-          where: { id: gr.poId },
-          data: {
-            status: allDone ? 'COMPLETED' : 'PARTIALLY_RECEIVED',
-          },
-        });
-
-        // Step 10: Auto-update linked PR to COMPLETED if all PO goods received
-        if (allDone && gr.po?.prId) {
-          await tx.purchaseRequisition.update({
-            where: { id: gr.po.prId },
-            data: { status: 'COMPLETED' },
-          });
-        }
-      }
+      await updateReceiptOrderStatus(gr, tx);
 
       // Mark GR as POSTED
       const updatedGR = await tx.goodsReceipt.update({
@@ -251,6 +216,50 @@ export async function postGoodsReceipt(grId: string, postedBy: string) {
   );
 }
 
+async function updateReceiptOrderStatus(gr: Pick<GoodsReceipt, 'poId'> & { po: Pick<ProcurementPO, 'prId'> | null }, tx: Prisma.TransactionClient) {
+  if (gr.poId) {
+    const allLines = await tx.procurementPOLine.findMany({
+      where: { poId: gr.poId },
+    });
+    const allDone = allLines.every((l: any) => l.remainingQty === 0);
+    await tx.procurementPO.update({
+      where: { id: gr.poId },
+      data: {
+        status: allDone ? 'COMPLETED' : 'PARTIALLY_RECEIVED',
+      },
+    });
+
+    // Step 10: Auto-update linked PR to COMPLETED if all PO goods received
+    if (allDone && gr.po?.prId) {
+      await tx.purchaseRequisition.update({
+        where: { id: gr.po.prId },
+        data: { status: 'COMPLETED' },
+      });
+    }
+  }
+}
+
+async function updatePurchaseOrderReceiptLine(line: Pick<GoodsReceiptLine, 'poLineId' | 'acceptedQty'>, tx: Prisma.TransactionClient) {
+  if (line.poLineId) {
+    const poLine = await tx.procurementPOLine.findUnique({
+      where: { id: line.poLineId },
+    });
+
+    if (poLine) {
+      const newRecQty = poLine.receivedQty + line.acceptedQty;
+      const newRemQty = Math.max(0, poLine.orderedQty - newRecQty);
+      await tx.procurementPOLine.update({
+        where: { id: line.poLineId },
+        data: {
+          receivedQty: newRecQty,
+          remainingQty: newRemQty,
+          status: newRemQty === 0 ? 'COMPLETED' : 'PARTIAL',
+        },
+      });
+    }
+  }
+}
+
 // -------------------------------------------------------------
 // STOCK ISSUE POSTING
 // -------------------------------------------------------------
@@ -274,60 +283,7 @@ export async function postStockIssue(issueId: string, postedBy: string) {
       if (qtyToIssue <= 0) continue;
 
       // Find lot to deduct
-      let remainingQty = qtyToIssue;
-
-      if (line.lotNumber) {
-        // Specific lot chosen
-        const lot = await tx.lot.findFirst({
-          where: {
-            itemId: line.itemId,
-            warehouseId: issue.sourceWarehouseId,
-            lotNumber: line.lotNumber,
-            currentQty: { gt: 0 },
-          },
-        });
-
-        if (lot) {
-          const deduct = Math.min(lot.currentQty, remainingQty);
-          await tx.lot.update({
-            where: { id: lot.id },
-            data: {
-              currentQty: lot.currentQty - deduct,
-              reservedQty: Math.max(0, (lot.reservedQty || 0) - deduct),
-              status: lot.currentQty - deduct === 0 ? 'DEPLETED' : lot.status,
-            },
-          });
-          remainingQty -= deduct;
-        }
-      }
-
-      // If still remaining, deduct using FEFO order
-      if (remainingQty > 0) {
-        const activeLots = await tx.lot.findMany({
-          where: {
-            itemId: line.itemId,
-            warehouseId: issue.sourceWarehouseId,
-            status: 'ACTIVE',
-            currentQty: { gt: 0 },
-            expiryDate: { gt: new Date() },
-          },
-          orderBy: { expiryDate: 'asc' },
-        });
-
-        for (const lot of activeLots) {
-          if (remainingQty <= 0) break;
-          const deduct = Math.min(lot.currentQty, remainingQty);
-          await tx.lot.update({
-            where: { id: lot.id },
-            data: {
-              currentQty: lot.currentQty - deduct,
-              reservedQty: Math.max(0, (lot.reservedQty || 0) - deduct),
-              status: lot.currentQty - deduct === 0 ? 'DEPLETED' : lot.status,
-            },
-          });
-          remainingQty -= deduct;
-        }
-      }
+      await deductIssueLots(qtyToIssue, line, tx, issue);
 
       // Record Stock Movement
       const balBefore = (await tx.stockBalance.findUnique({
@@ -388,6 +344,63 @@ export async function postStockIssue(issueId: string, postedBy: string) {
     maxWait: 15000,
     timeout: 30000,
   });
+}
+
+async function deductIssueLots(qtyToIssue: number, line: Pick<StockIssueLine, 'itemId' | 'lotNumber'>, tx: Prisma.TransactionClient, issue: Pick<StockIssue, 'sourceWarehouseId'>) {
+  let remainingQty = qtyToIssue;
+
+  if (line.lotNumber) {
+    // Specific lot chosen
+    const lot = await tx.lot.findFirst({
+      where: {
+        itemId: line.itemId,
+        warehouseId: issue.sourceWarehouseId,
+        lotNumber: line.lotNumber,
+        currentQty: { gt: 0 },
+      },
+    });
+
+    if (lot) {
+      const deduct = Math.min(lot.currentQty, remainingQty);
+      await tx.lot.update({
+        where: { id: lot.id },
+        data: {
+          currentQty: lot.currentQty - deduct,
+          reservedQty: Math.max(0, (lot.reservedQty || 0) - deduct),
+          status: lot.currentQty - deduct === 0 ? 'DEPLETED' : lot.status,
+        },
+      });
+      remainingQty -= deduct;
+    }
+  }
+
+  // If still remaining, deduct using FEFO order
+  if (remainingQty > 0) {
+    const activeLots = await tx.lot.findMany({
+      where: {
+        itemId: line.itemId,
+        warehouseId: issue.sourceWarehouseId,
+        status: 'ACTIVE',
+        currentQty: { gt: 0 },
+        expiryDate: { gt: new Date() },
+      },
+      orderBy: { expiryDate: 'asc' },
+    });
+
+    for (const lot of activeLots) {
+      if (remainingQty <= 0) break;
+      const deduct = Math.min(lot.currentQty, remainingQty);
+      await tx.lot.update({
+        where: { id: lot.id },
+        data: {
+          currentQty: lot.currentQty - deduct,
+          reservedQty: Math.max(0, (lot.reservedQty || 0) - deduct),
+          status: lot.currentQty - deduct === 0 ? 'DEPLETED' : lot.status,
+        },
+      });
+      remainingQty -= deduct;
+    }
+  }
 }
 
 // -------------------------------------------------------------
@@ -511,7 +524,7 @@ export async function receiveStockTransfer(
 
     for (const line of trf.lines) {
       const customQty = receivedLineData?.find((d) => d.lineId === line.id)?.receivedQty;
-      const qtyReceived = customQty !== undefined ? customQty : line.dispatchedQty;
+      const qtyReceived = customQty ?? line.dispatchedQty;
       const discrepancy = line.dispatchedQty - qtyReceived;
 
       // Reduce In Transit from Source Balance
@@ -570,7 +583,7 @@ export async function receiveStockTransfer(
           balanceAfter: destBal.onHand,
           unitCost: line.item.standardCost,
           totalCost: qtyReceived * line.item.standardCost,
-          remark: `รับสินค้าจากการโอนย้าย ${trf.transferNumber}${discrepancy > 0 ? ` (ส่วนต่าง ${discrepancy})` : ''}`,
+          remark: `รับสินค้าจากการโอนย้าย ${trf.transferNumber}${discrepancy > 0 ? ' (ส่วนต่าง ' + discrepancy + ')' : ''}`,
           createdBy: receivedBy,
         },
       });
@@ -632,31 +645,7 @@ export async function postStockAdjustment(adjustmentId: string, postedBy: string
         });
       } else {
         // Decrease: reduce lot
-        const deductTotal = Math.abs(line.adjustmentQty);
-        let rem = deductTotal;
-
-        const lots = await tx.lot.findMany({
-          where: {
-            itemId: line.itemId,
-            warehouseId: adj.warehouseId,
-            currentQty: { gt: 0 },
-            ...(line.lotNumber ? { lotNumber: line.lotNumber } : {}),
-          },
-          orderBy: { expiryDate: 'asc' },
-        });
-
-        for (const lot of lots) {
-          if (rem <= 0) break;
-          const take = Math.min(lot.currentQty, rem);
-          await tx.lot.update({
-            where: { id: lot.id },
-            data: {
-              currentQty: lot.currentQty - take,
-              status: lot.currentQty - take === 0 ? 'DEPLETED' : lot.status,
-            },
-          });
-          rem -= take;
-        }
+        await deductAdjustmentLots(line, tx, adj);
       }
 
       // Sync balance
@@ -707,4 +696,32 @@ export async function postStockAdjustment(adjustmentId: string, postedBy: string
     maxWait: 15000,
     timeout: 30000,
   });
+}
+
+async function deductAdjustmentLots(line: Pick<StockAdjustmentLine, 'itemId' | 'lotNumber' | 'adjustmentQty'>, tx: Prisma.TransactionClient, adj: Pick<StockAdjustment, 'warehouseId'>) {
+  const deductTotal = Math.abs(line.adjustmentQty);
+  let rem = deductTotal;
+
+  const lots = await tx.lot.findMany({
+    where: {
+      itemId: line.itemId,
+      warehouseId: adj.warehouseId,
+      currentQty: { gt: 0 },
+      ...(line.lotNumber ? { lotNumber: line.lotNumber } : {}),
+    },
+    orderBy: { expiryDate: 'asc' },
+  });
+
+  for (const lot of lots) {
+    if (rem <= 0) break;
+    const take = Math.min(lot.currentQty, rem);
+    await tx.lot.update({
+      where: { id: lot.id },
+      data: {
+        currentQty: lot.currentQty - take,
+        status: lot.currentQty - take === 0 ? 'DEPLETED' : lot.status,
+      },
+    });
+    rem -= take;
+  }
 }

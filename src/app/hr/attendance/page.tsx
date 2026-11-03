@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { Clock, Plus, CheckCircle2, AlertTriangle, UserCheck } from 'lucide-react';
+import { HRAttendance, useHR } from '@/context/HRContext';
+import { Clock, Plus } from 'lucide-react';
+import Link from 'next/link';
+import React, { useId, useState } from 'react';
 
 export default function HRAttendancePage() {
+  const formId = useId();
   const { attendance, employees, addAttendance } = useHR();
   const { addToast } = useApp();
 
@@ -55,7 +56,7 @@ export default function HRAttendancePage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => setShowModal(true)}
           className="px-4 py-2.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-xl text-xs font-bold flex items-center gap-2 shrink-0"
         >
@@ -120,19 +121,7 @@ export default function HRAttendancePage() {
                   <td className="py-3 px-4 text-center font-mono font-bold text-[#14213D]">{att.checkOut}</td>
                   <td className="py-3 px-4 font-mono text-[11px] text-[#64748B]">{att.device}</td>
                   <td className="py-3 px-4 text-center">
-                    {att.status === 'LATE' ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                        มาสาย ({att.lateMinutes} นาที)
-                      </span>
-                    ) : att.status === 'OT' ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-300">
-                        ปกติ + OT {att.otHours} ชม.
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        ปกติ (On-Time)
-                      </span>
-                    )}
+                    {getStatusContent(att)}
                   </td>
                 </tr>
               ))}
@@ -147,8 +136,8 @@ export default function HRAttendancePage() {
             <h3 className="font-extrabold text-base text-[#14213D]">ลงเวลาปฏิบัติงาน (Manual Attendance)</h3>
             <form onSubmit={handleManualCheckIn} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold mb-1">เลือกบุคลากร</label>
-                <select
+                <label htmlFor={`${formId}-field-30`} className="block font-bold mb-1">เลือกบุคลากร</label>
+                <select id={`${formId}-field-30`}
                   value={empCode}
                   onChange={(e) => setEmpCode(e.target.value)}
                   className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]"
@@ -161,8 +150,8 @@ export default function HRAttendancePage() {
                 </select>
               </div>
               <div>
-                <label className="block font-bold mb-1">ผลัดเวรปฏิบัติงาน</label>
-                <select
+                <label htmlFor={`${formId}-field-31`} className="block font-bold mb-1">ผลัดเวรปฏิบัติงาน</label>
+                <select id={`${formId}-field-31`}
                   value={shiftType}
                   onChange={(e) => setShiftType(e.target.value as any)}
                   className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]"
@@ -175,8 +164,8 @@ export default function HRAttendancePage() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">เวลาเข้า (Check-In)</label>
-                  <input
+                  <label htmlFor={`${formId}-field-32`} className="block font-bold mb-1">เวลาเข้า (Check-In)</label>
+                  <input id={`${formId}-field-32`}
                     type="text"
                     value={checkIn}
                     onChange={(e) => setCheckIn(e.target.value)}
@@ -184,8 +173,8 @@ export default function HRAttendancePage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">เวลาออก (Check-Out)</label>
-                  <input
+                  <label htmlFor={`${formId}-field-33`} className="block font-bold mb-1">เวลาออก (Check-Out)</label>
+                  <input id={`${formId}-field-33`}
                     type="text"
                     value={checkOut}
                     onChange={(e) => setCheckOut(e.target.value)}
@@ -209,3 +198,20 @@ export default function HRAttendancePage() {
   );
 }
 
+
+function getStatusContent(att: HRAttendance): React.ReactNode {
+  if (att.status === 'LATE') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+      มาสาย ({att.lateMinutes} นาที)
+    </span>;
+  }
+  if (att.status === 'OT') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-300">
+      ปกติ + OT {att.otHours} ชม.
+    </span>;
+  }
+  return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+    ปกติ (On-Time)
+  </span>;
+
+}

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
-import { Settings, Save } from 'lucide-react';
+import { Save, Settings } from 'lucide-react';
+import Link from 'next/link';
+import React, { useId, useState } from 'react';
 
 export default function HRSettingsPage() {
+  const formId = useId();
   const { addToast } = useApp();
   const [lateGraceMinutes, setLateGraceMinutes] = useState(15);
   const [licenseAlertDays, setLicenseAlertDays] = useState(90);
@@ -37,10 +38,10 @@ export default function HRSettingsPage() {
       <form onSubmit={handleSave} className="bg-white p-6 rounded-3xl border border-[#E2EAF4] shadow-xs space-y-5 text-xs">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block font-bold text-[#14213D] mb-1">
+            <label htmlFor={`${formId}-field-74`} className="block font-bold text-[#14213D] mb-1">
               ระยะเวลาผ่อนผันการสแกนเข้าเวรสาย (Grace Period - นาที)
             </label>
-            <input
+            <input id={`${formId}-field-74`}
               type="number"
               value={lateGraceMinutes}
               onChange={(e) => setLateGraceMinutes(Number(e.target.value))}
@@ -48,10 +49,10 @@ export default function HRSettingsPage() {
             />
           </div>
           <div>
-            <label className="block font-bold text-[#14213D] mb-1">
+            <label htmlFor={`${formId}-field-75`} className="block font-bold text-[#14213D] mb-1">
               แจ้งเตือนใบประกอบวิชาชีพหมดอายุล่วงหน้า (วัน)
             </label>
-            <input
+            <input id={`${formId}-field-75`}
               type="number"
               value={licenseAlertDays}
               onChange={(e) => setLicenseAlertDays(Number(e.target.value))}
@@ -59,10 +60,10 @@ export default function HRSettingsPage() {
             />
           </div>
           <div>
-            <label className="block font-bold text-[#14213D] mb-1">
+            <label htmlFor={`${formId}-field-76`} className="block font-bold text-[#14213D] mb-1">
               ระยะเวลาทดลองงานมาตรฐาน (Probation Period - วัน)
             </label>
-            <input
+            <input id={`${formId}-field-76`}
               type="number"
               value={probationDays}
               onChange={(e) => setProbationDays(Number(e.target.value))}
@@ -70,10 +71,10 @@ export default function HRSettingsPage() {
             />
           </div>
           <div>
-            <label className="block font-bold text-[#14213D] mb-1">
+            <label htmlFor={`${formId}-field-77`} className="block font-bold text-[#14213D] mb-1">
               อัตราเงินสมทบประกันสังคม ม.33 (%)
             </label>
-            <input
+            <input id={`${formId}-field-77`}
               type="number"
               value={ssoRate}
               onChange={(e) => setSsoRate(Number(e.target.value))}

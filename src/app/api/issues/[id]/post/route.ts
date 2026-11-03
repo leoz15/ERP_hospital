@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { postStockIssue } from '@/lib/stock-service';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +19,7 @@ export async function POST(
           await prisma.stockIssueLine.update({
             where: { id: l.id },
             data: {
-              approvedQty: parseFloat(l.approvedQty || l.requestedQty || '0'),
+              approvedQty: Number.parseFloat(l.approvedQty || l.requestedQty || '0'),
               lotNumber: l.lotNumber || null,
             },
           });

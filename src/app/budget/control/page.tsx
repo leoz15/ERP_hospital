@@ -1,18 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useBudget } from '@/context/BudgetContext';
+import { BudgetTransactionItem, useBudget } from '@/context/BudgetContext';
 import {
-  ShieldCheck,
   Calculator,
-  Lock,
-  Receipt,
-  AlertTriangle,
-  ArrowRight,
   CheckCircle2,
-  FileCheck2,
   Search,
+  ShieldCheck
 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function BudgetControlPage() {
   const { plans, transactions, convertCommitmentToActual } = useBudget();
@@ -33,9 +28,9 @@ export default function BudgetControlPage() {
   const targetPlan = plans.find((p) => p.budgetCode === checkCode) || plans[0];
   const targetAvailable = targetPlan
     ? targetPlan.approvedAmount -
-      targetPlan.reservedAmount -
-      targetPlan.commitmentAmount -
-      targetPlan.actualAmount
+    targetPlan.reservedAmount -
+    targetPlan.commitmentAmount -
+    targetPlan.actualAmount
     : 0;
   const isSufficient = (Number(checkAmount) || 0) <= targetAvailable;
 
@@ -80,7 +75,7 @@ export default function BudgetControlPage() {
             <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
             {toastMsg}
           </span>
-          <button onClick={() => setToastMsg(null)} className="text-blue-700 hover:underline ml-4">
+          <button type="button" onClick={() => setToastMsg(null)} className="text-blue-700 hover:underline ml-4">
             รับทราบ
           </button>
         </div>
@@ -165,17 +160,16 @@ export default function BudgetControlPage() {
               className="w-40 px-3 py-2 rounded-xl border border-slate-200 font-bold"
             />
             <span
-              className={`px-3.5 py-2 rounded-xl font-bold ${
-                isSufficient
-                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                  : 'bg-rose-100 text-rose-800 border border-rose-300'
-              }`}
+              className={`px-3.5 py-2 rounded-xl font-bold ${isSufficient
+                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                : 'bg-rose-100 text-rose-800 border border-rose-300'
+                }`}
             >
               {isSufficient
                 ? `✓ วงเงินเพียงพอ (คงเหลือ ฿${targetAvailable.toLocaleString()})`
                 : `✗ เกินวงเงินคงเหลือ! (ขาดอีก ฿${(
-                    Number(checkAmount) - targetAvailable
-                  ).toLocaleString()})`}
+                  Number(checkAmount) - targetAvailable
+                ).toLocaleString()})`}
             </span>
           </div>
         </div>
@@ -192,14 +186,13 @@ export default function BudgetControlPage() {
             { id: 'OVER_BUDGET', label: 'รายการเฝ้าระวัง / เกินงบประมาณ' },
             { id: 'TX_HISTORY', label: 'ประวัติการใช้วงเงินทั้งหมด' },
           ].map((t) => (
-            <button
+            <button type="button"
               key={t.id}
               onClick={() => setActiveTab(t.id as typeof activeTab)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
-                activeTab === t.id
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${activeTab === t.id
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               {t.label}
             </button>
@@ -253,7 +246,7 @@ export default function BudgetControlPage() {
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         {p.commitmentAmount >= 500000 ? (
-                          <button
+                          <button type="button"
                             onClick={() =>
                               handleConvertPOToActual(
                                 p.budgetCode,
@@ -281,63 +274,58 @@ export default function BudgetControlPage() {
           activeTab === 'COMMITMENT' ||
           activeTab === 'ACTUAL' ||
           activeTab === 'TX_HISTORY') && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50/80 text-[11px] font-bold uppercase text-slate-500 border-b border-slate-200">
-                  <th className="py-3.5 px-4">เลขที่รายการ / วันที่</th>
-                  <th className="py-3.5 px-4">เอกสารอ้างอิง (PR/PO/PV)</th>
-                  <th className="py-3.5 px-4">รหัสงบ / หน่วยงาน</th>
-                  <th className="py-3.5 px-4">รายละเอียดธุรกรรม</th>
-                  <th className="py-3.5 px-4 text-center">ประเภทวงเงิน</th>
-                  <th className="py-3.5 px-4 text-right">จำนวนเงิน</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {transactions
-                  .filter((tx) => {
-                    if (activeTab === 'RESERVATION') return tx.txType === 'RESERVATION';
-                    if (activeTab === 'COMMITMENT') return tx.txType === 'COMMITMENT';
-                    if (activeTab === 'ACTUAL') return tx.txType === 'ACTUAL';
-                    return true;
-                  })
-                  .map((tx) => (
-                    <tr key={tx.id} className="hover:bg-slate-50/70 transition">
-                      <td className="py-3.5 px-4">
-                        <div className="font-bold text-slate-900">{tx.txNo}</div>
-                        <div className="text-[10px] text-slate-400">{tx.date}</div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="font-bold text-slate-800">{tx.refDocNo}</span>
-                        <div className="text-[10px] text-slate-500">{tx.sourceSystem}</div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="font-bold text-emerald-700">{tx.budgetCode}</div>
-                        <div className="text-[11px] text-slate-500">{tx.departmentName}</div>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-700 max-w-md">{tx.description}</td>
-                      <td className="py-3.5 px-4 text-center">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                            tx.txType === 'RESERVATION'
-                              ? 'bg-purple-100 text-purple-800'
-                              : tx.txType === 'COMMITMENT'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}
-                        >
-                          {tx.txType}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-extrabold text-slate-900">
-                        ฿{tx.amount.toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 text-[11px] font-bold uppercase text-slate-500 border-b border-slate-200">
+                    <th className="py-3.5 px-4">เลขที่รายการ / วันที่</th>
+                    <th className="py-3.5 px-4">เอกสารอ้างอิง (PR/PO/PV)</th>
+                    <th className="py-3.5 px-4">รหัสงบ / หน่วยงาน</th>
+                    <th className="py-3.5 px-4">รายละเอียดธุรกรรม</th>
+                    <th className="py-3.5 px-4 text-center">ประเภทวงเงิน</th>
+                    <th className="py-3.5 px-4 text-right">จำนวนเงิน</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {transactions
+                    .filter((tx) => {
+                      if (activeTab === 'RESERVATION') return tx.txType === 'RESERVATION';
+                      if (activeTab === 'COMMITMENT') return tx.txType === 'COMMITMENT';
+                      if (activeTab === 'ACTUAL') return tx.txType === 'ACTUAL';
+                      return true;
+                    })
+                    .map((tx) => (
+                      <tr key={tx.id} className="hover:bg-slate-50/70 transition">
+                        <td className="py-3.5 px-4">
+                          <div className="font-bold text-slate-900">{tx.txNo}</div>
+                          <div className="text-[10px] text-slate-400">{tx.date}</div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="font-bold text-slate-800">{tx.refDocNo}</span>
+                          <div className="text-[10px] text-slate-500">{tx.sourceSystem}</div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <div className="font-bold text-emerald-700">{tx.budgetCode}</div>
+                          <div className="text-[11px] text-slate-500">{tx.departmentName}</div>
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-700 max-w-md">{tx.description}</td>
+                        <td className="py-3.5 px-4 text-center">
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${getTxTypeClassName(tx)
+                              }`}
+                          >
+                            {tx.txType}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-extrabold text-slate-900">
+                          ฿{tx.amount.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
         {activeTab === 'OVER_BUDGET' && (
           <div className="p-6 space-y-3">
@@ -358,11 +346,10 @@ export default function BudgetControlPage() {
                     </p>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full font-bold ${
-                      pct >= 80
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-emerald-100 text-emerald-800'
-                    }`}
+                    className={`px-3 py-1 rounded-full font-bold ${pct >= 80
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-emerald-100 text-emerald-800'
+                      }`}
                   >
                     ใช้วงเงินไป {pct}%
                   </span>
@@ -376,3 +363,14 @@ export default function BudgetControlPage() {
   );
 }
 
+
+function getTxTypeClassName(tx: BudgetTransactionItem) {
+  if (tx.txType === 'RESERVATION') {
+    return 'bg-purple-100 text-purple-800';
+  }
+  if (tx.txType === 'COMMITMENT') {
+    return 'bg-amber-100 text-amber-800';
+  }
+  return 'bg-blue-100 text-blue-800';
+
+}

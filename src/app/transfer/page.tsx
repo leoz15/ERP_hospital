@@ -1,29 +1,30 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useApp } from '@/context/AppContext';
+import { createFormRowId } from '@/lib/form-row';
 import {
-  ArrowLeftRight,
-  Plus,
-  Truck,
-  CheckCircle2,
   AlertTriangle,
+  ArrowLeftRight,
   Building,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Copy,
+  Eye,
+  Package,
+  PackageCheck,
+  Plus,
+  Printer,
   RefreshCw,
   Send,
-  PackageCheck,
-  Eye,
-  Copy,
-  Printer,
-  X,
-  Clock,
-  Calendar,
-  ShieldCheck,
-  Package,
+  Truck,
+  X
 } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import React, { useEffect, useId, useState } from 'react';
 
 export default function StockTransferPage() {
+  const formId = useId();
   const { currentUser, addToast, refreshKey, triggerRefresh } = useApp();
   const [transfers, setTransfers] = useState<any[]>([]);
   const [warehouses, setWarehouses] = useState<any[]>([]);
@@ -32,14 +33,14 @@ export default function StockTransferPage() {
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState<any | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState<any>(null);
 
   // Form states
   const [sourceWarehouseId, setSourceWarehouseId] = useState('');
   const [destinationWarehouseId, setDestinationWarehouseId] = useState('');
   const [remark, setRemark] = useState('');
   const [lines, setLines] = useState<any[]>([
-    { itemId: '', requestedQty: 1, lotNumber: '', availableStock: 0 },
+    { clientId: "initial-1136", itemId: '', requestedQty: 1, lotNumber: '', availableStock: 0 },
   ]);
 
   const loadData = () => {
@@ -89,7 +90,7 @@ export default function StockTransferPage() {
   };
 
   const addLine = () => {
-    setLines([...lines, { itemId: '', requestedQty: 1, lotNumber: '', availableStock: 0 }]);
+    setLines([...lines, { clientId: createFormRowId(), itemId: '', requestedQty: 1, lotNumber: '', availableStock: 0 }]);
   };
 
   const removeLine = (idx: number) => {
@@ -204,7 +205,7 @@ export default function StockTransferPage() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
         >
@@ -231,64 +232,7 @@ export default function StockTransferPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
-                    <RefreshCw className="w-6 h-6 mx-auto animate-spin text-indigo-600 mb-2" />
-                    กำลังดึงข้อมูลใบโอนย้าย...
-                  </td>
-                </tr>
-              ) : transfers.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
-                    ยังไม่มีรายการโอนย้ายพัสดุ
-                  </td>
-                </tr>
-              ) : (
-                transfers.map((trf) => (
-                  <tr
-                    key={trf.id}
-                    className="hover:bg-indigo-50/40 transition-colors group cursor-pointer"
-                    onClick={() => setShowDetailModal(trf)}
-                  >
-                    <td className="py-3 px-4 font-mono font-bold text-indigo-700">
-                      <span className="hover:underline bg-indigo-50 group-hover:bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded transition-colors">
-                        {trf.transferNumber}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-semibold text-[#14213D] whitespace-nowrap">
-                      {trf.sourceWarehouse.name}
-                    </td>
-                    <td className="py-3 px-3 font-semibold text-indigo-700 whitespace-nowrap">
-                      {trf.destWarehouse.name}
-                    </td>
-                    <td className="py-3 px-3 text-right font-semibold tabular-nums">
-                      {trf.lines.length} รายการ
-                    </td>
-                    <td className="py-3 px-3 whitespace-nowrap text-[#64748B]">
-                      {new Date(trf.transferDate).toLocaleDateString('th-TH')}
-                    </td>
-                    <td className="py-3 px-3 text-[#64748B]">
-                      {trf.dispatchedBy || '-'}
-                    </td>
-                    <td className="py-3 px-3 text-[#64748B]">
-                      {trf.receivedBy || '-'}
-                    </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <StatusBadge status={trf.status} />
-                    </td>
-                    <td className="py-3 px-4 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => setShowDetailModal(trf)}
-                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-[#334155] rounded-lg text-xs font-medium transition-colors flex items-center gap-1 mx-auto"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>ดูรายละเอียด</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableRows(loading, transfers, setShowDetailModal)}
             </tbody>
           </table>
         </div>
@@ -307,7 +251,7 @@ export default function StockTransferPage() {
                   โอนสินค้าจากคลังต้นทางไปยังคลังปลายทาง พร้อมควบคุม In Transit
                 </p>
               </div>
-              <button
+              <button type="button"
                 onClick={() => setShowCreateModal(false)}
                 className="text-[#94A3B8] hover:text-[#64748B] text-lg font-bold"
               >
@@ -318,10 +262,10 @@ export default function StockTransferPage() {
             <form onSubmit={handleCreateTransfer} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#334155] mb-1">
+                  <label htmlFor={`${formId}-field-187`} className="block text-xs font-semibold text-[#334155] mb-1">
                     คลังต้นทาง (Source) *
                   </label>
-                  <select
+                  <select id={`${formId}-field-187`}
                     value={sourceWarehouseId}
                     onChange={(e) => setSourceWarehouseId(e.target.value)}
                     className="w-full text-xs px-3 py-2 bg-[#F5F8FC] border border-[#E2EAF4] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -335,10 +279,10 @@ export default function StockTransferPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#334155] mb-1">
+                  <label htmlFor={`${formId}-field-188`} className="block text-xs font-semibold text-[#334155] mb-1">
                     คลังปลายทาง (Destination) *
                   </label>
-                  <select
+                  <select id={`${formId}-field-188`}
                     value={destinationWarehouseId}
                     onChange={(e) => setDestinationWarehouseId(e.target.value)}
                     className="w-full text-xs px-3 py-2 bg-[#F5F8FC] border border-[#E2EAF4] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -367,7 +311,7 @@ export default function StockTransferPage() {
 
                 <div className="p-3 space-y-2">
                   {lines.map((line, idx) => (
-                    <div key={idx} className="flex items-center gap-3 bg-[#F5F8FC] p-2.5 rounded-lg border border-[#E2EAF4]">
+                    <div key={line.clientId} className="flex items-center gap-3 bg-[#F5F8FC] p-2.5 rounded-lg border border-[#E2EAF4]">
                       <div className="flex-1">
                         <select
                           required
@@ -392,8 +336,8 @@ export default function StockTransferPage() {
                       </div>
 
                       <div className="w-24">
-                        <label className="text-[10px] text-[#94A3B8] block text-right">จำนวนโอน:</label>
-                        <input
+                        <label htmlFor={`${formId}-field-189-${idx}`} className="text-[10px] text-[#94A3B8] block text-right">จำนวนโอน:</label>
+                        <input id={`${formId}-field-189-${idx}`}
                           type="number"
                           min="1"
                           max={line.availableStock || 99999}
@@ -401,7 +345,7 @@ export default function StockTransferPage() {
                           value={line.requestedQty}
                           onChange={(e) => {
                             const updated = [...lines];
-                            updated[idx].requestedQty = parseFloat(e.target.value) || 0;
+                            updated[idx].requestedQty = Number.parseFloat(e.target.value) || 0;
                             setLines(updated);
                           }}
                           className="w-full text-xs px-2 py-1 bg-white border border-slate-300 rounded text-right font-bold"
@@ -421,10 +365,10 @@ export default function StockTransferPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1">
+                <label htmlFor={`${formId}-field-190`} className="block text-xs font-semibold text-[#334155] mb-1">
                   หมายเหตุ / วัตถุประสงค์การโอนย้าย
                 </label>
-                <textarea
+                <textarea id={`${formId}-field-190`}
                   rows={2}
                   value={remark}
                   onChange={(e) => setRemark(e.target.value)}
@@ -508,7 +452,7 @@ export default function StockTransferPage() {
                 </button>
 
                 {showDetailModal.status === 'APPROVED' && (
-                  <button
+                  <button type="button"
                     onClick={() => handleDispatch(showDetailModal.id)}
                     className="px-4 py-2 bg-[#2563EB] hover:bg-[#164EAB] text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all"
                   >
@@ -518,7 +462,7 @@ export default function StockTransferPage() {
                 )}
 
                 {showDetailModal.status === 'IN_TRANSIT' && (
-                  <button
+                  <button type="button"
                     onClick={() => handleReceive(showDetailModal.id)}
                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all"
                   >
@@ -666,19 +610,10 @@ export default function StockTransferPage() {
                               </td>
                               <td className="py-2.5 px-3 text-center">
                                 <span
-                                  className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                                    l.receivedQty > 0
-                                      ? 'bg-emerald-100 text-emerald-800'
-                                      : l.dispatchedQty > 0
-                                      ? 'bg-blue-100 text-blue-800'
-                                      : 'bg-slate-100 text-[#64748B]'
-                                  }`}
+                                  className={`px-2 py-0.5 rounded text-[10px] font-semibold ${getReceivedQtyClassName(l)
+                                    }`}
                                 >
-                                  {l.receivedQty > 0
-                                    ? 'รับครบแล้ว'
-                                    : l.dispatchedQty > 0
-                                    ? 'กำลังเดินทาง'
-                                    : 'รอจัดส่ง'}
+                                  {getReceivedQtyText(l)}
                                 </span>
                               </td>
                             </tr>
@@ -714,11 +649,10 @@ export default function StockTransferPage() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
-                      showDetailModal.status !== 'PENDING_APPROVAL'
-                        ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                        : 'bg-amber-50/60 border-amber-200 text-amber-900'
-                    }`}
+                    className={`p-3 rounded-xl border ${showDetailModal.status !== 'PENDING_APPROVAL'
+                      ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
+                      : 'bg-amber-50/60 border-amber-200 text-amber-900'
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       {showDetailModal.status !== 'PENDING_APPROVAL' ? (
@@ -736,13 +670,8 @@ export default function StockTransferPage() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
-                      showDetailModal.status === 'COMPLETED'
-                        ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                        : showDetailModal.status === 'IN_TRANSIT'
-                        ? 'bg-blue-50/60 border-blue-200 text-blue-900'
-                        : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
-                    }`}
+                    className={`p-3 rounded-xl border ${getStatusClassName(showDetailModal)
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       <Send className="w-3.5 h-3.5 text-[#2563EB]" />
@@ -756,11 +685,10 @@ export default function StockTransferPage() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
-                      showDetailModal.status === 'COMPLETED'
-                        ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                        : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
-                    }`}
+                    className={`p-3 rounded-xl border ${showDetailModal.status === 'COMPLETED'
+                      ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
+                      : 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]'
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#94A3B8]" />
@@ -806,13 +734,13 @@ export default function StockTransferPage() {
 
                 {showDetailModal.status === 'PENDING_APPROVAL' && (
                   <>
-                    <button
+                    <button type="button"
                       onClick={() => handleApprove(showDetailModal.id, 'REJECT')}
                       className="px-4 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-semibold"
                     >
                       ไม่อนุมัติ
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => handleApprove(showDetailModal.id, 'APPROVE')}
                       className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm"
                     >
@@ -822,7 +750,7 @@ export default function StockTransferPage() {
                 )}
 
                 {showDetailModal.status === 'APPROVED' && (
-                  <button
+                  <button type="button"
                     onClick={() => handleDispatch(showDetailModal.id)}
                     className="px-5 py-2 bg-[#2563EB] hover:bg-[#164EAB] text-white rounded-xl text-xs font-semibold shadow-sm flex items-center gap-1.5"
                   >
@@ -832,7 +760,7 @@ export default function StockTransferPage() {
                 )}
 
                 {showDetailModal.status === 'IN_TRANSIT' && (
-                  <button
+                  <button type="button"
                     onClick={() => handleReceive(showDetailModal.id)}
                     className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm flex items-center gap-1.5"
                   >
@@ -847,4 +775,99 @@ export default function StockTransferPage() {
       )}
     </div>
   );
+}
+
+function getStatusClassName(showDetailModal: any) {
+  if (showDetailModal.status === 'COMPLETED') {
+    return 'bg-emerald-50/60 border-emerald-200 text-emerald-900';
+  }
+  if (showDetailModal.status === 'IN_TRANSIT') {
+    return 'bg-blue-50/60 border-blue-200 text-blue-900';
+  }
+  return 'bg-[#F5F8FC] border-[#E2EAF4] text-[#64748B]';
+
+}
+
+function getReceivedQtyText(l: any): React.ReactNode {
+  if (l.receivedQty > 0) {
+    return 'รับครบแล้ว';
+  }
+  if (l.dispatchedQty > 0) {
+    return 'กำลังเดินทาง';
+  }
+  return 'รอจัดส่ง';
+
+}
+
+function getReceivedQtyClassName(l: any) {
+  if (l.receivedQty > 0) {
+    return 'bg-emerald-100 text-emerald-800';
+  }
+  if (l.dispatchedQty > 0) {
+    return 'bg-blue-100 text-blue-800';
+  }
+  return 'bg-slate-100 text-[#64748B]';
+
+}
+
+function renderTableRows(loading: boolean, transfers: any[], setShowDetailModal: React.Dispatch<any>): React.ReactNode {
+  if (loading) {
+    return <tr>
+      <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
+        <RefreshCw className="w-6 h-6 mx-auto animate-spin text-indigo-600 mb-2" />
+        กำลังดึงข้อมูลใบโอนย้าย...
+      </td>
+    </tr>;
+  }
+  if (transfers.length === 0) {
+    return <tr>
+      <td colSpan={9} className="py-12 text-center text-[#94A3B8]">
+        ยังไม่มีรายการโอนย้ายพัสดุ
+      </td>
+    </tr>;
+  }
+  return transfers.map((trf) => (
+    <tr
+      key={trf.id}
+      className="hover:bg-indigo-50/40 transition-colors group cursor-pointer"
+      onClick={() => setShowDetailModal(trf)}
+    >
+      <td className="py-3 px-4 font-mono font-bold text-indigo-700">
+        <span className="hover:underline bg-indigo-50 group-hover:bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded transition-colors">
+          {trf.transferNumber}
+        </span>
+      </td>
+      <td className="py-3 px-3 font-semibold text-[#14213D] whitespace-nowrap">
+        {trf.sourceWarehouse.name}
+      </td>
+      <td className="py-3 px-3 font-semibold text-indigo-700 whitespace-nowrap">
+        {trf.destWarehouse.name}
+      </td>
+      <td className="py-3 px-3 text-right font-semibold tabular-nums">
+        {trf.lines.length} รายการ
+      </td>
+      <td className="py-3 px-3 whitespace-nowrap text-[#64748B]">
+        {new Date(trf.transferDate).toLocaleDateString('th-TH')}
+      </td>
+      <td className="py-3 px-3 text-[#64748B]">
+        {trf.dispatchedBy || '-'}
+      </td>
+      <td className="py-3 px-3 text-[#64748B]">
+        {trf.receivedBy || '-'}
+      </td>
+      <td className="py-3 px-3 text-center whitespace-nowrap">
+        <StatusBadge status={trf.status} />
+      </td>
+      <td className="py-3 px-4 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+        <button type="button"
+          onClick={() => setShowDetailModal(trf)}
+          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-[#334155] rounded-lg text-xs font-medium transition-colors flex items-center gap-1 mx-auto"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          <span>ดูรายละเอียด</span>
+        </button>
+      </td>
+    </tr>
+  ));
+
 }

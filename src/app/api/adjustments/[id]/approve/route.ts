@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { postStockAdjustment } from '@/lib/stock-service';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 

@@ -1,27 +1,24 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useApp } from '@/context/AppContext';
 import {
-  Package,
   ArrowLeft,
   Building,
-  Layers,
   CalendarClock,
   History,
-  ShoppingCart,
   RefreshCw,
-  ShieldAlert,
+  ShoppingCart
 } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function ItemDetailPage() {
   const params = useParams();
-  const router = useRouter();
+
   const { addToast } = useApp();
-  const [item, setItem] = useState<any | null>(null);
+  const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'STOCK' | 'LOTS' | 'MOVEMENTS' | 'PO'>('STOCK');
 
@@ -113,14 +110,13 @@ export default function ItemDetailPage() {
         ].map((t) => {
           const Icon = t.icon;
           return (
-            <button
+            <button type="button"
               key={t.id}
               onClick={() => setActiveTab(t.id as any)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 border-b-2 transition-all ${
-                activeTab === t.id
-                  ? 'border-blue-600 text-[#2563EB] font-bold'
-                  : 'border-transparent text-[#64748B] hover:text-[#14213D]'
-              }`}
+              className={`flex items-center gap-1.5 px-4 py-2.5 border-b-2 transition-all ${activeTab === t.id
+                ? 'border-blue-600 text-[#2563EB] font-bold'
+                : 'border-transparent text-[#64748B] hover:text-[#14213D]'
+                }`}
             >
               <Icon className="w-3.5 h-3.5" />
               <span>{t.label}</span>
@@ -271,9 +267,8 @@ export default function ItemDetailPage() {
                       </span>
                     </td>
                     <td
-                      className={`py-3 px-3 text-right font-bold tabular-nums ${
-                        m.quantity > 0 ? 'text-emerald-600' : 'text-rose-600'
-                      }`}
+                      className={`py-3 px-3 text-right font-bold tabular-nums ${m.quantity > 0 ? 'text-emerald-600' : 'text-rose-600'
+                        }`}
                     >
                       {m.quantity > 0 ? `+${m.quantity}` : m.quantity} {item.unit}
                     </td>

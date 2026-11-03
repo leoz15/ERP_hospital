@@ -1,60 +1,57 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useApp } from '@/context/AppContext';
 import {
-  Package,
-  Layers,
-  CircleDollarSign,
-  AlertTriangle,
   AlertOctagon,
-  CalendarClock,
-  Clock,
-  ArrowRight,
-  TrendingUp,
-  Building,
-  RefreshCw,
-  FileCheck2,
-  Calendar,
-  X,
-  Printer,
-  Copy,
-  Check,
-  CheckCircle2,
-  ExternalLink,
+  AlertTriangle,
   ArrowDownToLine,
-  ArrowUpFromLine,
   ArrowLeftRight,
-  RotateCcw,
-  SlidersHorizontal,
-  ClipboardCheck,
-  History,
-  Eye,
-  PieChart as PieIcon,
+  ArrowUpFromLine,
   BarChart3,
-  Sparkles,
-  Filter,
   Boxes,
-  ShieldAlert,
-  ChevronRight,
-  Warehouse as WarehouseIcon,
-  ShoppingCart,
+  Building,
+  CalendarClock,
+  Check,
   CheckCircle,
+  CheckCircle2,
+  ChevronRight,
+  CircleDollarSign,
+  ClipboardCheck,
+  Clock,
+  Copy,
+  ExternalLink,
+  FileCheck2,
+  Filter,
+  History,
+  Layers,
+  Package,
+  PieChart as PieIcon,
+  Printer,
+  RefreshCw,
+  RotateCcw,
+  ShieldAlert,
+  ShoppingCart,
+  SlidersHorizontal,
+  Sparkles,
+  TrendingUp,
+  Warehouse as WarehouseIcon,
+  X
 } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import {
-  BarChart,
   Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
+  BarChart,
   Cell,
   Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 
 const CATEGORY_COLORS = ['#2563EB', '#60A5FA', '#0D9488', '#6366F1', '#8B5CF6', '#F28C28'];
 
@@ -65,9 +62,9 @@ export default function InventoryDashboardPage() {
   const [warehouses, setWarehouses] = useState<any[]>([]);
 
   // Modals state
-  const [selectedMovement, setSelectedMovement] = useState<any | null>(null);
-  const [selectedLot, setSelectedLot] = useState<any | null>(null);
-  const [selectedLowStockItem, setSelectedLowStockItem] = useState<any | null>(null);
+  const [selectedMovement, setSelectedMovement] = useState<any>(null);
+  const [selectedLot, setSelectedLot] = useState<any>(null);
+  const [selectedLowStockItem, setSelectedLowStockItem] = useState<any>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Fetch warehouses list for quick selector
@@ -83,7 +80,8 @@ export default function InventoryDashboardPage() {
   // Fetch dashboard data
   useEffect(() => {
     setLoading(true);
-    const url = `/api/dashboard${selectedWarehouse ? `?warehouseId=${selectedWarehouse}` : ''}`;
+    const query = selectedWarehouse ? '?warehouseId=' + selectedWarehouse : '';
+    const url = '/api/dashboard' + query;
     fetch(url)
       .then((res) => res.json())
       .then((res) => {
@@ -123,93 +121,7 @@ export default function InventoryDashboardPage() {
   const { summary, alerts, pendingApprovals, warehouseSummary, categorySummary, recentMovements } = data;
   const currentWarehouseObj = warehouses.find((w) => w.id === selectedWarehouse);
 
-  const kpis = [
-    {
-      title: 'รายการสินค้าทั้งหมด',
-      subTitle: 'Total Items Active',
-      value: summary.totalItems.toLocaleString(),
-      unit: 'รายการ',
-      sub: 'บันทึกในระบบและเปิดใช้งาน',
-      icon: Package,
-      color: 'text-[#2563EB] bg-[#EFF6FF] border-blue-200',
-      href: '/items',
-    },
-    {
-      title: 'ยอดสต็อกคงเหลือรวม',
-      subTitle: 'Total Stock Balance',
-      value: summary.totalStockQuantity.toLocaleString(),
-      unit: 'หน่วยนับ',
-      sub: currentWarehouseObj ? `เฉพาะคลัง ${currentWarehouseObj.name}` : 'จำนวนหน่วยรวมทุกคลังสินค้า',
-      icon: Layers,
-      color: 'text-teal-600 bg-teal-50 border-teal-200',
-      href: '/stock',
-    },
-    {
-      title: 'มูลค่าสต็อกรวม',
-      subTitle: 'Total Inventory Value',
-      value: `฿${summary.totalInventoryValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      unit: '',
-      sub: 'คำนวณจากราคาทุนมาตรฐานเฉลี่ย',
-      icon: CircleDollarSign,
-      color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
-      href: '/reports',
-    },
-    {
-      title: 'สินค้าใกล้หมด (Low Stock)',
-      subTitle: 'Below Min Stock Point',
-      value: summary.lowStockItems,
-      unit: 'รายการ',
-      sub: 'ต่ำกว่าเกณฑ์สต็อกความปลอดภัย',
-      icon: AlertTriangle,
-      color: summary.lowStockItems > 0 ? 'text-amber-600 bg-amber-50 border-amber-300' : 'text-[#64748B] bg-slate-50 border-[#E2EAF4]',
-      highlight: summary.lowStockItems > 0,
-      href: '/stock?status=LOW_STOCK',
-    },
-    {
-      title: 'สินค้าหมดคลัง (Out of Stock)',
-      subTitle: 'Zero Available Stock',
-      value: summary.outOfStock,
-      unit: 'รายการ',
-      sub: 'พร้อมใช้เป็น 0 ต้องเร่งสั่งซื้อ',
-      icon: AlertOctagon,
-      color: summary.outOfStock > 0 ? 'text-rose-600 bg-rose-50 border-rose-300' : 'text-[#64748B] bg-slate-50 border-[#E2EAF4]',
-      highlight: summary.outOfStock > 0,
-      href: '/stock?status=OUT_OF_STOCK',
-    },
-    {
-      title: 'สินค้าใกล้หมดอายุ (< 90 วัน)',
-      subTitle: 'Near Expiry Control',
-      value: summary.nearExpiry,
-      unit: 'Lot',
-      sub: 'ต้องเร่งจ่ายตามเกณฑ์ FEFO',
-      icon: CalendarClock,
-      color: summary.nearExpiry > 0 ? 'text-orange-600 bg-orange-50 border-orange-300' : 'text-[#64748B] bg-slate-50 border-[#E2EAF4]',
-      highlight: summary.nearExpiry > 0,
-      href: '/lots?filter=NEAR_EXPIRY',
-    },
-    {
-      title: 'สินค้าหมดอายุ (Expired)',
-      subTitle: 'Expired Quarantine',
-      value: summary.expiredItems,
-      unit: 'Lot',
-      sub: 'ระงับจ่ายทันทีและรอตัดจำหน่าย',
-      icon: Clock,
-      color: summary.expiredItems > 0 ? 'text-red-700 bg-red-100 border-red-300' : 'text-[#64748B] bg-slate-50 border-[#E2EAF4]',
-      highlight: summary.expiredItems > 0,
-      href: '/lots?filter=EXPIRED',
-    },
-    {
-      title: 'ธุรกรรมรอจัดการ (Pending)',
-      subTitle: 'Awaiting Approvals',
-      value: summary.pendingTransactions,
-      unit: 'เอกสาร',
-      sub: 'ใบรับ/เบิก/โอน/ปรับยอดรอตรวจสอบ',
-      icon: FileCheck2,
-      color: summary.pendingTransactions > 0 ? 'text-indigo-600 bg-indigo-50 border-indigo-300' : 'text-[#64748B] bg-slate-50 border-[#E2EAF4]',
-      highlight: summary.pendingTransactions > 0,
-      href: '/approvals',
-    },
-  ];
+  const kpis = buildInventoryKpis(summary, currentWarehouseObj);
 
   const quickActions = [
     { title: 'รับเข้าคลัง (GR)', desc: 'ตรวจรับสินค้าจาก PO', href: '/receiving', icon: ArrowDownToLine, color: 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-200' },
@@ -264,7 +176,7 @@ export default function InventoryDashboardPage() {
               </select>
             </div>
 
-            <button
+            <button type="button"
               onClick={() => triggerRefresh()}
               className="flex items-center gap-1.5 px-3.5 py-2 bg-[#2563EB] hover:bg-[#164EAB] text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95"
               title="รีเฟรชข้อมูลล่าสุด"
@@ -293,7 +205,7 @@ export default function InventoryDashboardPage() {
             const Icon = action.icon;
             return (
               <Link
-                key={idx}
+                key={action.title}
                 href={action.href}
                 className={`p-3 rounded-xl border flex flex-col items-center text-center transition-all duration-150 hover:-translate-y-0.5 hover:shadow-xs ${action.color}`}
               >
@@ -358,11 +270,10 @@ export default function InventoryDashboardPage() {
           const Icon = kpi.icon;
           return (
             <Link
-              key={idx}
+              key={kpi.title}
               href={kpi.href}
-              className={`bg-white p-4 sm:p-5 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between group ${
-                kpi.highlight ? 'border-amber-300 ring-2 ring-amber-400/20' : 'border-[#E2EAF4] shadow-2xs'
-              }`}
+              className={`bg-white p-4 sm:p-5 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between group ${kpi.highlight ? 'border-amber-300 ring-2 ring-amber-400/20' : 'border-[#E2EAF4] shadow-2xs'
+                }`}
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
@@ -481,7 +392,7 @@ export default function InventoryDashboardPage() {
                     paddingAngle={4}
                   >
                     {categorySummary.map((entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
+                      <Cell key={entry.name} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
@@ -790,9 +701,8 @@ export default function InventoryDashboardPage() {
                     <div className="text-[10px] text-[#94A3B8] font-mono">{m.item?.itemCode}</div>
                   </td>
                   <td
-                    className={`py-2.5 px-3 text-right font-bold tabular-nums whitespace-nowrap ${
-                      m.quantity > 0 ? 'text-[#059669]' : 'text-[#E11D48]'
-                    }`}
+                    className={`py-2.5 px-3 text-right font-bold tabular-nums whitespace-nowrap ${m.quantity > 0 ? 'text-[#059669]' : 'text-[#E11D48]'
+                      }`}
                   >
                     {m.quantity > 0 ? `+${m.quantity.toLocaleString()}` : m.quantity.toLocaleString()} {m.item?.unit}
                   </td>
@@ -1070,11 +980,10 @@ export default function InventoryDashboardPage() {
                     </div>
 
                     <span
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
-                        selectedLot.daysExpired > 0
-                          ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                          : 'bg-amber-50 text-amber-700 border border-amber-200'
-                      }`}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold ${selectedLot.daysExpired > 0
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}
                     >
                       {selectedLot.daysExpired > 0 ? 'หมดอายุแล้ว (Expired)' : 'ใกล้หมดอายุ (Near Expiry)'}
                     </span>
@@ -1130,9 +1039,8 @@ export default function InventoryDashboardPage() {
                   <span className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider block">
                     สถานะระยะเวลาคงเหลือ
                   </span>
-                  <div className={`text-xl font-bold mt-1 tabular-nums ${
-                    selectedLot.daysExpired > 0 ? 'text-[#E11D48]' : 'text-[#D97706]'
-                  }`}>
+                  <div className={`text-xl font-bold mt-1 tabular-nums ${selectedLot.daysExpired > 0 ? 'text-[#E11D48]' : 'text-[#D97706]'
+                    }`}>
                     {selectedLot.daysExpired > 0
                       ? `หมดอายุแล้ว ${selectedLot.daysExpired} วัน`
                       : `เหลืออีก ${selectedLot.daysRemaining} วัน`}
@@ -1394,4 +1302,94 @@ export default function InventoryDashboardPage() {
       )}
     </div>
   );
+}
+
+function buildInventoryKpis(summary: any, currentWarehouseObj: any) {
+  return [
+    {
+      title: 'รายการสินค้าทั้งหมด',
+      subTitle: 'Total Items Active',
+      value: summary.totalItems.toLocaleString(),
+      unit: 'รายการ',
+      sub: 'บันทึกในระบบและเปิดใช้งาน',
+      icon: Package,
+      color: 'text-[#2563EB] bg-[#EFF6FF] border-blue-200',
+      href: '/items',
+    },
+    {
+      title: 'ยอดสต็อกคงเหลือรวม',
+      subTitle: 'Total Stock Balance',
+      value: summary.totalStockQuantity.toLocaleString(),
+      unit: 'หน่วยนับ',
+      sub: currentWarehouseObj ? `เฉพาะคลัง ${currentWarehouseObj.name}` : 'จำนวนหน่วยรวมทุกคลังสินค้า',
+      icon: Layers,
+      color: 'text-teal-600 bg-teal-50 border-teal-200',
+      href: '/stock',
+    },
+    {
+      title: 'มูลค่าสต็อกรวม',
+      subTitle: 'Total Inventory Value',
+      value: `฿${summary.totalInventoryValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      unit: '',
+      sub: 'คำนวณจากราคาทุนมาตรฐานเฉลี่ย',
+      icon: CircleDollarSign,
+      color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
+      href: '/reports',
+    },
+    {
+      title: 'สินค้าใกล้หมด (Low Stock)',
+      subTitle: 'Below Min Stock Point',
+      value: summary.lowStockItems,
+      unit: 'รายการ',
+      sub: 'ต่ำกว่าเกณฑ์สต็อกความปลอดภัย',
+      icon: AlertTriangle,
+      color: summary.lowStockItems > 0 ? 'text-amber-600 bg-amber-50 border-amber-300' : 'text-[#64748B] bg-slate-50 border-[#E2EAF4]',
+      highlight: summary.lowStockItems > 0,
+      href: '/stock?status=LOW_STOCK',
+    },
+    {
+      title: 'สินค้าหมดคลัง (Out of Stock)',
+      subTitle: 'Zero Available Stock',
+      value: summary.outOfStock,
+      unit: 'รายการ',
+      sub: 'พร้อมใช้เป็น 0 ต้องเร่งสั่งซื้อ',
+      icon: AlertOctagon,
+      color: summary.outOfStock > 0 ? 'text-rose-600 bg-rose-50 border-rose-300' : 'text-[#64748B] bg-slate-50 border-[#E2EAF4]',
+      highlight: summary.outOfStock > 0,
+      href: '/stock?status=OUT_OF_STOCK',
+    },
+    {
+      title: 'สินค้าใกล้หมดอายุ (< 90 วัน)',
+      subTitle: 'Near Expiry Control',
+      value: summary.nearExpiry,
+      unit: 'Lot',
+      sub: 'ต้องเร่งจ่ายตามเกณฑ์ FEFO',
+      icon: CalendarClock,
+      color: summary.nearExpiry > 0 ? 'text-orange-600 bg-orange-50 border-orange-300' : 'text-[#64748B] bg-slate-50 border-[#E2EAF4]',
+      highlight: summary.nearExpiry > 0,
+      href: '/lots?filter=NEAR_EXPIRY',
+    },
+    {
+      title: 'สินค้าหมดอายุ (Expired)',
+      subTitle: 'Expired Quarantine',
+      value: summary.expiredItems,
+      unit: 'Lot',
+      sub: 'ระงับจ่ายทันทีและรอตัดจำหน่าย',
+      icon: Clock,
+      color: summary.expiredItems > 0 ? 'text-red-700 bg-red-100 border-red-300' : 'text-[#64748B] bg-slate-50 border-[#E2EAF4]',
+      highlight: summary.expiredItems > 0,
+      href: '/lots?filter=EXPIRED',
+    },
+    {
+      title: 'ธุรกรรมรอจัดการ (Pending)',
+      subTitle: 'Awaiting Approvals',
+      value: summary.pendingTransactions,
+      unit: 'เอกสาร',
+      sub: 'ใบรับ/เบิก/โอน/ปรับยอดรอตรวจสอบ',
+      icon: FileCheck2,
+      color: summary.pendingTransactions > 0 ? 'text-indigo-600 bg-indigo-50 border-indigo-300' : 'text-[#64748B] bg-slate-50 border-[#E2EAF4]',
+      highlight: summary.pendingTransactions > 0,
+      href: '/approvals',
+    },
+  ];
 }

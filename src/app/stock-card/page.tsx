@@ -1,31 +1,24 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import {
-  History,
-  Search,
-  Filter,
-  Download,
-  Calendar,
-  Building,
-  RefreshCw,
-  ArrowUpRight,
-  ArrowDownLeft,
-  Eye,
-  Copy,
-  Printer,
-  X,
-  Layers,
   CheckCircle2,
-  Package,
+  Copy,
+  Download,
   ExternalLink,
-  FileText,
+  History,
+  Package,
+  Printer,
+  RefreshCw,
+  Search,
+  X
 } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useId, useState } from 'react';
 
 function StockCardContent() {
+  const formId = useId();
   const searchParams = useSearchParams();
   const initialItemId = searchParams.get('itemId') || '';
   const initialWarehouseId = searchParams.get('warehouseId') || '';
@@ -38,7 +31,7 @@ function StockCardContent() {
 
   // Full-screen Movement Detail Modal State
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedMovement, setSelectedMovement] = useState<any | null>(null);
+  const [selectedMovement, setSelectedMovement] = useState<any>(null);
 
   // Filters
   const [selectedItemId, setSelectedItemId] = useState(initialItemId);
@@ -89,7 +82,7 @@ function StockCardContent() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => {
             const csvContent =
               '\uFEFF' +
@@ -119,10 +112,10 @@ function StockCardContent() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* Search */}
           <div>
-            <label className="block text-[11px] font-semibold text-[#64748B] mb-1">ค้นหาเลขที่เอกสาร / สินค้า</label>
+            <label htmlFor={`${formId}-field-183`} className="block text-[11px] font-semibold text-[#64748B] mb-1">ค้นหาเลขที่เอกสาร / สินค้า</label>
             <div className="relative">
               <Search className="w-4 h-4 text-[#94A3B8] absolute left-3 top-2.5" />
-              <input
+              <input id={`${formId}-field-183`}
                 type="text"
                 placeholder="เช่น GR-202610, ISS-..."
                 value={search}
@@ -134,8 +127,8 @@ function StockCardContent() {
 
           {/* Item filter */}
           <div>
-            <label className="block text-[11px] font-semibold text-[#64748B] mb-1">กรองตามรายการสินค้า</label>
-            <select
+            <label htmlFor={`${formId}-field-184`} className="block text-[11px] font-semibold text-[#64748B] mb-1">กรองตามรายการสินค้า</label>
+            <select id={`${formId}-field-184`}
               value={selectedItemId}
               onChange={(e) => setSelectedItemId(e.target.value)}
               className="w-full text-xs px-3 py-2 bg-white border border-[#DCE5F0] rounded-xl focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 text-[#14213D] cursor-pointer"
@@ -151,8 +144,8 @@ function StockCardContent() {
 
           {/* Warehouse filter */}
           <div>
-            <label className="block text-[11px] font-semibold text-[#64748B] mb-1">คลังสินค้า</label>
-            <select
+            <label htmlFor={`${formId}-field-185`} className="block text-[11px] font-semibold text-[#64748B] mb-1">คลังสินค้า</label>
+            <select id={`${formId}-field-185`}
               value={selectedWhId}
               onChange={(e) => setSelectedWhId(e.target.value)}
               className="w-full text-xs px-3 py-2 bg-white border border-[#DCE5F0] rounded-xl focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 text-[#14213D] cursor-pointer"
@@ -168,8 +161,8 @@ function StockCardContent() {
 
           {/* Movement Type */}
           <div>
-            <label className="block text-[11px] font-semibold text-[#64748B] mb-1">ประเภทการเคลื่อนไหว</label>
-            <select
+            <label htmlFor={`${formId}-field-186`} className="block text-[11px] font-semibold text-[#64748B] mb-1">ประเภทการเคลื่อนไหว</label>
+            <select id={`${formId}-field-186`}
               value={movementType}
               onChange={(e) => setMovementType(e.target.value)}
               className="w-full text-xs px-3 py-2 bg-white border border-[#DCE5F0] rounded-xl focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 text-[#14213D] cursor-pointer"
@@ -207,75 +200,7 @@ function StockCardContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={11} className="py-12 text-center text-[#94A3B8]">
-                    <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
-                    กำลังดึงข้อมูลบัตรสต็อก...
-                  </td>
-                </tr>
-              ) : movements.length === 0 ? (
-                <tr>
-                  <td colSpan={11} className="py-12 text-center text-[#94A3B8]">
-                    ไม่พบรายการเคลื่อนไหวตามเงื่อนไขที่เลือก
-                  </td>
-                </tr>
-              ) : (
-                movements.map((m) => (
-                  <tr key={m.id} className="hover:bg-[#F5F8FC] transition-colors">
-                    <td className="py-3 px-4 whitespace-nowrap text-[#64748B] font-mono text-[11px]">
-                      {new Date(m.createdAt).toLocaleString('th-TH')}
-                    </td>
-                    <td className="py-3 px-3 whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedMovement(m);
-                          setShowDetailModal(true);
-                        }}
-                        className="font-mono font-bold text-[#2563EB] hover:text-[#164EAB] hover:underline"
-                        title="คลิกเพื่อดูรายละเอียดธุรกรรมและบัตรสต็อกแบบเต็มจอ"
-                      >
-                        {m.documentNumber}
-                      </button>
-                    </td>
-                    <td className="py-3 px-3 whitespace-nowrap">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-[#334155] border border-[#E2EAF4]">
-                        {m.movementType}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3">
-                      <div className="font-semibold text-[#14213D]">{m.item.itemName}</div>
-                      <div className="text-[10px] text-[#94A3B8] font-mono">{m.item.itemCode}</div>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-[11px] text-[#64748B]">
-                      {m.lotNumber || '-'}
-                    </td>
-                    {/* Incoming (+) */}
-                    <td className="py-3 px-3 text-right font-bold text-emerald-600 tabular-nums">
-                      {m.quantity > 0 ? `+${m.quantity.toLocaleString()} ${m.item.unit}` : '-'}
-                    </td>
-                    {/* Outgoing (-) */}
-                    <td className="py-3 px-3 text-right font-bold text-rose-600 tabular-nums">
-                      {m.quantity < 0 ? `${m.quantity.toLocaleString()} ${m.item.unit}` : '-'}
-                    </td>
-                    {/* Balance Before */}
-                    <td className="py-3 px-3 text-right text-[#64748B] tabular-nums">
-                      {m.balanceBefore.toLocaleString()}
-                    </td>
-                    {/* Balance After */}
-                    <td className="py-3 px-3 text-right font-bold text-[#14213D] tabular-nums bg-[#F5F8FC]">
-                      {m.balanceAfter.toLocaleString()} {m.item.unit}
-                    </td>
-                    <td className="py-3 px-3 whitespace-nowrap text-[#64748B]">
-                      {m.createdBy}
-                    </td>
-                    <td className="py-3 px-4 text-[#94A3B8] text-[11px] truncate max-w-[200px]">
-                      {m.remark || '-'}
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableRows(loading, movements, setSelectedMovement, setShowDetailModal)}
             </tbody>
           </table>
         </div>
@@ -528,6 +453,79 @@ function StockCardContent() {
       )}
     </div>
   );
+}
+
+function renderTableRows(loading: boolean, movements: any[], setSelectedMovement, setShowDetailModal) {
+  if (loading) {
+    return <tr>
+      <td colSpan={11} className="py-12 text-center text-[#94A3B8]">
+        <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
+        กำลังดึงข้อมูลบัตรสต็อก...
+      </td>
+    </tr>;
+  }
+  if (movements.length === 0) {
+    return <tr>
+      <td colSpan={11} className="py-12 text-center text-[#94A3B8]">
+        ไม่พบรายการเคลื่อนไหวตามเงื่อนไขที่เลือก
+      </td>
+    </tr>;
+  }
+  return movements.map((m) => (
+    <tr key={m.id} className="hover:bg-[#F5F8FC] transition-colors">
+      <td className="py-3 px-4 whitespace-nowrap text-[#64748B] font-mono text-[11px]">
+        {new Date(m.createdAt).toLocaleString('th-TH')}
+      </td>
+      <td className="py-3 px-3 whitespace-nowrap">
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedMovement(m);
+            setShowDetailModal(true);
+          }}
+          className="font-mono font-bold text-[#2563EB] hover:text-[#164EAB] hover:underline"
+          title="คลิกเพื่อดูรายละเอียดธุรกรรมและบัตรสต็อกแบบเต็มจอ"
+        >
+          {m.documentNumber}
+        </button>
+      </td>
+      <td className="py-3 px-3 whitespace-nowrap">
+        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-[#334155] border border-[#E2EAF4]">
+          {m.movementType}
+        </span>
+      </td>
+      <td className="py-3 px-3">
+        <div className="font-semibold text-[#14213D]">{m.item.itemName}</div>
+        <div className="text-[10px] text-[#94A3B8] font-mono">{m.item.itemCode}</div>
+      </td>
+      <td className="py-3 px-3 font-mono text-[11px] text-[#64748B]">
+        {m.lotNumber || '-'}
+      </td>
+      {/* Incoming (+) */}
+      <td className="py-3 px-3 text-right font-bold text-emerald-600 tabular-nums">
+        {m.quantity > 0 ? `+${m.quantity.toLocaleString()} ${m.item.unit}` : '-'}
+      </td>
+      {/* Outgoing (-) */}
+      <td className="py-3 px-3 text-right font-bold text-rose-600 tabular-nums">
+        {m.quantity < 0 ? `${m.quantity.toLocaleString()} ${m.item.unit}` : '-'}
+      </td>
+      {/* Balance Before */}
+      <td className="py-3 px-3 text-right text-[#64748B] tabular-nums">
+        {m.balanceBefore.toLocaleString()}
+      </td>
+      {/* Balance After */}
+      <td className="py-3 px-3 text-right font-bold text-[#14213D] tabular-nums bg-[#F5F8FC]">
+        {m.balanceAfter.toLocaleString()} {m.item.unit}
+      </td>
+      <td className="py-3 px-3 whitespace-nowrap text-[#64748B]">
+        {m.createdBy}
+      </td>
+      <td className="py-3 px-4 text-[#94A3B8] text-[11px] truncate max-w-[200px]">
+        {m.remark || '-'}
+      </td>
+    </tr>
+  ));
+
 }
 
 export default function StockCardPage() {

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
 import { useBudget } from '@/context/BudgetContext';
-import { History, Search, ShieldCheck } from 'lucide-react';
+import { History, Search } from 'lucide-react';
+import { useState } from 'react';
 
 export default function BudgetAuditLogPage() {
   const { audits } = useBudget();
@@ -45,14 +45,13 @@ export default function BudgetAuditLogPage() {
               { id: 'BUDGET_ADJUSTMENT', label: 'โอน/ปรับปรุง (Adjustment)' },
               { id: 'BUDGET_CONTROL', label: 'ควบคุมวงเงิน (Control)' },
             ].map((m) => (
-              <button
+              <button type="button"
                 key={m.id}
                 onClick={() => setModuleFilter(m.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
-                  moduleFilter === m.id
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${moduleFilter === m.id
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
               >
                 {m.label}
               </button>

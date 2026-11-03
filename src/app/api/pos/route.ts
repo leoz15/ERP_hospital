@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { generateDocumentNumber } from '@/lib/doc-sequence';
 import { logAudit } from '@/lib/audit';
+import { generateDocumentNumber } from '@/lib/doc-sequence';
+import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -107,9 +107,9 @@ export async function POST(request: Request) {
     let subtotal = 0;
     let totalDiscount = 0;
     const formattedLines = lines.map((l: any) => {
-      const qty = parseFloat(l.orderedQty) || 0;
-      const price = parseFloat(l.unitPrice) || 0;
-      const lineDisc = parseFloat(l.discount) || 0;
+      const qty = Number.parseFloat(l.orderedQty) || 0;
+      const price = Number.parseFloat(l.unitPrice) || 0;
+      const lineDisc = Number.parseFloat(l.discount) || 0;
       const lineBase = qty * price - lineDisc;
       const lineVat = Math.round(lineBase * 0.07 * 100) / 100;
       const lineNet = lineBase + lineVat;

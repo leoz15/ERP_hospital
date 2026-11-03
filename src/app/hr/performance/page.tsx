@@ -1,10 +1,9 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { useHR } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { Target, CheckCircle2, Award } from 'lucide-react';
+import { useHR } from '@/context/HRContext';
+import { Target } from 'lucide-react';
+import Link from 'next/link';
 
 export default function HRPerformancePage() {
   const { performances } = useHR();
@@ -67,7 +66,7 @@ export default function HRPerformancePage() {
                   </td>
                   <td className="py-3 px-4 text-[#64748B]">{p.evaluator}</td>
                   <td className="py-3 px-4 text-right">
-                    <button
+                    <button type="button"
                       onClick={() => addToast('success', `อนุมัติผลประเมินของ ${p.empName} เรียบร้อยแล้ว`)}
                       className="px-3 py-1 bg-[#0D9488] text-white rounded-lg text-[11px] font-bold"
                     >

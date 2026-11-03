@@ -1,58 +1,56 @@
 'use client';
 
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useApp } from '@/context/AppContext';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import {
-  SourcingHeader,
-  StatCard,
   FilterTabs,
   ModalShell,
   SectionCard,
-  inputCls,
+  SourcingHeader,
+  StatCard,
   btnPrimary,
   btnSecondary,
   btnSuccess,
   fmtDate,
   fmtMoney,
+  inputCls,
 } from '@/components/procurement/SourcingUI';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useApp } from '@/context/AppContext';
 import {
-  Receipt,
-  Plus,
-  Search,
+  Building2,
+  Clock,
   Eye,
+  FileSearch,
+  FileText,
   Inbox,
+  Package,
+  Paperclip,
+  Plus,
+  Receipt,
+  Save,
+  Scale,
+  Search,
+  Star,
   Trophy,
   Truck,
-  Star,
-  Building2,
-  Package,
-  Scale,
-  Clock,
-  FileSearch,
-  Save,
-  Paperclip,
   Upload,
-  FileText,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import React, { Suspense, useEffect, useId, useMemo, useState } from 'react';
 
 type Tab = 'ALL' | 'RECEIVED' | 'SELECTED' | 'NOT_SELECTED';
 
-function QuotationStatus({ status }: { status: string }) {
+function QuotationStatus({ status }: Readonly<{ status: string }>) {
   if (status === 'RECEIVED') {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-violet-50 text-violet-700 border-violet-200">
-        <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-        ได้รับแล้ว (รอเปรียบเทียบ)
-      </span>
+        <span className="w-1.5 h-1.5 rounded-full bg-violet-500" /><span>ได้รับแล้ว (รอเปรียบเทียบ)</span></span>
     );
   }
   return <StatusBadge status={status} />;
 }
 
-function StarInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+function StarInput({ value, onChange }: Readonly<{ value: number; onChange: (v: number) => void }>) {
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
@@ -66,6 +64,7 @@ function StarInput({ value, onChange }: { value: number; onChange: (v: number) =
 }
 
 function QuotationsContent() {
+  const formId = useId();
   const searchParams = useSearchParams();
   const rfqIdParam = searchParams.get('rfqId') || '';
   const supplierIdParam = searchParams.get('supplierId') || '';
@@ -77,7 +76,7 @@ function QuotationsContent() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState<Tab>('ALL');
-  const [detail, setDetail] = useState<any | null>(null);
+  const [detail, setDetail] = useState<any>(null);
 
   // Form
   const [showCreate, setShowCreate] = useState(false);
@@ -323,87 +322,7 @@ function QuotationsContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">กำลังโหลดข้อมูล...</td>
-                </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-14 text-center text-slate-400">
-                    <Receipt className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-                    ยังไม่มีใบเสนอราคาตามเงื่อนไขที่เลือก
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((q) => {
-                  const expired = q.validUntil && new Date(q.validUntil) < new Date() && q.status === 'RECEIVED';
-                  return (
-                    <tr key={q.id} className="hover:bg-[#FFF7ED]/40 transition-colors">
-                      <td className="py-3 px-4">
-                        <button type="button" onClick={() => setDetail(q)} className="font-mono font-bold text-[#D97706] hover:underline">
-                          {q.quotationNumber}
-                        </button>
-                        {q.supplierQuoteRef && <div className="text-[10px] text-slate-400">อ้างอิงผู้ขาย: {q.supplierQuoteRef}</div>}
-                        {q.attachmentName && (
-                          <div className="inline-flex items-center gap-1 text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 mt-1 font-mono">
-                            <Paperclip className="w-2.5 h-2.5" />
-                            <span className="truncate max-w-[130px]">{q.attachmentName}</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 font-mono text-[11px]">
-                        <span className="bg-sky-50 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-lg">{q.rfq?.rfqNumber}</span>
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="font-semibold text-[#14213D]">{q.supplier?.name}</div>
-                        <div className="text-[10px] text-slate-400 font-mono">{q.paymentTerm || q.supplier?.paymentTerm || '-'}</div>
-                      </td>
-                      <td className="py-3 px-3 text-slate-600">
-                        <div>{fmtDate(q.quoteDate)}</div>
-                        <div className={`text-[10px] ${expired ? 'text-rose-600 font-semibold' : 'text-slate-400'}`}>
-                          ถึง {fmtDate(q.validUntil)} {expired && '(หมดอายุ)'}
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 text-center tabular-nums">{q.deliveryDays} วัน</td>
-                      <td className="py-3 px-3 text-center">
-                        {q.qualityScore > 0 ? (
-                          <span className="inline-flex items-center gap-0.5 text-amber-600 font-semibold">
-                            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                            {q.qualityScore}
-                          </span>
-                        ) : (
-                          <span className="text-slate-300">-</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 text-right font-bold text-[#14213D] tabular-nums">฿{fmtMoney(q.totalAmount)}</td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <QuotationStatus status={q.status} />
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setDetail(q)}
-                            className="px-2.5 py-1 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold border border-slate-200 flex items-center gap-1"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-slate-500" />
-                            <span>ดูข้อมูล</span>
-                          </button>
-                          {q.status === 'RECEIVED' && (
-                            <Link
-                              href={`/procurement/comparison?rfqId=${q.rfqId}`}
-                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1"
-                            >
-                              <Scale className="w-3.5 h-3.5" />
-                              <span>เปรียบเทียบ</span>
-                            </Link>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
+              {renderTableRows(loading, filtered, setDetail)}
             </tbody>
           </table>
         </div>
@@ -425,9 +344,8 @@ function QuotationsContent() {
               </span>
               {estTotal > 0 && formTotal > 0 && (
                 <span
-                  className={`px-2 py-0.5 rounded-md font-semibold ${
-                    formTotal <= estTotal ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
-                  }`}
+                  className={`px-2 py-0.5 rounded-md font-semibold ${formTotal <= estTotal ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+                    }`}
                 >
                   {formTotal <= estTotal ? '▼' : '▲'} {Math.abs(((formTotal - estTotal) / estTotal) * 100).toFixed(1)}% จากราคากลาง
                 </span>
@@ -448,8 +366,8 @@ function QuotationsContent() {
             <SectionCard title="อ้างอิงคำขอและผู้จำหน่าย" icon={Building2}>
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">คำขอใบเสนอราคา (RFQ) *</label>
-                  <select
+                  <label htmlFor={`${formId}-field-129`} className="block font-semibold text-slate-700 mb-1">คำขอใบเสนอราคา (RFQ) *</label>
+                  <select id={`${formId}-field-129`}
                     value={rfqId}
                     onChange={(e) => {
                       setRfqId(e.target.value);
@@ -468,8 +386,8 @@ function QuotationsContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">ผู้จำหน่าย *</label>
-                  <select value={supplierId} onChange={(e) => pickSupplier(e.target.value)} className={inputCls}>
+                  <label htmlFor={`${formId}-field-130`} className="block font-semibold text-slate-700 mb-1">ผู้จำหน่าย *</label>
+                  <select id={`${formId}-field-130`} value={supplierId} onChange={(e) => pickSupplier(e.target.value)} className={inputCls}>
                     <option value="">-- เลือกผู้จำหน่าย --</option>
                     {invitedPending.length > 0 && (
                       <optgroup label="ผู้จำหน่ายที่ได้รับเชิญ (ยังไม่เสนอราคา)">
@@ -496,22 +414,22 @@ function QuotationsContent() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">เลขที่ใบเสนอราคาผู้ขาย</label>
-                    <input value={supplierQuoteRef} onChange={(e) => setSupplierQuoteRef(e.target.value)} className={inputCls} placeholder="เช่น QO-2569/123" />
+                    <label htmlFor={`${formId}-field-131`} className="block font-semibold text-slate-700 mb-1">เลขที่ใบเสนอราคาผู้ขาย</label>
+                    <input id={`${formId}-field-131`} value={supplierQuoteRef} onChange={(e) => setSupplierQuoteRef(e.target.value)} className={inputCls} placeholder="เช่น QO-2569/123" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">วันที่เสนอราคา</label>
-                    <input type="date" value={quoteDate} onChange={(e) => setQuoteDate(e.target.value)} className={inputCls} />
+                    <label htmlFor={`${formId}-field-132`} className="block font-semibold text-slate-700 mb-1">วันที่เสนอราคา</label>
+                    <input id={`${formId}-field-132`} type="date" value={quoteDate} onChange={(e) => setQuoteDate(e.target.value)} className={inputCls} />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                  <label htmlFor={`${formId}-field-133`} className="block font-semibold text-slate-700 mb-1 flex items-center justify-between">
                     <span>เอกสารแนบใบเสนอราคาต้นฉบับ (Quotation Document)</span>
                     <span className="text-[10px] text-slate-400 font-normal">PDF, รูปภาพ หรือ Word</span>
                   </label>
                   <div className="relative border-2 border-dashed border-slate-300 hover:border-[#F28C28] rounded-xl p-3 bg-slate-50/70 hover:bg-orange-50/20 transition-all text-center">
-                    <input
+                    <input id={`${formId}-field-133`}
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                       onChange={handleFileUpload}
@@ -549,31 +467,31 @@ function QuotationsContent() {
               <div className="space-y-3 text-xs">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">ระยะเวลาส่งมอบ (วัน)</label>
-                    <input type="number" min={1} value={deliveryDays} onChange={(e) => setDeliveryDays(Number(e.target.value))} className={inputCls} />
+                    <label htmlFor={`${formId}-field-134`} className="block font-semibold text-slate-700 mb-1">ระยะเวลาส่งมอบ (วัน)</label>
+                    <input id={`${formId}-field-134`} type="number" min={1} value={deliveryDays} onChange={(e) => setDeliveryDays(Number(e.target.value))} className={inputCls} />
                   </div>
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">ยืนราคาถึงวันที่</label>
-                    <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} />
+                    <label htmlFor={`${formId}-field-135`} className="block font-semibold text-slate-700 mb-1">ยืนราคาถึงวันที่</label>
+                    <input id={`${formId}-field-135`} type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} className={inputCls} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">เงื่อนไขชำระเงิน</label>
-                    <input value={paymentTerm} onChange={(e) => setPaymentTerm(e.target.value)} className={inputCls} placeholder="เช่น Credit 30 วัน" />
+                    <label htmlFor={`${formId}-field-136`} className="block font-semibold text-slate-700 mb-1">เงื่อนไขชำระเงิน</label>
+                    <input id={`${formId}-field-136`} value={paymentTerm} onChange={(e) => setPaymentTerm(e.target.value)} className={inputCls} placeholder="เช่น Credit 30 วัน" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">การรับประกัน</label>
-                    <input value={warranty} onChange={(e) => setWarranty(e.target.value)} className={inputCls} placeholder="เช่น อายุยา ≥ 2 ปี" />
+                    <label htmlFor={`${formId}-field-137`} className="block font-semibold text-slate-700 mb-1">การรับประกัน</label>
+                    <input id={`${formId}-field-137`} value={warranty} onChange={(e) => setWarranty(e.target.value)} className={inputCls} placeholder="เช่น อายุยา ≥ 2 ปี" />
                   </div>
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">ประเมินคุณภาพ / ความน่าเชื่อถือ</label>
+                  <div className="block font-semibold text-slate-700 mb-1">ประเมินคุณภาพ / ความน่าเชื่อถือ</div>
                   <StarInput value={qualityScore} onChange={setQualityScore} />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">หมายเหตุ</label>
-                  <textarea rows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} className={inputCls} />
+                  <label htmlFor={`${formId}-field-138`} className="block font-semibold text-slate-700 mb-1">หมายเหตุ</label>
+                  <textarea id={`${formId}-field-138`} rows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} className={inputCls} />
                 </div>
               </div>
             </SectionCard>
@@ -755,6 +673,91 @@ function QuotationsContent() {
       </ModalShell>
     </div>
   );
+}
+
+function renderTableRows(loading: boolean, filtered: any[], setDetail: React.Dispatch<any>): React.ReactNode {
+  if (loading) {
+    return <tr>
+      <td colSpan={9} className="py-12 text-center text-slate-400">กำลังโหลดข้อมูล...</td>
+    </tr>;
+  }
+  if (filtered.length === 0) {
+    return <tr>
+      <td colSpan={9} className="py-14 text-center text-slate-400">
+        <Receipt className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+        ยังไม่มีใบเสนอราคาตามเงื่อนไขที่เลือก
+      </td>
+    </tr>;
+  }
+  return filtered.map((q) => {
+    const expired = q.validUntil && new Date(q.validUntil) < new Date() && q.status === 'RECEIVED';
+    return (
+      <tr key={q.id} className="hover:bg-[#FFF7ED]/40 transition-colors">
+        <td className="py-3 px-4">
+          <button type="button" onClick={() => setDetail(q)} className="font-mono font-bold text-[#D97706] hover:underline">
+            {q.quotationNumber}
+          </button>
+          {q.supplierQuoteRef && <div className="text-[10px] text-slate-400">อ้างอิงผู้ขาย: {q.supplierQuoteRef}</div>}
+          {q.attachmentName && (
+            <div className="inline-flex items-center gap-1 text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 mt-1 font-mono">
+              <Paperclip className="w-2.5 h-2.5" />
+              <span className="truncate max-w-[130px]">{q.attachmentName}</span>
+            </div>
+          )}
+        </td>
+        <td className="py-3 px-3 font-mono text-[11px]">
+          <span className="bg-sky-50 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-lg">{q.rfq?.rfqNumber}</span>
+        </td>
+        <td className="py-3 px-3">
+          <div className="font-semibold text-[#14213D]">{q.supplier?.name}</div>
+          <div className="text-[10px] text-slate-400 font-mono">{q.paymentTerm || q.supplier?.paymentTerm || '-'}</div>
+        </td>
+        <td className="py-3 px-3 text-slate-600">
+          <div>{fmtDate(q.quoteDate)}</div>
+          <div className={`text-[10px] ${expired ? 'text-rose-600 font-semibold' : 'text-slate-400'}`}>
+            ถึง {fmtDate(q.validUntil)} {expired && '(หมดอายุ)'}
+          </div>
+        </td>
+        <td className="py-3 px-3 text-center tabular-nums">{q.deliveryDays} วัน</td>
+        <td className="py-3 px-3 text-center">
+          {q.qualityScore > 0 ? (
+            <span className="inline-flex items-center gap-0.5 text-amber-600 font-semibold">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              {q.qualityScore}
+            </span>
+          ) : (
+            <span className="text-slate-300">-</span>
+          )}
+        </td>
+        <td className="py-3 px-3 text-right font-bold text-[#14213D] tabular-nums">฿{fmtMoney(q.totalAmount)}</td>
+        <td className="py-3 px-3 text-center whitespace-nowrap">
+          <QuotationStatus status={q.status} />
+        </td>
+        <td className="py-3 px-4 whitespace-nowrap">
+          <div className="flex items-center justify-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setDetail(q)}
+              className="px-2.5 py-1 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold border border-slate-200 flex items-center gap-1"
+            >
+              <Eye className="w-3.5 h-3.5 text-slate-500" />
+              <span>ดูข้อมูล</span>
+            </button>
+            {q.status === 'RECEIVED' && (
+              <Link
+                href={`/procurement/comparison?rfqId=${q.rfqId}`}
+                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1"
+              >
+                <Scale className="w-3.5 h-3.5" />
+                <span>เปรียบเทียบ</span>
+              </Link>
+            )}
+          </div>
+        </td>
+      </tr>
+    );
+  });
+
 }
 
 export default function QuotationsPage() {

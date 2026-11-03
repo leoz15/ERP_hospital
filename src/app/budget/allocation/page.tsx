@@ -1,20 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
 import { useBudget } from '@/context/BudgetContext';
 import {
+  Building2,
+  CheckCircle2,
+  FolderKanban,
+  History,
   Layers,
   Plus,
   ShieldAlert,
-  CheckCircle2,
-  Building2,
-  FolderKanban,
-  CalendarRange,
-  History,
-  X,
+  X
 } from 'lucide-react';
+import React, { useId, useState } from 'react';
 
 export default function BudgetAllocationPage() {
+  const formId = useId();
   const { plans, allocations, addAllocation, audits } = useBudget();
   const [viewMode, setViewMode] = useState<'BY_DEPT' | 'BY_CATEGORY' | 'BY_PROJECT' | 'HISTORY'>(
     'BY_DEPT'
@@ -90,7 +90,7 @@ export default function BudgetAllocationPage() {
             กระจายวงเงินที่ได้รับอนุมัติให้แต่ละหน่วยงาน หมวดงบประมาณ โครงการ และแบ่งงวดรายไตรมาส (Q1–Q4)
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={() => {
             setErrorMsg(null);
             setShowAllocModal(true);
@@ -121,7 +121,7 @@ export default function BudgetAllocationPage() {
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             {successMsg}
           </span>
-          <button onClick={() => setSuccessMsg(null)} className="text-emerald-600 hover:underline">
+          <button type="button" onClick={() => setSuccessMsg(null)} className="text-emerald-600 hover:underline">
             ปิด
           </button>
         </div>
@@ -171,46 +171,42 @@ export default function BudgetAllocationPage() {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <button
+            <button type="button"
               onClick={() => setViewMode('BY_DEPT')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                viewMode === 'BY_DEPT'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${viewMode === 'BY_DEPT'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               <Building2 className="w-3.5 h-3.5" />
               จัดสรรตามหน่วยงาน & ไตรมาส (Q1-Q4)
             </button>
-            <button
+            <button type="button"
               onClick={() => setViewMode('BY_CATEGORY')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                viewMode === 'BY_CATEGORY'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${viewMode === 'BY_CATEGORY'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               <Layers className="w-3.5 h-3.5" />
               จัดสรรตามหมวดงบประมาณ
             </button>
-            <button
+            <button type="button"
               onClick={() => setViewMode('BY_PROJECT')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                viewMode === 'BY_PROJECT'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${viewMode === 'BY_PROJECT'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               <FolderKanban className="w-3.5 h-3.5" />
               จัดสรรตามโครงการ
             </button>
-            <button
+            <button type="button"
               onClick={() => setViewMode('HISTORY')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                viewMode === 'HISTORY'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${viewMode === 'HISTORY'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               <History className="w-3.5 h-3.5" />
               ประวัติการจัดสรร ({allocAudits.length})
@@ -359,7 +355,7 @@ export default function BudgetAllocationPage() {
                   จัดสรรงบประมาณให้หน่วยงาน / โครงการ
                 </h3>
               </div>
-              <button
+              <button type="button"
                 onClick={() => setShowAllocModal(false)}
                 className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"
               >
@@ -369,10 +365,10 @@ export default function BudgetAllocationPage() {
 
             <form onSubmit={handleCreateAllocation} className="space-y-4 mt-4 text-xs">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">
+                <label htmlFor={`${formId}-field-11`} className="font-bold text-slate-700 block mb-1">
                   เลือกรหัสงบประมาณ / หน่วยงานที่ต้องการจัดสรร
                 </label>
-                <select
+                <select id={`${formId}-field-11`}
                   value={selectedBudgetCode}
                   onChange={(e) => {
                     setSelectedBudgetCode(e.target.value);
@@ -399,11 +395,10 @@ export default function BudgetAllocationPage() {
                   <div className="text-right">
                     <div className="text-slate-500">ยอดรวมจัดสรร Q1–Q4 ที่กรอก</div>
                     <div
-                      className={`text-base font-extrabold ${
-                        sumQuarters > selectedPlan.approvedAmount
-                          ? 'text-rose-600'
-                          : 'text-emerald-700'
-                      }`}
+                      className={`text-base font-extrabold ${sumQuarters > selectedPlan.approvedAmount
+                        ? 'text-rose-600'
+                        : 'text-emerald-700'
+                        }`}
                     >
                       ฿{sumQuarters.toLocaleString()}
                     </div>
@@ -413,10 +408,10 @@ export default function BudgetAllocationPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">
+                  <label htmlFor={`${formId}-field-12`} className="font-bold text-slate-700 block mb-1">
                     งวดไตรมาส 1 (ต.ค. - ธ.ค.)
                   </label>
-                  <input
+                  <input id={`${formId}-field-12`}
                     type="number"
                     value={q1}
                     onChange={(e) => setQ1(e.target.value)}
@@ -424,10 +419,10 @@ export default function BudgetAllocationPage() {
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">
+                  <label htmlFor={`${formId}-field-13`} className="font-bold text-slate-700 block mb-1">
                     งวดไตรมาส 2 (ม.ค. - มี.ค.)
                   </label>
-                  <input
+                  <input id={`${formId}-field-13`}
                     type="number"
                     value={q2}
                     onChange={(e) => setQ2(e.target.value)}
@@ -435,10 +430,10 @@ export default function BudgetAllocationPage() {
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">
+                  <label htmlFor={`${formId}-field-14`} className="font-bold text-slate-700 block mb-1">
                     งวดไตรมาส 3 (เม.ย. - มิ.ย.)
                   </label>
-                  <input
+                  <input id={`${formId}-field-14`}
                     type="number"
                     value={q3}
                     onChange={(e) => setQ3(e.target.value)}
@@ -446,10 +441,10 @@ export default function BudgetAllocationPage() {
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">
+                  <label htmlFor={`${formId}-field-15`} className="font-bold text-slate-700 block mb-1">
                     งวดไตรมาส 4 (ก.ค. - ก.ย.)
                   </label>
-                  <input
+                  <input id={`${formId}-field-15`}
                     type="number"
                     value={q4}
                     onChange={(e) => setQ4(e.target.value)}

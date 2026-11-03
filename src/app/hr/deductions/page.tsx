@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
 import { Receipt } from 'lucide-react';
+import Link from 'next/link';
 
 export default function HRDeductionsPage() {
   const items = [
@@ -52,11 +51,10 @@ export default function HRDeductionsPage() {
                   <td className="py-3 px-4 font-bold text-[#14213D]">{it.name}</td>
                   <td className="py-3 px-4">
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                        it.type.includes('รายรับ')
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : 'bg-rose-50 text-rose-700 border-rose-200'
-                      }`}
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${it.type.includes('รายรับ')
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-rose-50 text-rose-700 border-rose-200'
+                        }`}
                     >
                       {it.type}
                     </span>

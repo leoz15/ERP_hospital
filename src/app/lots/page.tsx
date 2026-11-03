@@ -1,33 +1,28 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useApp } from '@/context/AppContext';
 import {
-  CalendarClock,
-  Search,
-  Filter,
-  Download,
-  AlertTriangle,
-  Clock,
-  ShieldCheck,
   Building,
-  RefreshCw,
-  Sparkles,
-  Eye,
-  Copy,
-  Printer,
-  X,
-  Layers,
-  DollarSign,
+  CalendarClock,
   CheckCircle2,
-  ExternalLink,
-  History,
   ChevronLeft,
   ChevronRight,
+  Clock,
+  Copy,
+  Download,
+  History,
+  Printer,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  X
 } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useEffect, useId, useState } from 'react';
 
 export default function LotsManagementPage() {
+  const formId = useId();
   const { selectedWarehouse, refreshKey, addToast } = useApp();
   const [lots, setLots] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +31,7 @@ export default function LotsManagementPage() {
 
   // Full-screen Lot Detail Modal State
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedLotDetail, setSelectedLotDetail] = useState<any | null>(null);
+  const [selectedLotDetail, setSelectedLotDetail] = useState<any>(null);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,7 +40,7 @@ export default function LotsManagementPage() {
   // FEFO Simulator state
   const [fefoItemId, setFefoItemId] = useState('');
   const [fefoQty, setFefoQty] = useState(50);
-  const [fefoResult, setFefoResult] = useState<any | null>(null);
+  const [fefoResult, setFefoResult] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
 
   useEffect(() => {
@@ -116,7 +111,7 @@ export default function LotsManagementPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => {
               const csvContent =
                 '\uFEFF' +
@@ -156,8 +151,8 @@ export default function LotsManagementPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end pt-1">
           <div className="md:col-span-2">
-            <label className="block text-xs font-medium text-slate-300 mb-1">เลือกสินค้าที่จะเบิกจ่าย</label>
-            <select
+            <label htmlFor={`${formId}-field-106`} className="block text-xs font-medium text-slate-300 mb-1">เลือกสินค้าที่จะเบิกจ่าย</label>
+            <select id={`${formId}-field-106`}
               value={fefoItemId}
               onChange={(e) => setFefoItemId(e.target.value)}
               className="w-full text-xs px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white font-medium focus:ring-2 focus:ring-blue-400"
@@ -171,17 +166,17 @@ export default function LotsManagementPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">จำนวนที่ต้องการเบิก</label>
-            <input
+            <label htmlFor={`${formId}-field-107`} className="block text-xs font-medium text-slate-300 mb-1">จำนวนที่ต้องการเบิก</label>
+            <input id={`${formId}-field-107`}
               type="number"
               min="1"
               value={fefoQty}
-              onChange={(e) => setFefoQty(parseFloat(e.target.value) || 0)}
+              onChange={(e) => setFefoQty(Number.parseFloat(e.target.value) || 0)}
               className="w-full text-xs px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white font-bold text-right"
             />
           </div>
 
-          <button
+          <button type="button"
             onClick={runFEFOSimulation}
             className="w-full px-4 py-2 bg-[#2563EB] hover:bg-[#164EAB] text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-blue-500/20"
           >
@@ -199,7 +194,7 @@ export default function LotsManagementPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                   {fefoResult.allocations.map((a: any, i: number) => (
-                    <div key={i} className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-700">
+                    <div key={a.lotId} className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-700">
                       <div className="font-mono text-amber-300 font-bold">{a.lotNumber}</div>
                       <div className="text-[11px] text-slate-300">
                         จัดสรร: <span className="font-bold text-white">{a.allocateQty} หน่วย</span> (คงเหลือใน Lot: {a.availableInLot})
@@ -253,17 +248,16 @@ export default function LotsManagementPage() {
                 { id: 'EXPIRED', label: 'หมดอายุแล้ว' },
                 { id: 'QUARANTINE', label: 'กักกัน' },
               ].map((tab) => (
-                <button
+                <button type="button"
                   key={tab.id}
                   onClick={() => {
                     setActiveFilter(tab.id);
                     setCurrentPage(1);
                   }}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    activeFilter === tab.id
-                      ? 'bg-[#2563EB] text-white shadow-xs'
-                      : 'bg-slate-100 hover:bg-slate-200 text-[#64748B]'
-                  }`}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeFilter === tab.id
+                    ? 'bg-[#2563EB] text-white shadow-xs'
+                    : 'bg-slate-100 hover:bg-slate-200 text-[#64748B]'
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -290,80 +284,7 @@ export default function LotsManagementPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={10} className="py-12 text-center text-[#94A3B8]">
-                    <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
-                    กำลังดึงข้อมูล Lot ทั้งหมด...
-                  </td>
-                </tr>
-              ) : lots.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="py-12 text-center text-[#94A3B8]">
-                    ไม่พบข้อมูล Lot ตามเงื่อนไขที่เลือก
-                  </td>
-                </tr>
-              ) : (
-                lots
-                  .slice((currentPage - 1) * pageSize, currentPage * pageSize)
-                  .map((l) => (
-                    <tr key={l.id} className="hover:bg-[#F5F8FC] transition-colors">
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedLotDetail(l);
-                            setShowDetailModal(true);
-                          }}
-                          className="font-mono font-bold text-[#2563EB] hover:text-[#164EAB] hover:underline"
-                          title="คลิกเพื่อดูข้อมูล Lot 360° และวันหมดอายุแบบเต็มจอ"
-                        >
-                          {l.lotNumber}
-                        </button>
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="font-semibold text-[#14213D]">{l.itemName}</div>
-                        <div className="text-[10px] text-[#94A3B8] font-mono">{l.itemCode}</div>
-                      </td>
-                      <td className="py-3 px-3 whitespace-nowrap text-[#334155]">
-                        {l.warehouseName}
-                      </td>
-                      <td className="py-3 px-3 font-mono text-[#64748B] whitespace-nowrap">
-                        {l.locationCode}
-                      </td>
-                      <td className="py-3 px-3 text-right font-semibold text-[#14213D] tabular-nums whitespace-nowrap">
-                        {l.currentQty.toLocaleString()} {l.unit}
-                      </td>
-                      <td className="py-3 px-3 text-right font-bold text-blue-700 tabular-nums bg-blue-50/30 whitespace-nowrap">
-                        {l.availableInLot.toLocaleString()} {l.unit}
-                      </td>
-                      <td className="py-3 px-3 text-right tabular-nums text-[#64748B] whitespace-nowrap">
-                        ฿{l.unitCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="py-3 px-3 whitespace-nowrap font-medium text-[#14213D]">
-                        {new Date(l.expiryDate).toLocaleDateString('th-TH')}
-                      </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
-                        {l.isExpired ? (
-                          <span className="text-red-700 font-bold text-[11px]">
-                            หมดอายุแล้ว ({Math.abs(l.daysRemaining)} วันที่แล้ว)
-                          </span>
-                        ) : l.isNearExpiry ? (
-                          <span className="text-amber-700 font-semibold text-[11px]">
-                            เหลือ {l.daysRemaining} วัน (ใกล้หมดอายุ)
-                          </span>
-                        ) : (
-                          <span className="text-[#64748B] text-[11px]">
-                            เหลือ {l.daysRemaining} วัน
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <StatusBadge status={l.status} />
-                      </td>
-                    </tr>
-                  ))
-              )}
+              {renderTableRows(loading, lots, currentPage, pageSize, setSelectedLotDetail, setShowDetailModal)}
             </tbody>
           </table>
         </div>
@@ -396,11 +317,10 @@ export default function LotsManagementPage() {
                 key={page}
                 type="button"
                 onClick={() => setCurrentPage(page)}
-                className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
-                  currentPage === page
-                    ? 'bg-[#2563EB] text-white shadow-2xs'
-                    : 'border border-[#E2EAF4] hover:bg-[#F5F8FC] text-[#334155]'
-                }`}
+                className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${currentPage === page
+                  ? 'bg-[#2563EB] text-white shadow-2xs'
+                  : 'border border-[#E2EAF4] hover:bg-[#F5F8FC] text-[#334155]'
+                  }`}
               >
                 {page}
               </button>
@@ -564,13 +484,7 @@ export default function LotsManagementPage() {
                     <div className="flex justify-between items-center py-1 border-b border-[#E2EAF4]">
                       <span className="text-[#64748B]">ระยะเวลาคงเหลือ (Days Remaining):</span>
                       <span className="font-bold text-sm">
-                        {selectedLotDetail.isExpired ? (
-                          <span className="text-rose-600 font-bold">หมดอายุแล้ว ({Math.abs(selectedLotDetail.daysRemaining)} วันที่แล้ว)</span>
-                        ) : selectedLotDetail.isNearExpiry ? (
-                          <span className="text-amber-600 font-bold">เหลืออีก {selectedLotDetail.daysRemaining} วัน (ใกล้หมดอายุ)</span>
-                        ) : (
-                          <span className="text-emerald-700 font-bold">เหลืออีก {selectedLotDetail.daysRemaining} วัน</span>
-                        )}
+                        {getIsExpiredContent(selectedLotDetail)}
                       </span>
                     </div>
 
@@ -668,4 +582,98 @@ export default function LotsManagementPage() {
       )}
     </div>
   );
+}
+
+function getIsExpiredContent(selectedLotDetail: any) {
+  if (selectedLotDetail.isExpired) {
+    return <span className="text-rose-600 font-bold">หมดอายุแล้ว ({Math.abs(selectedLotDetail.daysRemaining)} วันที่แล้ว)</span>;
+  }
+  if (selectedLotDetail.isNearExpiry) {
+    return <span className="text-amber-600 font-bold">เหลืออีก {selectedLotDetail.daysRemaining} วัน (ใกล้หมดอายุ)</span>;
+  }
+  return <span className="text-emerald-700 font-bold">เหลืออีก {selectedLotDetail.daysRemaining} วัน</span>;
+
+}
+
+function renderTableRows(loading: boolean, lots: any[], currentPage: number, pageSize: number, setSelectedLotDetail, setShowDetailModal) {
+  if (loading) {
+    return <tr>
+      <td colSpan={10} className="py-12 text-center text-[#94A3B8]">
+        <RefreshCw className="w-6 h-6 mx-auto animate-spin text-[#2563EB] mb-2" />
+        กำลังดึงข้อมูล Lot ทั้งหมด...
+      </td>
+    </tr>;
+  }
+  if (lots.length === 0) {
+    return <tr>
+      <td colSpan={10} className="py-12 text-center text-[#94A3B8]">
+        ไม่พบข้อมูล Lot ตามเงื่อนไขที่เลือก
+      </td>
+    </tr>;
+  }
+  return lots
+    .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    .map((l) => (
+      <tr key={l.id} className="hover:bg-[#F5F8FC] transition-colors">
+        <td className="py-3 px-4 whitespace-nowrap">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedLotDetail(l);
+              setShowDetailModal(true);
+            }}
+            className="font-mono font-bold text-[#2563EB] hover:text-[#164EAB] hover:underline"
+            title="คลิกเพื่อดูข้อมูล Lot 360° และวันหมดอายุแบบเต็มจอ"
+          >
+            {l.lotNumber}
+          </button>
+        </td>
+        <td className="py-3 px-3">
+          <div className="font-semibold text-[#14213D]">{l.itemName}</div>
+          <div className="text-[10px] text-[#94A3B8] font-mono">{l.itemCode}</div>
+        </td>
+        <td className="py-3 px-3 whitespace-nowrap text-[#334155]">
+          {l.warehouseName}
+        </td>
+        <td className="py-3 px-3 font-mono text-[#64748B] whitespace-nowrap">
+          {l.locationCode}
+        </td>
+        <td className="py-3 px-3 text-right font-semibold text-[#14213D] tabular-nums whitespace-nowrap">
+          {l.currentQty.toLocaleString()} {l.unit}
+        </td>
+        <td className="py-3 px-3 text-right font-bold text-blue-700 tabular-nums bg-blue-50/30 whitespace-nowrap">
+          {l.availableInLot.toLocaleString()} {l.unit}
+        </td>
+        <td className="py-3 px-3 text-right tabular-nums text-[#64748B] whitespace-nowrap">
+          ฿{l.unitCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+        </td>
+        <td className="py-3 px-3 whitespace-nowrap font-medium text-[#14213D]">
+          {new Date(l.expiryDate).toLocaleDateString('th-TH')}
+        </td>
+        <td className="py-3 px-3 text-center whitespace-nowrap">
+          {getIsExpiredContent2(l)}
+        </td>
+        <td className="py-3 px-4 text-center whitespace-nowrap">
+          <StatusBadge status={l.status} />
+        </td>
+      </tr>
+    ));
+
+}
+
+function getIsExpiredContent2(l: any) {
+  if (l.isExpired) {
+    return <span className="text-red-700 font-bold text-[11px]">
+      หมดอายุแล้ว ({Math.abs(l.daysRemaining)} วันที่แล้ว)
+    </span>;
+  }
+  if (l.isNearExpiry) {
+    return <span className="text-amber-700 font-semibold text-[11px]">
+      เหลือ {l.daysRemaining} วัน (ใกล้หมดอายุ)
+    </span>;
+  }
+  return <span className="text-[#64748B] text-[11px]">
+    เหลือ {l.daysRemaining} วัน
+  </span>;
+
 }

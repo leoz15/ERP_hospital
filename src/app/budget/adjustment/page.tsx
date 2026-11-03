@@ -1,19 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useBudget, BudgetAdjustmentRecord } from '@/context/BudgetContext';
+import { BudgetAdjustmentRecord, useBudget } from '@/context/BudgetContext';
 import {
   ArrowRightLeft,
-  Plus,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  ArrowRight,
   History,
-  X,
+  Plus,
+  X
 } from 'lucide-react';
+import React, { useId, useState } from 'react';
 
 export default function BudgetAdjustmentPage() {
+  const formId = useId();
   const { plans, adjustments, addAdjustment, approveAdjustment, audits } = useBudget();
   const [activeTab, setActiveTab] = useState<'ALL' | 'PENDING' | 'HISTORY'>('ALL');
   const [showModal, setShowModal] = useState(false);
@@ -79,7 +76,7 @@ export default function BudgetAdjustmentPage() {
             โอนงบระหว่างหน่วยงาน โอนระหว่างหมวดงบประมาณ ขอเพิ่ม/ลดกรอบงบประมาณ แสดงยอดก่อน-หลังโอนชัดเจน
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={() => setShowModal(true)}
           className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-2 shadow-sm shrink-0"
         >
@@ -120,33 +117,30 @@ export default function BudgetAdjustmentPage() {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={() => setActiveTab('ALL')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
-                activeTab === 'ALL'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${activeTab === 'ALL'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               คำขอโอนและปรับปรุงทั้งหมด ({adjustments.length})
             </button>
-            <button
+            <button type="button"
               onClick={() => setActiveTab('PENDING')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
-                activeTab === 'PENDING'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${activeTab === 'PENDING'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               รายการรออนุมัติ ({adjustments.filter((a) => a.status === 'PENDING_APPROVAL').length})
             </button>
-            <button
+            <button type="button"
               onClick={() => setActiveTab('HISTORY')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'HISTORY'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${activeTab === 'HISTORY'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               <History className="w-3.5 h-3.5" />
               ประวัติการเปลี่ยนแปลง ({adjAudits.length})
@@ -206,13 +200,8 @@ export default function BudgetAdjustmentPage() {
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                            adj.status === 'APPROVED'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : adj.status === 'PENDING_APPROVAL'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-rose-100 text-rose-800'
-                          }`}
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${getStatusClassName(adj)
+                            }`}
                         >
                           {adj.status}
                         </span>
@@ -220,13 +209,13 @@ export default function BudgetAdjustmentPage() {
                       <td className="py-3.5 px-4 text-right">
                         {adj.status === 'PENDING_APPROVAL' ? (
                           <div className="flex items-center justify-end gap-1.5">
-                            <button
+                            <button type="button"
                               onClick={() => approveAdjustment(adj.id, true)}
                               className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px]"
                             >
                               อนุมัติโอน
                             </button>
-                            <button
+                            <button type="button"
                               onClick={() => approveAdjustment(adj.id, false)}
                               className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px]"
                             >
@@ -277,7 +266,7 @@ export default function BudgetAdjustmentPage() {
                   สร้างคำขอโอน / ปรับปรุงงบประมาณ
                 </h3>
               </div>
-              <button
+              <button type="button"
                 onClick={() => setShowModal(false)}
                 className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"
               >
@@ -288,10 +277,10 @@ export default function BudgetAdjustmentPage() {
             <form onSubmit={handleCreateAdjustment} className="space-y-4 mt-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">
+                  <label htmlFor={`${formId}-field-6`} className="font-bold text-slate-700 block mb-1">
                     ประเภทการปรับปรุงงบประมาณ
                   </label>
-                  <select
+                  <select id={`${formId}-field-6`}
                     value={adjustmentType}
                     onChange={(e) =>
                       setAdjustmentType(
@@ -307,10 +296,10 @@ export default function BudgetAdjustmentPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">
+                  <label htmlFor={`${formId}-field-7`} className="font-bold text-slate-700 block mb-1">
                     จำนวนเงินที่ต้องการโอน / ปรับปรุง (บาท)
                   </label>
-                  <input
+                  <input id={`${formId}-field-7`}
                     type="number"
                     required
                     value={transferAmount}
@@ -322,10 +311,10 @@ export default function BudgetAdjustmentPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-3.5 rounded-xl bg-rose-50/50 border border-rose-200">
-                  <label className="font-bold text-rose-800 block mb-1">
+                  <label htmlFor={`${formId}-field-8`} className="font-bold text-rose-800 block mb-1">
                     รหัสงบต้นทาง (ผู้โอนออก)
                   </label>
-                  <select
+                  <select id={`${formId}-field-8`}
                     value={fromCode}
                     onChange={(e) => setFromCode(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white mb-2"
@@ -355,10 +344,10 @@ export default function BudgetAdjustmentPage() {
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-200">
-                  <label className="font-bold text-emerald-800 block mb-1">
+                  <label htmlFor={`${formId}-field-9`} className="font-bold text-emerald-800 block mb-1">
                     รหัสงบปลายทาง (ผู้รับโอน)
                   </label>
-                  <select
+                  <select id={`${formId}-field-9`}
                     value={toCode}
                     onChange={(e) => setToCode(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white mb-2"
@@ -389,10 +378,10 @@ export default function BudgetAdjustmentPage() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">
+                <label htmlFor={`${formId}-field-10`} className="font-bold text-slate-700 block mb-1">
                   บันทึกเหตุผลและความจำเป็นในการโอน
                 </label>
-                <textarea
+                <textarea id={`${formId}-field-10`}
                   rows={2}
                   required
                   placeholder="ระบุเหตุผลการโอนงบประมาณเพื่อเสนอผู้บริหารพิจารณา..."
@@ -425,3 +414,14 @@ export default function BudgetAdjustmentPage() {
   );
 }
 
+
+function getStatusClassName(adj: BudgetAdjustmentRecord) {
+  if (adj.status === 'APPROVED') {
+    return 'bg-emerald-100 text-emerald-800';
+  }
+  if (adj.status === 'PENDING_APPROVAL') {
+    return 'bg-amber-100 text-amber-800';
+  }
+  return 'bg-rose-100 text-rose-800';
+
+}

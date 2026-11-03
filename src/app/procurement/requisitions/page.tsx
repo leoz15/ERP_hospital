@@ -1,50 +1,44 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { useApp } from "@/context/AppContext";
+import { BudgetAllocationRecord, BudgetPlanItem, useBudget } from "@/context/BudgetContext";
+import { createFormRowId } from '@/lib/form-row';
+import {
+  AlertCircle,
+  AlertTriangle,
+  Ban,
+  Building,
+  Check,
+  CheckCircle2,
+  Copy,
+  DollarSign,
+  Edit3,
+  Eye,
+  FileSearch,
+  FileText,
+  Package,
+  Paperclip,
+  PieChart,
+  Plus,
+  Printer,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  Send,
+  ShieldCheck,
+  ShoppingCart,
+  Sparkles,
+  Tag,
+  User,
+  X
+} from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useApp } from "@/context/AppContext";
-import {
-  FileText,
-  Plus,
-  Search,
-  RefreshCw,
-  ShoppingCart,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
-  Sparkles,
-  Building,
-  DollarSign,
-  ChevronRight,
-  ShieldCheck,
-  Send,
-  Eye,
-  Printer,
-  Copy,
-  X,
-  Calendar,
-  User,
-  PieChart,
-  Tag,
-  ArrowUpRight,
-  Check,
-  Ban,
-  Package,
-  FileSearch,
-  RotateCcw,
-  Edit3,
-  Layers,
-  Paperclip,
-  CheckSquare,
-  Square,
-  AlertCircle,
-  HelpCircle,
-} from "lucide-react";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { useBudget } from "@/context/BudgetContext";
+import React, { Suspense, useEffect, useId, useState } from "react";
 
 function RequisitionsContent() {
+  const formId = useId();
   const searchParams = useSearchParams();
   const initialPlanId = searchParams.get("planId") || "";
 
@@ -62,11 +56,11 @@ function RequisitionsContent() {
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showConvertModal, setShowConvertModal] = useState(false);
-  const [selectedPRToConvert, setSelectedPRToConvert] = useState<any | null>(
+  const [selectedPRToConvert, setSelectedPRToConvert] = useState<any>(
     null,
   );
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedPRDetail, setSelectedPRDetail] = useState<any | null>(null);
+  const [selectedPRDetail, setSelectedPRDetail] = useState<any>(null);
   const [showReviseModal, setShowReviseModal] = useState(false);
 
   // Return / Reject prompt state
@@ -91,6 +85,7 @@ function RequisitionsContent() {
   const [attachmentName, setAttachmentName] = useState("");
   const [lines, setLines] = useState<any[]>([
     {
+      clientId: "initial-2934",
       itemId: "",
       specification: "",
       requestedQty: 100,
@@ -163,6 +158,7 @@ function RequisitionsContent() {
           if (data.length > 0 && lines[0].itemId === "") {
             setLines([
               {
+                clientId: createFormRowId(),
                 itemId: data[0].id,
                 specification: data[0].description || "",
                 requestedQty: 100,
@@ -225,6 +221,7 @@ function RequisitionsContent() {
             50,
           );
           return {
+            clientId: createFormRowId(),
             itemId: b.item.id,
             specification: b.item.description || "",
             requestedQty: neededQty,
@@ -246,6 +243,7 @@ function RequisitionsContent() {
         );
       }
     } catch (err: any) {
+      console.error("Failed to fetch low-stock items:", err);
       addToast("error", "ไม่สามารถดึงข้อมูลสต็อกต่ำได้");
     }
   };
@@ -255,6 +253,7 @@ function RequisitionsContent() {
       setLines([
         ...lines,
         {
+          clientId: createFormRowId(),
           itemId: items[0].id,
           specification: items[0].description || "",
           requestedQty: 100,
@@ -354,8 +353,8 @@ function RequisitionsContent() {
           budgetYear: isUnplanned
             ? budgetYear
             : selectedPlan?.fiscalYear ||
-              selectedPlan?.budgetYear ||
-              budgetYear,
+            selectedPlan?.budgetYear ||
+            budgetYear,
           purchaseType,
           isUnplanned,
           unplannedReason: isUnplanned ? unplannedReason : null,
@@ -564,6 +563,7 @@ function RequisitionsContent() {
     );
     setRevisionLines(
       pr.lines.map((l: any) => ({
+        id: l.id,
         itemId: l.itemId,
         specification: l.specification || "",
         requestedQty: l.requestedQty,
@@ -635,10 +635,8 @@ function RequisitionsContent() {
       !search ||
       pr.prNumber?.toLowerCase().includes(search.toLowerCase()) ||
       pr.requesterName?.toLowerCase().includes(search.toLowerCase()) ||
-      (pr.department?.name &&
-        pr.department.name.toLowerCase().includes(search.toLowerCase())) ||
-      (pr.plan?.name &&
-        pr.plan.name.toLowerCase().includes(search.toLowerCase()));
+      pr.department?.name?.toLowerCase().includes(search.toLowerCase()) ||
+      pr.plan?.name?.toLowerCase().includes(search.toLowerCase());
 
     const matchesStatus = statusFilter === "ALL" || pr.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -696,14 +694,14 @@ function RequisitionsContent() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => triggerRefresh()}
             className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>รีเฟรช</span>
           </button>
-          <button
+          <button type="button"
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-[#F28C28] hover:bg-[#D97706] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
           >
@@ -766,19 +764,17 @@ function RequisitionsContent() {
                 key={tab.id}
                 type="button"
                 onClick={() => setStatusFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-xl font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                  statusFilter === tab.id
-                    ? "bg-[#F28C28] text-white font-semibold shadow-xs"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-600"
-                }`}
+                className={`px-3 py-1.5 rounded-xl font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${statusFilter === tab.id
+                  ? "bg-[#F28C28] text-white font-semibold shadow-xs"
+                  : "bg-slate-100 hover:bg-slate-200 text-slate-600"
+                  }`}
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                    statusFilter === tab.id
-                      ? "bg-white/20 text-white"
-                      : "bg-slate-200/80 text-slate-600"
-                  }`}
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${statusFilter === tab.id
+                    ? "bg-white/20 text-white"
+                    : "bg-slate-200/80 text-slate-600"
+                    }`}
                 >
                   {tab.count}
                 </span>
@@ -807,744 +803,14 @@ function RequisitionsContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
-                    กำลังโหลดข้อมูลใบขอซื้อ...
-                  </td>
-                </tr>
-              ) : filteredRequisitions.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
-                    {search || statusFilter !== "ALL"
-                      ? "ไม่พบใบขอซื้อที่ตรงกับเงื่อนไขการค้นหา"
-                      : "ยังไม่มีรายการใบขอซื้อ"}
-                  </td>
-                </tr>
-              ) : (
-                filteredRequisitions.map((pr) => (
-                  <tr
-                    key={pr.id}
-                    className="hover:bg-[#FFF7ED]/40 transition-colors group cursor-pointer"
-                    onClick={() => {
-                      setSelectedPRDetail(pr);
-                      setShowDetailModal(true);
-                    }}
-                  >
-                    <td className="py-3 px-4 font-mono font-bold text-[#D97706]">
-                      <span className="hover:underline text-[#D97706] bg-[#FFF7ED] border border-orange-200/60 group-hover:bg-orange-100 px-2 py-0.5 rounded-lg transition-colors">
-                        {pr.prNumber}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
-                      {new Date(pr.requestDate).toLocaleDateString("th-TH")}
-                    </td>
-                    <td className="py-3 px-3 font-medium text-slate-800">
-                      <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                        <Building className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span>
-                          {pr.departmentName ||
-                            pr.department?.name ||
-                            "กลุ่มงานเภสัชกรรม (Pharmacy)"}
-                        </span>
-                      </div>
-                      {(pr.allocationId || pr.plan?.allocationId) && (
-                        <div className="text-[10px] font-mono text-emerald-800 font-semibold mt-0.5">
-                          {pr.allocationId || pr.plan?.allocationId}
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 whitespace-nowrap">
-                      {getPurchaseTypeBadge(pr.purchaseType || "GENERAL")}
-                    </td>
-                    <td className="py-3 px-3">
-                      {pr.isUnplanned ? (
-                        <div className="space-y-0.5">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                            จัดซื้อเร่งด่วนนอกแผน (ปี {pr.budgetYear || "2569"})
-                          </span>
-                          <div className="text-[10px] font-mono text-emerald-700">
-                            [{pr.allocationId || "ALC-2569-001"} ·{" "}
-                            {pr.budgetCode || "BG-69-PHARM-01"}]
-                          </div>
-                        </div>
-                      ) : pr.plan || pr.planNumber ? (
-                        <div className="space-y-0.5">
-                          <div className="font-semibold text-purple-900 truncate max-w-[200px]">
-                            {pr.plan?.name || "แผนจัดซื้อเวชภัณฑ์ประจำปี"}
-                          </div>
-                          <div className="text-[10px] font-mono text-purple-700 flex items-center gap-1">
-                            <span className="font-bold">
-                              [{pr.planNumber || pr.plan?.planNumber}]
-                            </span>
-                            <span className="text-emerald-700 font-semibold">
-                              ·{" "}
-                              {pr.allocationId ||
-                                pr.plan?.allocationId ||
-                                "ALC-2569-001"}
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 text-xs">-</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 text-right font-medium tabular-nums">
-                      {pr.lines?.length || 0} รายการ
-                    </td>
-                    <td className="py-3 px-3 text-right font-bold text-[#14213D] tabular-nums">
-                      ฿{pr.totalAmount.toLocaleString()}
-                    </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          pr.urgency === "EMERGENCY"
-                            ? "bg-rose-50 text-rose-700 border border-rose-200 font-bold"
-                            : pr.urgency === "URGENT"
-                              ? "bg-amber-50 text-amber-700 border border-amber-200"
-                              : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {pr.urgency === "EMERGENCY"
-                          ? "ฉุกเฉิน"
-                          : pr.urgency === "URGENT"
-                            ? "ด่วน"
-                            : "ปกติ"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <StatusBadge status={pr.status} />
-                    </td>
-                    <td
-                      className="py-3 px-4 text-center whitespace-nowrap"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex items-center justify-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedPRDetail(pr);
-                            setShowDetailModal(true);
-                          }}
-                          className="px-2.5 py-1 text-slate-700 hover:text-[#14213D] hover:bg-slate-100 rounded-lg text-xs font-semibold transition-colors border border-slate-200 shadow-2xs flex items-center gap-1"
-                        >
-                          <Eye className="w-3.5 h-3.5 text-slate-500" />
-                          <span>ดูข้อมูล</span>
-                        </button>
-
-                        {pr.status === "RETURNED" && (
-                          <button
-                            type="button"
-                            onClick={() => handleOpenReviseModal(pr)}
-                            className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg text-xs font-semibold flex items-center gap-1"
-                            title="แก้ไขข้อมูลตามที่ผู้บังคับบัญชาส่งกลับและส่งใหม่"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                            <span>แก้ไขส่งใหม่</span>
-                          </button>
-                        )}
-
-                        {pr.status === "APPROVED" && (
-                          <div className="flex items-center gap-1">
-                            <Link
-                              href={`/procurement/rfq?prId=${pr.id}`}
-                              className="px-2 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1"
-                              title="ส่งขอใบเสนอราคาจากผู้จำหน่าย (RFQ)"
-                            >
-                              <FileSearch className="w-3.5 h-3.5" />
-                              <span>RFQ</span>
-                            </Link>
-                            <button
-                              type="button"
-                              onClick={() => handleOpenConvertModal(pr)}
-                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1"
-                              title="ออกใบสั่งซื้อ (PO) สู่ผู้ขาย"
-                            >
-                              <ShoppingCart className="w-3.5 h-3.5" />
-                              <span>ออก PO</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableRows({ loading, filteredRequisitions, search, statusFilter, setSelectedPRDetail, setShowDetailModal, getPurchaseTypeBadge, handleOpenReviseModal, handleOpenConvertModal })}
             </tbody>
           </table>
         </div>
       </div>
 
       {/* Modal: Create PR */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fade-in font-sans">
-          <div className="bg-white rounded-2xl shadow-2xl border border-[#E2EAF4] max-w-4xl w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div>
-                <h3 className="font-bold text-base text-[#14213D] flex items-center gap-2">
-                  <Plus className="w-5 h-5 text-[#F28C28]" />
-                  <span>
-                    สร้างใบขอซื้อพัสดุและเวชภัณฑ์ (Purchase Requisition - PR)
-                  </span>
-                </h3>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  เอกสารขอซื้อภายในองค์กร ไม่บังคับระบุผู้ขาย
-                  ระบบจะตรวจสอบงบประมาณและบันทึกประวัติการขอซื้อ
-                </p>
-              </div>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleCreatePR} className="space-y-4 text-xs">
-              {/* Header Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 bg-[#F5F8FC] p-3.5 rounded-xl border border-[#E2EAF4]">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    แผนกที่ขอซื้อ (Department) *
-                  </label>
-                  <select
-                    value={departmentId}
-                    onChange={(e) => setDepartmentId(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-[#F28C28] cursor-pointer"
-                    required
-                  >
-                    <option value="">-- เลือกแผนก --</option>
-                    {departments.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        [{d.code}] {d.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    ประเภทการจัดซื้อ (Purchase Type) *
-                  </label>
-                  <select
-                    value={purchaseType}
-                    onChange={(e) => setPurchaseType(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-[#F28C28] cursor-pointer"
-                    required
-                  >
-                    <option value="GENERAL">จัดซื้อทั่วไป</option>
-                    <option value="DRUG">ยาและเวชภัณฑ์ทางการแพทย์</option>
-                    <option value="MEDICAL_SUPPLY">
-                      วัสดุการแพทย์และอุปกรณ์สิ้นเปลือง
-                    </option>
-                    <option value="EQUIPMENT">
-                      เครื่องมือแพทย์ / ครุภัณฑ์
-                    </option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    ระดับความเร่งด่วน
-                  </label>
-                  <select
-                    value={urgency}
-                    onChange={(e) => setUrgency(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-[#F28C28] cursor-pointer"
-                  >
-                    <option value="NORMAL">ปกติ (Normal)</option>
-                    <option value="URGENT">ด่วน (Urgent - ใกล้ถึง ROP)</option>
-                    <option value="EMERGENCY">
-                      ฉุกเฉิน (Emergency - ขาดแคลนวิกฤต)
-                    </option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    วันที่ต้องการใช้สินค้า (Required Date)
-                  </label>
-                  <input
-                    type="date"
-                    value={requiredDate}
-                    onChange={(e) => setRequiredDate(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    ปีงบประมาณ
-                  </label>
-                  <input
-                    type="text"
-                    value={budgetYear}
-                    onChange={(e) => setBudgetYear(e.target.value)}
-                    placeholder="2568"
-                    className="w-full px-3 py-2 border rounded-lg bg-white font-mono"
-                    disabled={!isUnplanned && !!selectedPlan}
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    เอกสารแนบอ้างอิง
-                  </label>
-                  <div className="relative">
-                    <Paperclip className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                    <input
-                      type="text"
-                      placeholder="เช่น บันทึกข้อความขออนุมัติ_2568.pdf"
-                      value={attachmentName}
-                      onChange={(e) => setAttachmentName(e.target.value)}
-                      className="w-full pl-8 pr-3 py-2 border rounded-lg bg-white text-xs"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Procurement Plan vs Unplanned Purchase Toggle (Budget Integration) */}
-              <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-2xl space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <PieChart className="w-4 h-4 text-purple-700" />
-                    <span className="font-bold text-slate-800 text-xs">
-                      การอ้างอิงแผนจัดซื้อ (PP) และการดึงงบประมาณอัตโนมัติ
-                    </span>
-                  </div>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={isUnplanned}
-                      onChange={(e) => {
-                        setIsUnplanned(e.target.checked);
-                        if (e.target.checked) setPlanId("");
-                      }}
-                      className="rounded text-[#F28C28] focus:ring-[#F28C28]"
-                    />
-                    <span
-                      className={isUnplanned ? "font-bold text-rose-700" : ""}
-                    >
-                      จัดซื้อเร่งด่วนไม่มี PP อ้างอิง (Emergency Special
-                      Workflow)
-                    </span>
-                  </label>
-                </div>
-
-                {!isUnplanned ? (
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block font-semibold text-slate-700 mb-1">
-                        เลือกแผนการจัดซื้อจัดจ้าง (Procurement Plan - PP){" "}
-                        <span className="text-rose-500">*</span>
-                      </label>
-                      <select
-                        value={planId}
-                        onChange={(e) => handlePlanChange(e.target.value)}
-                        className="w-full px-3 py-2 border rounded-xl bg-white focus:ring-2 focus:ring-purple-500 cursor-pointer font-medium text-xs"
-                        required={!isUnplanned}
-                      >
-                        <option value="">
-                          -- กรุณาเลือกแผนจัดซื้อ (PP) เพื่อดึงงบประมาณอัตโนมัติ
-                          --
-                        </option>
-                        {plans.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            [{p.planNumber}] {p.name} — คงเหลือ ฿
-                            {p.remainingBudget?.toLocaleString()} บ.
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {selectedPlan ? (
-                      <div className="p-3.5 bg-white rounded-xl border border-purple-200 space-y-2.5 shadow-2xs">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                            <span className="text-[10px] text-slate-500 block uppercase font-bold">
-                              หน่วยงาน / กลุ่มงาน (ดึงจาก PP อัตโนมัติ)
-                            </span>
-                            <span className="font-bold text-slate-800 text-xs mt-0.5 block">
-                              {selectedPlan.departmentName ||
-                                "กลุ่มงานเภสัชกรรม (Pharmacy)"}
-                            </span>
-                          </div>
-
-                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                            <span className="text-[10px] text-slate-500 block uppercase font-bold">
-                              รหัสจัดสรรงบประมาณ (ดึงจาก PP อัตโนมัติ)
-                            </span>
-                            <span className="font-mono font-bold text-emerald-800 text-xs mt-0.5 block">
-                              {selectedPlan.allocationId || "ALC-2569-001"} ·{" "}
-                              {selectedPlan.budgetCode || "BG-69-PHARM-01"}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-2 text-xs pt-1">
-                          <div className="p-2 bg-purple-50/50 rounded-lg border border-purple-100">
-                            <span className="text-[10px] text-purple-700 block">
-                              วงเงินจัดสรรของแผน
-                            </span>
-                            <span className="font-extrabold text-[#14213D] text-xs tabular-nums mt-0.5 block">
-                              ฿
-                              {(
-                                selectedPlan.targetBudget ||
-                                selectedPlan.allocatedBudget
-                              )?.toLocaleString()}
-                            </span>
-                          </div>
-
-                          <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-200">
-                            <span className="text-[10px] text-emerald-700 block font-semibold">
-                              วงเงินคงเหลือของแผน
-                            </span>
-                            <span className="font-extrabold text-emerald-700 text-xs tabular-nums mt-0.5 block">
-                              ฿{selectedPlan.remainingBudget?.toLocaleString()}
-                            </span>
-                          </div>
-
-                          <div className="p-2 bg-amber-50 rounded-lg border border-amber-200">
-                            <span className="text-[10px] text-amber-800 block font-semibold">
-                              มูลค่ารวม PR ที่ขอซื้อ
-                            </span>
-                            <span className="font-extrabold text-amber-700 text-xs tabular-nums mt-0.5 block">
-                              ฿{formTotal.toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Real-time Budget Check Alert */}
-                        {isBudgetExceeded ? (
-                          <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs font-semibold flex items-start gap-2">
-                            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                            <div>
-                              <div>ยอดเงินขอซื้อเกินงบประมาณคงเหลือของแผน!</div>
-                              <div className="text-[11px] font-normal text-rose-600">
-                                ขอซื้อ ฿{formTotal.toLocaleString()}{" "}
-                                เกินงบคงเหลือ (฿
-                                {selectedPlan.remainingBudget?.toLocaleString()}
-                                ) อยู่ ฿
-                                {(
-                                  formTotal - selectedPlan.remainingBudget
-                                ).toLocaleString()}{" "}
-                                บาท (ตามกฎข้อ 4 ห้ามใช้วงเงินเกินยอดที่ใช้ได้)
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="p-2 bg-emerald-50/60 border border-emerald-200 rounded-lg text-emerald-800 text-[11px] font-semibold flex items-center justify-between">
-                            <span className="flex items-center gap-1.5">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                              <span>
-                                ยอดขอซื้ออยู่ในกรอบงบประมาณของแผนจัดซื้อ
-                              </span>
-                            </span>
-                            <span className="text-emerald-700 font-bold">
-                              คงเหลือหลังขอซื้อ: ฿
-                              {(
-                                selectedPlan.remainingBudget - formTotal
-                              ).toLocaleString()}{" "}
-                              บ.
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="p-3 bg-white/70 border border-dashed border-purple-200 rounded-xl text-center text-slate-400 text-xs">
-                        กรุณาเลือกแผนจัดซื้อ (PP)
-                        เพื่อดึงกลุ่มงานและรหัสจัดสรรงบประมาณอัตโนมัติ
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  /* Emergency / Unplanned Purchase: Direct Budget Selection with Special Workflow */
-                  <div className="p-3.5 bg-rose-50/60 border border-rose-200 rounded-xl space-y-3">
-                    <div className="flex items-center gap-2 text-rose-800 text-xs font-bold">
-                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                      <span>
-                        การจัดซื้อเร่งด่วนไม่มี PP อ้างอิง (Special Workflow):
-                        เลือกงบประมาณโดยตรง
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <label className="block font-semibold text-slate-700 mb-1">
-                          กลุ่มงานเจ้าของงบประมาณ{" "}
-                          <span className="text-rose-500">*</span>
-                        </label>
-                        <select
-                          value={unplannedDept}
-                          onChange={(e) => {
-                            setUnplannedDept(e.target.value);
-                            const matched = allocations.find(
-                              (a) => a.departmentName === e.target.value,
-                            );
-                            if (matched) setUnplannedAllocNo(matched.allocNo);
-                          }}
-                          className="w-full px-3 py-2 border rounded-xl bg-white font-semibold text-slate-800 cursor-pointer"
-                        >
-                          {Array.from(
-                            new Set(allocations.map((a) => a.departmentName)),
-                          ).map((d) => (
-                            <option key={d} value={d}>
-                              {d}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block font-semibold text-slate-700 mb-1">
-                          รายการจัดสรรงบประมาณ{" "}
-                          <span className="text-rose-500">*</span>
-                        </label>
-                        <select
-                          value={unplannedAllocNo}
-                          onChange={(e) => setUnplannedAllocNo(e.target.value)}
-                          className="w-full px-3 py-2 border rounded-xl bg-white font-mono font-bold text-emerald-800 cursor-pointer"
-                        >
-                          {allocations
-                            .filter((a) => a.departmentName === unplannedDept)
-                            .map((a) => (
-                              <option key={a.id} value={a.allocNo}>
-                                {a.allocNo} · {a.budgetCode} (คงเหลือ ฿
-                                {getAllocationBudgetInfo(
-                                  a.allocNo,
-                                ).remainingBudget.toLocaleString()}
-                                )
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs p-2.5 bg-white rounded-lg border border-rose-200">
-                      <span>
-                        วงเงินคงเหลือของงบประมาณ:{" "}
-                        <strong className="text-emerald-700">
-                          ฿
-                          {unplannedBudgetInfo?.remainingBudget.toLocaleString()}{" "}
-                          บาท
-                        </strong>
-                      </span>
-                      <span>
-                        มูลค่ารวม PR:{" "}
-                        <strong
-                          className={
-                            isBudgetExceeded
-                              ? "text-rose-600"
-                              : "text-slate-800"
-                          }
-                        >
-                          ฿{formTotal.toLocaleString()} บาท
-                        </strong>
-                      </span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="block text-rose-800 font-semibold text-[11px]">
-                        ระบุเหตุผลความจำเป็นเร่งด่วนสำหรับการจัดซื้อกรณีพิเศษ *
-                      </label>
-                      <textarea
-                        rows={2}
-                        value={unplannedReason}
-                        onChange={(e) => setUnplannedReason(e.target.value)}
-                        placeholder="ระบุเหตุผลความจำเป็น เช่น กรณีฉุกเฉินทางระบาดวิทยา, ผู้ป่วยวิกฤตเพิ่มขึ้นกะทันหัน..."
-                        className="w-full px-3 py-2 border border-rose-300 rounded-lg bg-white text-xs text-rose-950 focus:ring-2 focus:ring-rose-500"
-                        required={isUnplanned}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Items Section */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="font-semibold text-slate-700 flex items-center gap-1.5">
-                    <Package className="w-4 h-4 text-[#F28C28]" />
-                    <span>รายการสินค้าขอซื้อ ({lines.length} รายการ)</span>
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleAutoFillLowStock}
-                      className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
-                    >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>ดึงสินค้าสต็อกต่ำอัตโนมัติ</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleAddLine}
-                      className="text-[#F28C28] hover:text-[#D97706] font-semibold flex items-center gap-1"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>เพิ่มรายการ</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2 max-h-64 overflow-y-auto border p-2 rounded-xl bg-[#F5F8FC]">
-                  {lines.map((line, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-2"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-bold text-slate-400 w-5">
-                          {idx + 1}.
-                        </span>
-                        <select
-                          value={line.itemId}
-                          onChange={(e) =>
-                            handleLineChange(idx, "itemId", e.target.value)
-                          }
-                          className="flex-1 px-2.5 py-1.5 border rounded-lg text-xs bg-slate-50 font-medium"
-                        >
-                          {items.map((it) => (
-                            <option key={it.id} value={it.id}>
-                              [{it.itemCode}] {it.itemName} ({it.unit})
-                            </option>
-                          ))}
-                        </select>
-
-                        <div className="w-24">
-                          <input
-                            type="number"
-                            placeholder="จำนวน"
-                            value={line.requestedQty}
-                            onChange={(e) =>
-                              handleLineChange(
-                                idx,
-                                "requestedQty",
-                                Number(e.target.value),
-                              )
-                            }
-                            className="w-full px-2 py-1.5 border rounded-lg text-xs text-right font-medium"
-                            required
-                          />
-                        </div>
-
-                        <div className="w-28">
-                          <input
-                            type="number"
-                            placeholder="ราคาประมาณ"
-                            value={line.estimatedUnitPrice}
-                            onChange={(e) =>
-                              handleLineChange(
-                                idx,
-                                "estimatedUnitPrice",
-                                Number(e.target.value),
-                              )
-                            }
-                            className="w-full px-2 py-1.5 border rounded-lg text-xs text-right font-medium"
-                            required
-                          />
-                        </div>
-
-                        <div className="w-28 text-right font-bold text-[#14213D] tabular-nums">
-                          ฿
-                          {(
-                            (line.requestedQty || 0) *
-                            (line.estimatedUnitPrice || 0)
-                          ).toLocaleString()}
-                        </div>
-
-                        {lines.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveLine(idx)}
-                            className="text-rose-500 hover:text-rose-700 px-1 font-bold"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 pl-7">
-                        <input
-                          type="text"
-                          placeholder="รายละเอียดคุณสมบัติ (Specification)..."
-                          value={line.specification}
-                          onChange={(e) =>
-                            handleLineChange(
-                              idx,
-                              "specification",
-                              e.target.value,
-                            )
-                          }
-                          className="px-2.5 py-1 border rounded text-[11px] bg-slate-50/50"
-                        />
-                        <input
-                          type="text"
-                          placeholder="หมายเหตุเพิ่มเติมสำหรับรายการนี้..."
-                          value={line.remark}
-                          onChange={(e) =>
-                            handleLineChange(idx, "remark", e.target.value)
-                          }
-                          className="px-2.5 py-1 border rounded text-[11px] bg-slate-50/50"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-between items-center pt-2 text-xs">
-                  <span className="text-slate-500">
-                    * ไม่ต้องเลือก Supplier ในขั้นตอนนี้
-                    สามารถเลือกผู้ขายในขั้นตอน RFQ หรือตอนออก PO
-                  </span>
-                  <div className="font-bold text-[#14213D]">
-                    ยอดรวมประเมินทั้งสิ้น:{" "}
-                    <span className="text-[#D97706] ml-2 font-mono text-base">
-                      ฿{calculateFormTotal().toLocaleString()} บาท
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  เหตุผลความจำเป็นในการขอซื้อ
-                </label>
-                <textarea
-                  rows={2}
-                  value={justification}
-                  onChange={(e) => setJustification(e.target.value)}
-                  placeholder="ระบุเหตุผลความจำเป็น เช่น สำรองใช้งานตามรอบปกติ, เติมสต็อกหอผู้ป่วย..."
-                  className="w-full px-3 py-2 border rounded-lg bg-[#F5F8FC] focus:bg-white text-xs"
-                  required
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 border rounded-xl hover:bg-[#F5F8FC] font-medium"
-                >
-                  ยกเลิก
-                </button>
-                <button
-                  type="submit"
-                  disabled={isBudgetExceeded}
-                  className={`px-5 py-2 font-semibold rounded-xl shadow-sm flex items-center gap-1.5 transition-all ${
-                    isBudgetExceeded
-                      ? "bg-slate-300 text-slate-500 cursor-not-allowed"
-                      : "bg-[#F28C28] hover:bg-[#D97706] text-white"
-                  }`}
-                >
-                  <Send className="w-4 h-4" />
-                  <span>ส่งใบขอซื้อ (Submit PR)</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {renderCreateRequisitionModal({ showCreateModal, setShowCreateModal, handleCreatePR, formId, departmentId, setDepartmentId, departments, purchaseType, setPurchaseType, urgency, setUrgency, requiredDate, setRequiredDate, budgetYear, setBudgetYear, isUnplanned, selectedPlan, attachmentName, setAttachmentName, setIsUnplanned, setPlanId, planId, handlePlanChange, plans, formTotal, isBudgetExceeded, unplannedDept, setUnplannedDept, allocations, setUnplannedAllocNo, unplannedAllocNo, getAllocationBudgetInfo, unplannedBudgetInfo, unplannedReason, setUnplannedReason, lines, handleAutoFillLowStock, handleAddLine, handleLineChange, items, handleRemoveLine, calculateFormTotal, justification, setJustification })}
 
       {/* Modal: Convert PR to PO (With Line Splitting Support) */}
       {showConvertModal && selectedPRToConvert && (
@@ -1561,7 +827,7 @@ function RequisitionsContent() {
                   หลายราย (PR Splitting)
                 </p>
               </div>
-              <button
+              <button type="button"
                 onClick={() => setShowConvertModal(false)}
                 className="text-slate-400 hover:text-slate-600 text-lg"
               >
@@ -1596,11 +862,11 @@ function RequisitionsContent() {
               {/* Select Line Items for this PO */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="font-bold text-slate-700">
+                  <div className="font-bold text-slate-700">
                     เลือกรายการสินค้าที่จะสั่งซื้อใน PO นี้ (
                     {selectedLineIdsToConvert.length}/
                     {selectedPRToConvert.lines?.length || 0})
-                  </label>
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
@@ -1612,14 +878,14 @@ function RequisitionsContent() {
                       } else {
                         setSelectedLineIdsToConvert(
                           selectedPRToConvert.lines?.map((l: any) => l.id) ||
-                            [],
+                          [],
                         );
                       }
                     }}
                     className="text-[#F28C28] hover:underline font-semibold text-[11px]"
                   >
                     {selectedLineIdsToConvert.length ===
-                    selectedPRToConvert.lines?.length
+                      selectedPRToConvert.lines?.length
                       ? "ยกเลิกเลือกทั้งหมด"
                       : "เลือกทั้งหมด"}
                   </button>
@@ -1632,20 +898,20 @@ function RequisitionsContent() {
                     const maxQty = l.approvedQty || l.requestedQty;
                     const remaining = Math.max(0, maxQty - alreadyOrdered);
                     return (
-                      <div
+                      <label
+                        aria-label={l.item?.itemName || "เลือกรายการสินค้า"}
                         key={l.id}
-                        onClick={() => handleToggleLineSelection(l.id)}
-                        className={`p-2.5 flex items-center justify-between cursor-pointer transition-colors ${
-                          isSelected
-                            ? "bg-orange-50/70"
-                            : "bg-white hover:bg-slate-50"
-                        }`}
+
+                        className={`p-2.5 flex items-center justify-between cursor-pointer transition-colors ${isSelected
+                          ? "bg-orange-50/70"
+                          : "bg-white hover:bg-slate-50"
+                          }`}
                       >
                         <div className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => {}}
+                            onChange={() => handleToggleLineSelection(l.id)}
                             className="rounded text-[#F28C28] focus:ring-[#F28C28]"
                           />
                           <div>
@@ -1670,17 +936,17 @@ function RequisitionsContent() {
                             ).toLocaleString()}
                           </div>
                         </div>
-                      </div>
+                      </label>
                     );
                   })}
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label htmlFor={`${formId}-field-150`} className="block font-semibold text-slate-700 mb-1">
                   เลือกผู้จัดจำหน่าย (Supplier) *
                 </label>
-                <select
+                <select id={`${formId}-field-150`}
                   value={convertSupplierId}
                   onChange={(e) => setConvertSupplierId(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg bg-[#F5F8FC] focus:bg-white focus:ring-2 focus:ring-[#F28C28] cursor-pointer font-medium"
@@ -1697,10 +963,10 @@ function RequisitionsContent() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-151`} className="block font-semibold text-slate-700 mb-1">
                     สถานที่ส่งมอบพัสดุ (Delivery Location)
                   </label>
-                  <input
+                  <input id={`${formId}-field-151`}
                     type="text"
                     value={convertDeliveryLocation}
                     onChange={(e) => setConvertDeliveryLocation(e.target.value)}
@@ -1710,10 +976,10 @@ function RequisitionsContent() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-152`} className="block font-semibold text-slate-700 mb-1">
                     กำหนดส่งมอบ (Expected Date)
                   </label>
-                  <input
+                  <input id={`${formId}-field-152`}
                     type="date"
                     value={convertExpectedDate}
                     onChange={(e) => setConvertExpectedDate(e.target.value)}
@@ -1724,10 +990,10 @@ function RequisitionsContent() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-153`} className="block font-semibold text-slate-700 mb-1">
                     เงื่อนไขการชำระเงิน
                   </label>
-                  <input
+                  <input id={`${formId}-field-153`}
                     type="text"
                     value={convertPaymentTerms}
                     onChange={(e) => setConvertPaymentTerms(e.target.value)}
@@ -1736,10 +1002,10 @@ function RequisitionsContent() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-154`} className="block font-semibold text-slate-700 mb-1">
                     เครดิตเทอม (วัน)
                   </label>
-                  <input
+                  <input id={`${formId}-field-154`}
                     type="number"
                     value={convertCreditDays}
                     onChange={(e) =>
@@ -1751,10 +1017,10 @@ function RequisitionsContent() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label htmlFor={`${formId}-field-155`} className="block font-semibold text-slate-700 mb-1">
                   หมายเหตุเพิ่มเติม
                 </label>
-                <textarea
+                <textarea id={`${formId}-field-155`}
                   rows={2}
                   value={convertRemarks}
                   onChange={(e) => setConvertRemarks(e.target.value)}
@@ -1821,19 +1087,10 @@ function RequisitionsContent() {
                     )}
 
                     <span
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
-                        selectedPRDetail.urgency === "EMERGENCY"
-                          ? "bg-rose-50 text-rose-700 border border-rose-200"
-                          : selectedPRDetail.urgency === "URGENT"
-                            ? "bg-amber-50 text-amber-700 border border-amber-200"
-                            : "bg-slate-100 text-[#475569] border border-slate-200/80"
-                      }`}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getUrgencyClassName(selectedPRDetail)
+                        }`}
                     >
-                      {selectedPRDetail.urgency === "EMERGENCY"
-                        ? "ด่วนฉุกเฉิน"
-                        : selectedPRDetail.urgency === "URGENT"
-                          ? "ด่วน"
-                          : "ความเร่งด่วนปกติ"}
+                      {getUrgencyText(selectedPRDetail)}
                     </span>
                   </div>
 
@@ -1953,8 +1210,8 @@ function RequisitionsContent() {
                         เมื่อ{" "}
                         {selectedPRDetail.returnedAt
                           ? new Date(
-                              selectedPRDetail.returnedAt,
-                            ).toLocaleString("th-TH")
+                            selectedPRDetail.returnedAt,
+                          ).toLocaleString("th-TH")
                           : "-"}
                       </p>
                       <p className="text-xs text-amber-950 font-medium mt-1 bg-amber-100/70 p-2 rounded-lg border border-amber-200">
@@ -2001,8 +1258,8 @@ function RequisitionsContent() {
                     {selectedPRDetail.isUnplanned
                       ? "จัดซื้อเร่งด่วนนอกแผน"
                       : selectedPRDetail.planNumber ||
-                        selectedPRDetail.plan?.planNumber ||
-                        "ไม่ระบุแผน"}
+                      selectedPRDetail.plan?.planNumber ||
+                      "ไม่ระบุแผน"}
                   </div>
                   <div className="text-[10px] font-mono text-emerald-800 font-bold truncate">
                     {selectedPRDetail.allocationId ||
@@ -2132,8 +1389,8 @@ function RequisitionsContent() {
                     กำหนดส่งมอบ:{" "}
                     {selectedPRDetail.requiredDate
                       ? new Date(
-                          selectedPRDetail.requiredDate,
-                        ).toLocaleDateString("th-TH")
+                        selectedPRDetail.requiredDate,
+                      ).toLocaleDateString("th-TH")
                       : "ตามรอบปกติ"}
                   </span>
                 </div>
@@ -2273,10 +1530,10 @@ function RequisitionsContent() {
             </p>
 
             <div>
-              <label className="block font-semibold text-slate-700 text-xs mb-1">
+              <label htmlFor={`${formId}-field-156`} className="block font-semibold text-slate-700 text-xs mb-1">
                 เหตุผลความจำเป็น *
               </label>
-              <textarea
+              <textarea id={`${formId}-field-156`}
                 rows={3}
                 value={actionReason}
                 onChange={(e) => setActionReason(e.target.value)}
@@ -2297,11 +1554,10 @@ function RequisitionsContent() {
               <button
                 type="button"
                 onClick={handleSubmitActionWithReason}
-                className={`px-4 py-2 text-white font-semibold rounded-xl text-xs ${
-                  actionType === "RETURN"
-                    ? "bg-amber-600 hover:bg-amber-700"
-                    : "bg-rose-600 hover:bg-rose-700"
-                }`}
+                className={`px-4 py-2 text-white font-semibold rounded-xl text-xs ${actionType === "RETURN"
+                  ? "bg-amber-600 hover:bg-amber-700"
+                  : "bg-rose-600 hover:bg-rose-700"
+                  }`}
               >
                 ยืนยัน{actionType === "RETURN" ? "ส่งกลับแก้ไข" : "ไม่อนุมัติ"}
               </button>
@@ -2328,7 +1584,7 @@ function RequisitionsContent() {
                     "โปรดแก้ไขตามข้อสังเกตของผู้อนุมัติ"}
                 </p>
               </div>
-              <button
+              <button type="button"
                 onClick={() => setShowReviseModal(false)}
                 className="text-slate-400 hover:text-slate-600 text-lg"
               >
@@ -2342,10 +1598,10 @@ function RequisitionsContent() {
             >
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-157`} className="block font-semibold text-slate-700 mb-1">
                     แผนกที่ขอซื้อ
                   </label>
-                  <select
+                  <select id={`${formId}-field-157`}
                     value={revisionDepartmentId}
                     onChange={(e) => setRevisionDepartmentId(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg bg-[#F5F8FC]"
@@ -2359,10 +1615,10 @@ function RequisitionsContent() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-158`} className="block font-semibold text-slate-700 mb-1">
                     ความเร่งด่วน
                   </label>
-                  <select
+                  <select id={`${formId}-field-158`}
                     value={revisionUrgency}
                     onChange={(e) => setRevisionUrgency(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg bg-[#F5F8FC]"
@@ -2374,10 +1630,10 @@ function RequisitionsContent() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-159`} className="block font-semibold text-slate-700 mb-1">
                     วันที่ต้องการ
                   </label>
-                  <input
+                  <input id={`${formId}-field-159`}
                     type="date"
                     value={revisionRequiredDate}
                     onChange={(e) => setRevisionRequiredDate(e.target.value)}
@@ -2387,13 +1643,13 @@ function RequisitionsContent() {
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-2">
+                <div className="font-semibold text-slate-700 block mb-2">
                   แก้ไขรายการพัสดุและราคา
-                </label>
+                </div>
                 <div className="space-y-2 border p-2 rounded-xl bg-[#F5F8FC] max-h-56 overflow-y-auto">
                   {revisionLines.map((line, idx) => (
                     <div
-                      key={idx}
+                      key={line.id}
                       className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1.5"
                     >
                       <div className="flex items-center gap-2">
@@ -2486,10 +1742,10 @@ function RequisitionsContent() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label htmlFor={`${formId}-field-160`} className="block font-semibold text-slate-700 mb-1">
                   เหตุผลความจำเป็นเพิ่มเติม
                 </label>
-                <textarea
+                <textarea id={`${formId}-field-160`}
                   rows={2}
                   value={revisionJustification}
                   onChange={(e) => setRevisionJustification(e.target.value)}
@@ -2520,6 +1776,835 @@ function RequisitionsContent() {
       )}
     </div>
   );
+}
+
+type RenderCreateRequisitionModalOptions = Readonly<{
+  showCreateModal: boolean;
+  setShowCreateModal: React.Dispatch<React.SetStateAction<boolean>>;
+  handleCreatePR: (e: React.FormEvent) => Promise<void>;
+  formId: string;
+  departmentId: string;
+  setDepartmentId: React.Dispatch<React.SetStateAction<string>>;
+  departments: any[];
+  purchaseType: string;
+  setPurchaseType: React.Dispatch<React.SetStateAction<string>>;
+  urgency: string;
+  setUrgency: React.Dispatch<React.SetStateAction<string>>;
+  requiredDate: string;
+  setRequiredDate: React.Dispatch<React.SetStateAction<string>>;
+  budgetYear: string;
+  setBudgetYear: React.Dispatch<React.SetStateAction<string>>;
+  isUnplanned: boolean;
+  selectedPlan: any;
+  attachmentName: string;
+  setAttachmentName: React.Dispatch<React.SetStateAction<string>>;
+  setIsUnplanned: React.Dispatch<React.SetStateAction<boolean>>;
+  setPlanId: React.Dispatch<React.SetStateAction<string>>;
+  planId: string;
+  handlePlanChange: (selectedId: string) => void;
+  plans: any[];
+  formTotal: any;
+  isBudgetExceeded: boolean;
+  unplannedDept: string;
+  setUnplannedDept: React.Dispatch<React.SetStateAction<string>>;
+  allocations: BudgetAllocationRecord[];
+  setUnplannedAllocNo: React.Dispatch<React.SetStateAction<string>>;
+  unplannedAllocNo: string;
+  getAllocationBudgetInfo: (allocNoOrBudgetCode: string) => {
+    allocation?: BudgetAllocationRecord;
+    plan?: BudgetPlanItem;
+    allocatedAmount: number;
+    remainingBudget: number;
+    reservedAmount: number;
+    commitmentAmount: number;
+    actualAmount: number;
+  };
+  unplannedBudgetInfo: {
+    allocation?: BudgetAllocationRecord;
+    plan?: BudgetPlanItem;
+    allocatedAmount: number;
+    remainingBudget: number;
+    reservedAmount: number;
+    commitmentAmount: number;
+    actualAmount: number;
+  };
+  unplannedReason: string;
+  setUnplannedReason: React.Dispatch<React.SetStateAction<string>>;
+  lines: any[];
+  handleAutoFillLowStock: () => Promise<void>;
+  handleAddLine: () => void;
+  handleLineChange: (index: number, field: string, value: any) => void;
+  items: any[];
+  handleRemoveLine: (index: number) => void;
+  calculateFormTotal: () => any;
+  justification: string;
+  setJustification: React.Dispatch<React.SetStateAction<string>>
+}>;
+
+function renderCreateRequisitionModal({ showCreateModal, setShowCreateModal, handleCreatePR, formId, departmentId, setDepartmentId, departments, purchaseType, setPurchaseType, urgency, setUrgency, requiredDate, setRequiredDate, budgetYear, setBudgetYear, isUnplanned, selectedPlan, attachmentName, setAttachmentName, setIsUnplanned, setPlanId, planId, handlePlanChange, plans, formTotal, isBudgetExceeded, unplannedDept, setUnplannedDept, allocations, setUnplannedAllocNo, unplannedAllocNo, getAllocationBudgetInfo, unplannedBudgetInfo, unplannedReason, setUnplannedReason, lines, handleAutoFillLowStock, handleAddLine, handleLineChange, items, handleRemoveLine, calculateFormTotal, justification, setJustification }: RenderCreateRequisitionModalOptions): React.ReactNode {
+  return showCreateModal && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fade-in font-sans">
+      <div className="bg-white rounded-2xl shadow-2xl border border-[#E2EAF4] max-w-4xl w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto">
+        <div className="flex items-center justify-between border-b pb-3">
+          <div>
+            <h3 className="font-bold text-base text-[#14213D] flex items-center gap-2">
+              <Plus className="w-5 h-5 text-[#F28C28]" />
+              <span>
+                สร้างใบขอซื้อพัสดุและเวชภัณฑ์ (Purchase Requisition - PR)
+              </span>
+            </h3>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              เอกสารขอซื้อภายในองค์กร ไม่บังคับระบุผู้ขาย
+              ระบบจะตรวจสอบงบประมาณและบันทึกประวัติการขอซื้อ
+            </p>
+          </div>
+          <button type="button"
+            onClick={() => setShowCreateModal(false)}
+            className="text-slate-400 hover:text-slate-600 text-lg p-1"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleCreatePR} className="space-y-4 text-xs">
+          {/* Header Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 bg-[#F5F8FC] p-3.5 rounded-xl border border-[#E2EAF4]">
+            <div>
+              <label htmlFor={`${formId}-field-139`} className="block font-semibold text-slate-700 mb-1">
+                แผนกที่ขอซื้อ (Department) *
+              </label>
+              <select id={`${formId}-field-139`}
+                value={departmentId}
+                onChange={(e) => setDepartmentId(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-[#F28C28] cursor-pointer"
+                required
+              >
+                <option value="">-- เลือกแผนก --</option>
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    [{d.code}] {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor={`${formId}-field-140`} className="block font-semibold text-slate-700 mb-1">
+                ประเภทการจัดซื้อ (Purchase Type) *
+              </label>
+              <select id={`${formId}-field-140`}
+                value={purchaseType}
+                onChange={(e) => setPurchaseType(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-[#F28C28] cursor-pointer"
+                required
+              >
+                <option value="GENERAL">จัดซื้อทั่วไป</option>
+                <option value="DRUG">ยาและเวชภัณฑ์ทางการแพทย์</option>
+                <option value="MEDICAL_SUPPLY">
+                  วัสดุการแพทย์และอุปกรณ์สิ้นเปลือง
+                </option>
+                <option value="EQUIPMENT">
+                  เครื่องมือแพทย์ / ครุภัณฑ์
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor={`${formId}-field-141`} className="block font-semibold text-slate-700 mb-1">
+                ระดับความเร่งด่วน
+              </label>
+              <select id={`${formId}-field-141`}
+                value={urgency}
+                onChange={(e) => setUrgency(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-[#F28C28] cursor-pointer"
+              >
+                <option value="NORMAL">ปกติ (Normal)</option>
+                <option value="URGENT">ด่วน (Urgent - ใกล้ถึง ROP)</option>
+                <option value="EMERGENCY">
+                  ฉุกเฉิน (Emergency - ขาดแคลนวิกฤต)
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor={`${formId}-field-142`} className="block font-semibold text-slate-700 mb-1">
+                วันที่ต้องการใช้สินค้า (Required Date)
+              </label>
+              <input id={`${formId}-field-142`}
+                type="date"
+                value={requiredDate}
+                onChange={(e) => setRequiredDate(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg bg-white" />
+            </div>
+
+            <div>
+              <label htmlFor={`${formId}-field-143`} className="block font-semibold text-slate-700 mb-1">
+                ปีงบประมาณ
+              </label>
+              <input id={`${formId}-field-143`}
+                type="text"
+                value={budgetYear}
+                onChange={(e) => setBudgetYear(e.target.value)}
+                placeholder="2568"
+                className="w-full px-3 py-2 border rounded-lg bg-white font-mono"
+                disabled={!isUnplanned && !!selectedPlan} />
+            </div>
+
+            <div>
+              <label htmlFor={`${formId}-field-144`} className="block font-semibold text-slate-700 mb-1">
+                เอกสารแนบอ้างอิง
+              </label>
+              <div className="relative">
+                <Paperclip className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                <input id={`${formId}-field-144`}
+                  type="text"
+                  placeholder="เช่น บันทึกข้อความขออนุมัติ_2568.pdf"
+                  value={attachmentName}
+                  onChange={(e) => setAttachmentName(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2 border rounded-lg bg-white text-xs" />
+              </div>
+            </div>
+          </div>
+
+          {/* Procurement Plan vs Unplanned Purchase Toggle (Budget Integration) */}
+          <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-2xl space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <PieChart className="w-4 h-4 text-purple-700" />
+                <span className="font-bold text-slate-800 text-xs">
+                  การอ้างอิงแผนจัดซื้อ (PP) และการดึงงบประมาณอัตโนมัติ
+                </span>
+              </div>
+              <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={isUnplanned}
+                  onChange={(e) => {
+                    setIsUnplanned(e.target.checked);
+                    if (e.target.checked) setPlanId("");
+                  }}
+                  className="rounded text-[#F28C28] focus:ring-[#F28C28]" />
+                <span
+                  className={isUnplanned ? "font-bold text-rose-700" : ""}
+                >
+                  จัดซื้อเร่งด่วนไม่มี PP อ้างอิง (Emergency Special
+                  Workflow)
+                </span>
+              </label>
+            </div>
+
+            {!isUnplanned ? (
+              <div className="space-y-3">
+                <div>
+                  <label htmlFor={`${formId}-field-145`} className="block font-semibold text-slate-700 mb-1">
+                    เลือกแผนการจัดซื้อจัดจ้าง (Procurement Plan - PP){" "}
+                    <span className="text-rose-500">*</span>
+                  </label>
+                  <select id={`${formId}-field-145`}
+                    value={planId}
+                    onChange={(e) => handlePlanChange(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-xl bg-white focus:ring-2 focus:ring-purple-500 cursor-pointer font-medium text-xs"
+                    required={!isUnplanned}
+                  >
+                    <option value="">
+                      -- กรุณาเลือกแผนจัดซื้อ (PP) เพื่อดึงงบประมาณอัตโนมัติ
+                      --
+                    </option>
+                    {plans.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        [{p.planNumber}] {p.name} — คงเหลือ ฿
+                        {p.remainingBudget?.toLocaleString()} บ.
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedPlan ? (
+                  <div className="p-3.5 bg-white rounded-xl border border-purple-200 space-y-2.5 shadow-2xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-[10px] text-slate-500 block uppercase font-bold">
+                          หน่วยงาน / กลุ่มงาน (ดึงจาก PP อัตโนมัติ)
+                        </span>
+                        <span className="font-bold text-slate-800 text-xs mt-0.5 block">
+                          {selectedPlan.departmentName ||
+                            "กลุ่มงานเภสัชกรรม (Pharmacy)"}
+                        </span>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-[10px] text-slate-500 block uppercase font-bold">
+                          รหัสจัดสรรงบประมาณ (ดึงจาก PP อัตโนมัติ)
+                        </span>
+                        <span className="font-mono font-bold text-emerald-800 text-xs mt-0.5 block">
+                          {selectedPlan.allocationId || "ALC-2569-001"} ·{" "}
+                          {selectedPlan.budgetCode || "BG-69-PHARM-01"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-xs pt-1">
+                      <div className="p-2 bg-purple-50/50 rounded-lg border border-purple-100">
+                        <span className="text-[10px] text-purple-700 block">
+                          วงเงินจัดสรรของแผน
+                        </span>
+                        <span className="font-extrabold text-[#14213D] text-xs tabular-nums mt-0.5 block">
+                          ฿
+                          {(
+                            selectedPlan.targetBudget ||
+                            selectedPlan.allocatedBudget
+                          )?.toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <span className="text-[10px] text-emerald-700 block font-semibold">
+                          วงเงินคงเหลือของแผน
+                        </span>
+                        <span className="font-extrabold text-emerald-700 text-xs tabular-nums mt-0.5 block">
+                          ฿{selectedPlan.remainingBudget?.toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="p-2 bg-amber-50 rounded-lg border border-amber-200">
+                        <span className="text-[10px] text-amber-800 block font-semibold">
+                          มูลค่ารวม PR ที่ขอซื้อ
+                        </span>
+                        <span className="font-extrabold text-amber-700 text-xs tabular-nums mt-0.5 block">
+                          ฿{formTotal.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Real-time Budget Check Alert */}
+                    {isBudgetExceeded ? (
+                      <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs font-semibold flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                        <div>
+                          <div>ยอดเงินขอซื้อเกินงบประมาณคงเหลือของแผน!</div>
+                          <div className="text-[11px] font-normal text-rose-600">
+                            ขอซื้อ ฿{formTotal.toLocaleString()}{" "}
+                            เกินงบคงเหลือ (฿
+                            {selectedPlan.remainingBudget?.toLocaleString()}
+                            ) อยู่ ฿
+                            {(
+                              formTotal - selectedPlan.remainingBudget
+                            ).toLocaleString()}{" "}
+                            บาท (ตามกฎข้อ 4 ห้ามใช้วงเงินเกินยอดที่ใช้ได้)
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-2 bg-emerald-50/60 border border-emerald-200 rounded-lg text-emerald-800 text-[11px] font-semibold flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>
+                            ยอดขอซื้ออยู่ในกรอบงบประมาณของแผนจัดซื้อ
+                          </span>
+                        </span>
+                        <span className="text-emerald-700 font-bold">
+                          คงเหลือหลังขอซื้อ: ฿
+                          {(
+                            selectedPlan.remainingBudget - formTotal
+                          ).toLocaleString()}{" "}
+                          บ.
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-3 bg-white/70 border border-dashed border-purple-200 rounded-xl text-center text-slate-400 text-xs">
+                    กรุณาเลือกแผนจัดซื้อ (PP)
+                    เพื่อดึงกลุ่มงานและรหัสจัดสรรงบประมาณอัตโนมัติ
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Emergency / Unplanned Purchase: Direct Budget Selection with Special Workflow */
+              <div className="p-3.5 bg-rose-50/60 border border-rose-200 rounded-xl space-y-3">
+                <div className="flex items-center gap-2 text-rose-800 text-xs font-bold">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>
+                    การจัดซื้อเร่งด่วนไม่มี PP อ้างอิง (Special Workflow):
+                    เลือกงบประมาณโดยตรง
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label htmlFor={`${formId}-field-146`} className="block font-semibold text-slate-700 mb-1">
+                      กลุ่มงานเจ้าของงบประมาณ{" "}
+                      <span className="text-rose-500">*</span>
+                    </label>
+                    <select id={`${formId}-field-146`}
+                      value={unplannedDept}
+                      onChange={(e) => {
+                        setUnplannedDept(e.target.value);
+                        const matched = allocations.find(
+                          (a) => a.departmentName === e.target.value
+                        );
+                        if (matched) setUnplannedAllocNo(matched.allocNo);
+                      }}
+                      className="w-full px-3 py-2 border rounded-xl bg-white font-semibold text-slate-800 cursor-pointer"
+                    >
+                      {Array.from(
+                        new Set(allocations.map((a) => a.departmentName))
+                      ).map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor={`${formId}-field-147`} className="block font-semibold text-slate-700 mb-1">
+                      รายการจัดสรรงบประมาณ{" "}
+                      <span className="text-rose-500">*</span>
+                    </label>
+                    <select id={`${formId}-field-147`}
+                      value={unplannedAllocNo}
+                      onChange={(e) => setUnplannedAllocNo(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-xl bg-white font-mono font-bold text-emerald-800 cursor-pointer"
+                    >
+                      {allocations
+                        .filter((a) => a.departmentName === unplannedDept)
+                        .map((a) => (
+                          <option key={a.id} value={a.allocNo}>
+                            {a.allocNo} · {a.budgetCode} (คงเหลือ ฿
+                            {getAllocationBudgetInfo(
+                              a.allocNo
+                            ).remainingBudget.toLocaleString()}
+                            )
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-xs p-2.5 bg-white rounded-lg border border-rose-200">
+                  <span>
+                    วงเงินคงเหลือของงบประมาณ:{" "}
+                    <strong className="text-emerald-700">
+                      ฿
+                      {unplannedBudgetInfo?.remainingBudget.toLocaleString()}{" "}
+                      บาท
+                    </strong>
+                  </span>
+                  <span>
+                    มูลค่ารวม PR:{" "}
+                    <strong
+                      className={isBudgetExceeded
+                        ? "text-rose-600"
+                        : "text-slate-800"}
+                    >
+                      ฿{formTotal.toLocaleString()} บาท
+                    </strong>
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <label htmlFor={`${formId}-field-148`} className="block text-rose-800 font-semibold text-[11px]">
+                    ระบุเหตุผลความจำเป็นเร่งด่วนสำหรับการจัดซื้อกรณีพิเศษ *
+                  </label>
+                  <textarea id={`${formId}-field-148`}
+                    rows={2}
+                    value={unplannedReason}
+                    onChange={(e) => setUnplannedReason(e.target.value)}
+                    placeholder="ระบุเหตุผลความจำเป็น เช่น กรณีฉุกเฉินทางระบาดวิทยา, ผู้ป่วยวิกฤตเพิ่มขึ้นกะทันหัน..."
+                    className="w-full px-3 py-2 border border-rose-300 rounded-lg bg-white text-xs text-rose-950 focus:ring-2 focus:ring-rose-500"
+                    required={isUnplanned} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Items Section */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="font-semibold text-slate-700 flex items-center gap-1.5">
+                <Package className="w-4 h-4 text-[#F28C28]" />
+                <span>รายการสินค้าขอซื้อ ({lines.length} รายการ)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleAutoFillLowStock}
+                  className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>ดึงสินค้าสต็อกต่ำอัตโนมัติ</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddLine}
+                  className="text-[#F28C28] hover:text-[#D97706] font-semibold flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>เพิ่มรายการ</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2 max-h-64 overflow-y-auto border p-2 rounded-xl bg-[#F5F8FC]">
+              {lines.map((line, idx) => (
+                <div
+                  key={line.clientId}
+                  className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-400 w-5">
+                      {idx + 1}.
+                    </span>
+                    <select
+                      value={line.itemId}
+                      onChange={(e) => handleLineChange(idx, "itemId", e.target.value)}
+                      className="flex-1 px-2.5 py-1.5 border rounded-lg text-xs bg-slate-50 font-medium"
+                    >
+                      {items.map((it) => (
+                        <option key={it.id} value={it.id}>
+                          [{it.itemCode}] {it.itemName} ({it.unit})
+                        </option>
+                      ))}
+                    </select>
+
+                    <div className="w-24">
+                      <input
+                        type="number"
+                        placeholder="จำนวน"
+                        value={line.requestedQty}
+                        onChange={(e) => handleLineChange(
+                          idx,
+                          "requestedQty",
+                          Number(e.target.value)
+                        )}
+                        className="w-full px-2 py-1.5 border rounded-lg text-xs text-right font-medium"
+                        required />
+                    </div>
+
+                    <div className="w-28">
+                      <input
+                        type="number"
+                        placeholder="ราคาประมาณ"
+                        value={line.estimatedUnitPrice}
+                        onChange={(e) => handleLineChange(
+                          idx,
+                          "estimatedUnitPrice",
+                          Number(e.target.value)
+                        )}
+                        className="w-full px-2 py-1.5 border rounded-lg text-xs text-right font-medium"
+                        required />
+                    </div>
+
+                    <div className="w-28 text-right font-bold text-[#14213D] tabular-nums">
+                      ฿
+                      {(
+                        (line.requestedQty || 0) *
+                        (line.estimatedUnitPrice || 0)
+                      ).toLocaleString()}
+                    </div>
+
+                    {lines.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveLine(idx)}
+                        className="text-rose-500 hover:text-rose-700 px-1 font-bold"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pl-7">
+                    <input
+                      type="text"
+                      placeholder="รายละเอียดคุณสมบัติ (Specification)..."
+                      value={line.specification}
+                      onChange={(e) => handleLineChange(
+                        idx,
+                        "specification",
+                        e.target.value
+                      )}
+                      className="px-2.5 py-1 border rounded text-[11px] bg-slate-50/50" />
+                    <input
+                      type="text"
+                      placeholder="หมายเหตุเพิ่มเติมสำหรับรายการนี้..."
+                      value={line.remark}
+                      onChange={(e) => handleLineChange(idx, "remark", e.target.value)}
+                      className="px-2.5 py-1 border rounded text-[11px] bg-slate-50/50" />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-between items-center pt-2 text-xs">
+              <span className="text-slate-500">
+                * ไม่ต้องเลือก Supplier ในขั้นตอนนี้
+                สามารถเลือกผู้ขายในขั้นตอน RFQ หรือตอนออก PO
+              </span>
+              <div className="font-bold text-[#14213D]">
+                ยอดรวมประเมินทั้งสิ้น:{" "}
+                <span className="text-[#D97706] ml-2 font-mono text-base">
+                  ฿{calculateFormTotal().toLocaleString()} บาท
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor={`${formId}-field-149`} className="block font-semibold text-slate-700 mb-1">
+              เหตุผลความจำเป็นในการขอซื้อ
+            </label>
+            <textarea id={`${formId}-field-149`}
+              rows={2}
+              value={justification}
+              onChange={(e) => setJustification(e.target.value)}
+              placeholder="ระบุเหตุผลความจำเป็น เช่น สำรองใช้งานตามรอบปกติ, เติมสต็อกหอผู้ป่วย..."
+              className="w-full px-3 py-2 border rounded-lg bg-[#F5F8FC] focus:bg-white text-xs"
+              required />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t">
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(false)}
+              className="px-4 py-2 border rounded-xl hover:bg-[#F5F8FC] font-medium"
+            >
+              ยกเลิก
+            </button>
+            <button
+              type="submit"
+              disabled={isBudgetExceeded}
+              className={`px-5 py-2 font-semibold rounded-xl shadow-sm flex items-center gap-1.5 transition-all ${isBudgetExceeded
+                ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                : "bg-[#F28C28] hover:bg-[#D97706] text-white"}`}
+            >
+              <Send className="w-4 h-4" />
+              <span>ส่งใบขอซื้อ (Submit PR)</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function getUrgencyText(selectedPRDetail: any): React.ReactNode {
+  if (selectedPRDetail.urgency === "EMERGENCY") {
+    return "ด่วนฉุกเฉิน";
+  }
+  if (selectedPRDetail.urgency === "URGENT") {
+    return "ด่วน";
+  }
+  return "ความเร่งด่วนปกติ";
+
+}
+
+function getUrgencyClassName(selectedPRDetail: any) {
+  if (selectedPRDetail.urgency === "EMERGENCY") {
+    return "bg-rose-50 text-rose-700 border border-rose-200";
+  }
+  if (selectedPRDetail.urgency === "URGENT") {
+    return "bg-amber-50 text-amber-700 border border-amber-200";
+  }
+  return "bg-slate-100 text-[#475569] border border-slate-200/80";
+
+}
+
+type RenderTableRowsOptions = Readonly<{
+  loading: boolean;
+  filteredRequisitions: any[];
+  search: string;
+  statusFilter: string;
+  setSelectedPRDetail: React.Dispatch<any>;
+  setShowDetailModal: React.Dispatch<React.SetStateAction<boolean>>;
+  getPurchaseTypeBadge: (type: string) => React.JSX.Element;
+  handleOpenReviseModal: (pr: any) => void;
+  handleOpenConvertModal: (pr: any) => void
+}>;
+
+function renderTableRows({ loading, filteredRequisitions, search, statusFilter, setSelectedPRDetail, setShowDetailModal, getPurchaseTypeBadge, handleOpenReviseModal, handleOpenConvertModal }: RenderTableRowsOptions): React.ReactNode {
+  if (loading) {
+    return <tr>
+      <td colSpan={10} className="py-12 text-center text-slate-400">
+        กำลังโหลดข้อมูลใบขอซื้อ...
+      </td>
+    </tr>;
+  }
+  if (filteredRequisitions.length === 0) {
+    return <tr>
+      <td colSpan={10} className="py-12 text-center text-slate-400">
+        {search || statusFilter !== "ALL"
+          ? "ไม่พบใบขอซื้อที่ตรงกับเงื่อนไขการค้นหา"
+          : "ยังไม่มีรายการใบขอซื้อ"}
+      </td>
+    </tr>;
+  }
+  return filteredRequisitions.map((pr) => (
+    <tr
+      key={pr.id}
+      className="hover:bg-[#FFF7ED]/40 transition-colors group cursor-pointer"
+      onClick={() => {
+        setSelectedPRDetail(pr);
+        setShowDetailModal(true);
+      }}
+    >
+      <td className="py-3 px-4 font-mono font-bold text-[#D97706]">
+        <span className="hover:underline text-[#D97706] bg-[#FFF7ED] border border-orange-200/60 group-hover:bg-orange-100 px-2 py-0.5 rounded-lg transition-colors">
+          {pr.prNumber}
+        </span>
+      </td>
+      <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
+        {new Date(pr.requestDate).toLocaleDateString("th-TH")}
+      </td>
+      <td className="py-3 px-3 font-medium text-slate-800">
+        <div className="flex items-center gap-1.5 font-bold text-slate-900">
+          <Building className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <span>
+            {pr.departmentName ||
+              pr.department?.name ||
+              "กลุ่มงานเภสัชกรรม (Pharmacy)"}
+          </span>
+        </div>
+        {(pr.allocationId || pr.plan?.allocationId) && (
+          <div className="text-[10px] font-mono text-emerald-800 font-semibold mt-0.5">
+            {pr.allocationId || pr.plan?.allocationId}
+          </div>
+        )}
+      </td>
+      <td className="py-3 px-3 whitespace-nowrap">
+        {getPurchaseTypeBadge(pr.purchaseType || "GENERAL")}
+      </td>
+      <td className="py-3 px-3">
+        {getIsUnplannedContent(pr)}
+      </td>
+      <td className="py-3 px-3 text-right font-medium tabular-nums">
+        {pr.lines?.length || 0} รายการ
+      </td>
+      <td className="py-3 px-3 text-right font-bold text-[#14213D] tabular-nums">
+        ฿{pr.totalAmount.toLocaleString()}
+      </td>
+      <td className="py-3 px-3 text-center whitespace-nowrap">
+        <span
+          className={`px-2 py-0.5 rounded text-[10px] font-semibold ${getUrgencyClassName2(pr)}`}
+        >
+          {getUrgencyText2(pr)}
+        </span>
+      </td>
+      <td className="py-3 px-3 text-center whitespace-nowrap">
+        <StatusBadge status={pr.status} />
+      </td>
+      <td
+        className="py-3 px-4 text-center whitespace-nowrap"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedPRDetail(pr);
+              setShowDetailModal(true);
+            }}
+            className="px-2.5 py-1 text-slate-700 hover:text-[#14213D] hover:bg-slate-100 rounded-lg text-xs font-semibold transition-colors border border-slate-200 shadow-2xs flex items-center gap-1"
+          >
+            <Eye className="w-3.5 h-3.5 text-slate-500" />
+            <span>ดูข้อมูล</span>
+          </button>
+
+          {pr.status === "RETURNED" && (
+            <button
+              type="button"
+              onClick={() => handleOpenReviseModal(pr)}
+              className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg text-xs font-semibold flex items-center gap-1"
+              title="แก้ไขข้อมูลตามที่ผู้บังคับบัญชาส่งกลับและส่งใหม่"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>แก้ไขส่งใหม่</span>
+            </button>
+          )}
+
+          {pr.status === "APPROVED" && (
+            <div className="flex items-center gap-1">
+              <Link
+                href={`/procurement/rfq?prId=${pr.id}`}
+                className="px-2 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1"
+                title="ส่งขอใบเสนอราคาจากผู้จำหน่าย (RFQ)"
+              >
+                <FileSearch className="w-3.5 h-3.5" />
+                <span>RFQ</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => handleOpenConvertModal(pr)}
+                className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1"
+                title="ออกใบสั่งซื้อ (PO) สู่ผู้ขาย"
+              >
+                <ShoppingCart className="w-3.5 h-3.5" />
+                <span>ออก PO</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </td>
+    </tr>
+  ));
+
+}
+
+function getUrgencyText2(pr: any): React.ReactNode {
+  if (pr.urgency === "EMERGENCY") {
+    return "ฉุกเฉิน";
+  }
+  if (pr.urgency === "URGENT") {
+    return "ด่วน";
+  }
+  return "ปกติ";
+
+}
+
+function getUrgencyClassName2(pr: any) {
+  if (pr.urgency === "EMERGENCY") {
+    return "bg-rose-50 text-rose-700 border border-rose-200 font-bold";
+  }
+  if (pr.urgency === "URGENT") {
+    return "bg-amber-50 text-amber-700 border border-amber-200";
+  }
+  return "bg-slate-100 text-slate-600";
+
+}
+
+function getIsUnplannedContent(pr: any): React.ReactNode {
+  if (pr.isUnplanned) {
+    return <div className="space-y-0.5">
+      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+        จัดซื้อเร่งด่วนนอกแผน (ปี {pr.budgetYear || "2569"})
+      </span>
+      <div className="text-[10px] font-mono text-emerald-700">
+        [{pr.allocationId || "ALC-2569-001"} ·{" "}
+        {pr.budgetCode || "BG-69-PHARM-01"}]
+      </div>
+    </div>;
+  }
+  if (pr.plan || pr.planNumber) {
+    return <div className="space-y-0.5">
+      <div className="font-semibold text-purple-900 truncate max-w-[200px]">
+        {pr.plan?.name || "แผนจัดซื้อเวชภัณฑ์ประจำปี"}
+      </div>
+      <div className="text-[10px] font-mono text-purple-700 flex items-center gap-1">
+        <span className="font-bold">
+          [{pr.planNumber || pr.plan?.planNumber}]
+        </span>
+        <span className="text-emerald-700 font-semibold">
+          ·{" "}
+          {pr.allocationId ||
+            pr.plan?.allocationId ||
+            "ALC-2569-001"}
+        </span>
+      </div>
+    </div>;
+  }
+  return <span className="text-slate-400 text-xs">-</span>;
+
 }
 
 export default function ProcurementRequisitionsPage() {

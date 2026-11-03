@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
 import { TrendingUp } from 'lucide-react';
+import Link from 'next/link';
 
 export default function FinanceReceivablesPage() {
   const receivables = [

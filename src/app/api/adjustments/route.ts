@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { generateDocumentNumber } from '@/lib/doc-sequence';
 import { logAudit } from '@/lib/audit';
+import { generateDocumentNumber } from '@/lib/doc-sequence';
+import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,10 +39,10 @@ export async function POST(request: Request) {
           create: (body.lines || []).map((l: any) => ({
             itemId: l.itemId,
             lotNumber: l.lotNumber || null,
-            currentQty: parseFloat(l.currentQty || '0'),
-            adjustmentQty: parseFloat(l.adjustmentQty),
-            newQty: parseFloat(l.currentQty || '0') + parseFloat(l.adjustmentQty),
-            unitCost: parseFloat(l.unitCost || '0'),
+            currentQty: Number.parseFloat(l.currentQty || '0'),
+            adjustmentQty: Number.parseFloat(l.adjustmentQty),
+            newQty: Number.parseFloat(l.currentQty || '0') + Number.parseFloat(l.adjustmentQty),
+            unitCost: Number.parseFloat(l.unitCost || '0'),
             reason: l.reason || body.reason,
           })),
         },

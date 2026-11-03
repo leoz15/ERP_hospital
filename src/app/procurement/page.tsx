@@ -1,30 +1,24 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useApp } from '@/context/AppContext';
 import {
-  ShoppingCart,
-  PieChart,
-  FileText,
-  Building2,
-  TrendingUp,
-  DollarSign,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Plus,
   ArrowRight,
+  Building2,
+  Clock,
+  DollarSign,
+  FileText,
+  PieChart,
+  Plus,
   RefreshCw,
-  Layers,
-  ArrowDownToLine,
-  ShieldCheck,
-  Sparkles,
+  ShoppingCart,
+  Sparkles
 } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function ProcurementDashboardPage() {
-  const { addToast, refreshKey, triggerRefresh, currentUser } = useApp();
+  const { refreshKey, triggerRefresh } = useApp();
   const [plans, setPlans] = useState<any[]>([]);
   const [requisitions, setRequisitions] = useState<any[]>([]);
   const [pos, setPos] = useState<any[]>([]);
@@ -61,7 +55,7 @@ export default function ProcurementDashboardPage() {
   const activePOs = pos.filter((p) => p.status === 'APPROVED' || p.status === 'PARTIALLY_RECEIVED');
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto animate-fade-in font-sans pb-12">
+    <div aria-busy={loading} className="space-y-6 max-w-7xl mx-auto animate-fade-in font-sans pb-12">
       {/* 1. Header Banner (Orange CI: #F28C28) */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#FFF7ED] via-[#F8FAFC] to-white border border-[#E2EAF4] p-6 sm:p-7 shadow-xs">
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -84,7 +78,7 @@ export default function ProcurementDashboardPage() {
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
-            <button
+            <button type="button"
               onClick={() => triggerRefresh()}
               className="flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 text-[#14213D] rounded-xl text-xs font-semibold border border-[#E2EAF4] shadow-2xs transition-colors"
             >
@@ -279,9 +273,8 @@ export default function ProcurementDashboardPage() {
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs font-bold text-[#F28C28]">{pr.prNumber}</span>
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                        pr.urgency === 'URGENT' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-700'
-                      }`}
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${pr.urgency === 'URGENT' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-700'
+                        }`}
                     >
                       {pr.urgency === 'URGENT' ? 'ด่วน' : 'ปกติ'}
                     </span>

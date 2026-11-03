@@ -1,23 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import {
   BarChart3,
   Download,
-  Printer,
-  Calendar,
-  Building,
-  Layers,
-  AlertTriangle,
-  RefreshCw,
-  Search,
+  Printer
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function ReportsPage() {
   const { selectedWarehouse, refreshKey } = useApp();
   const [reportType, setReportType] = useState('VALUATION'); // VALUATION, LOW_STOCK, EXPIRY, MOVEMENTS
-  const [reportData, setReportData] = useState<any | null>(null);
+  const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const loadReport = () => {
@@ -47,7 +41,7 @@ export default function ReportsPage() {
   };
 
   const handleExportCSV = () => {
-    if (!reportData || !reportData.rows) return;
+    if (!reportData?.rows) return;
     let csv = '';
 
     if (reportType === 'VALUATION') {
@@ -91,7 +85,7 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div aria-busy={loading} className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E2EAF4] shadow-sm print:hidden">
         <div>
@@ -105,14 +99,14 @@ export default function ReportsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={handlePrint}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-[#334155] rounded-lg text-xs font-semibold"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>พิมพ์รายงาน (Print)</span>
           </button>
-          <button
+          <button type="button"
             onClick={handleExportCSV}
             className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#8B5CF6] hover:bg-[#6D28D9] text-white rounded-lg text-xs font-semibold shadow-xs"
           >
@@ -129,14 +123,13 @@ export default function ReportsPage() {
           { id: 'LOW_STOCK', label: '2. รายงานสินค้าใกล้หมด / ต่ำกว่าเกณฑ์ (Low Stock)' },
           { id: 'EXPIRY', label: '3. รายงานควบคุมวันหมดอายุ (Lot & Expiry)' },
         ].map((t) => (
-          <button
+          <button type="button"
             key={t.id}
             onClick={() => setReportType(t.id)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-              reportType === t.id
-                ? 'bg-[#8B5CF6] text-white shadow-xs font-bold'
-                : 'bg-white hover:bg-slate-100 text-[#334155] border border-[#E2EAF4]'
-            }`}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${reportType === t.id
+              ? 'bg-[#8B5CF6] text-white shadow-xs font-bold'
+              : 'bg-white hover:bg-slate-100 text-[#334155] border border-[#E2EAF4]'
+              }`}
           >
             {t.label}
           </button>
@@ -197,7 +190,7 @@ export default function ReportsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {reportData.rows.map((r: any, idx: number) => (
-                      <tr key={idx} className="hover:bg-[#F5F8FC]">
+                      <tr key={JSON.stringify([r.itemCode, r.warehouseName, r.lotNumber])} className="hover:bg-[#F5F8FC]">
                         <td className="py-2.5 px-3 font-mono font-bold text-[#2563EB]">{r.itemCode}</td>
                         <td className="py-2.5 px-3 font-semibold text-[#14213D]">{r.itemName}</td>
                         <td className="py-2.5 px-3 text-[#64748B]">{r.categoryName}</td>
@@ -227,7 +220,7 @@ export default function ReportsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {reportData.rows.map((r: any, idx: number) => (
-                      <tr key={idx} className="hover:bg-[#F5F8FC]">
+                      <tr key={JSON.stringify([r.itemCode, r.warehouseName, r.lotNumber])} className="hover:bg-[#F5F8FC]">
                         <td className="py-2.5 px-3 font-mono font-bold text-[#2563EB]">{r.itemCode}</td>
                         <td className="py-2.5 px-3 font-semibold text-[#14213D]">{r.itemName}</td>
                         <td className="py-2.5 px-3 text-[#334155]">{r.warehouseName}</td>
@@ -261,7 +254,7 @@ export default function ReportsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {reportData.rows.map((r: any, idx: number) => (
-                      <tr key={idx} className="hover:bg-[#F5F8FC]">
+                      <tr key={JSON.stringify([r.itemCode, r.warehouseName, r.lotNumber])} className="hover:bg-[#F5F8FC]">
                         <td className="py-2.5 px-3 font-mono font-bold text-[#14213D]">{r.lotNumber}</td>
                         <td className="py-2.5 px-3 font-semibold text-[#14213D]">{r.itemName}</td>
                         <td className="py-2.5 px-3 text-[#334155]">{r.warehouseName}</td>
@@ -275,7 +268,7 @@ export default function ReportsPage() {
                           )}
                         </td>
                         <td className="py-2.5 px-3 text-center">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${r.status === 'หมดอายุแล้ว' ? 'bg-red-100 text-red-800 border border-red-300' : r.status.includes('ใกล้หมดอายุ') ? 'bg-amber-100 text-amber-800' : 'bg-emerald-50 text-emerald-700'}`}>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getStatusClassName(r)}`}>
                             {r.status}
                           </span>
                         </td>
@@ -290,4 +283,15 @@ export default function ReportsPage() {
       )}
     </div>
   );
+}
+
+function getStatusClassName(r: any) {
+  if (r.status === 'หมดอายุแล้ว') {
+    return 'bg-red-100 text-red-800 border border-red-300';
+  }
+  if (r.status.includes('ใกล้หมดอายุ')) {
+    return 'bg-amber-100 text-amber-800';
+  }
+  return 'bg-emerald-50 text-emerald-700';
+
 }

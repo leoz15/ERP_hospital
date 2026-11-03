@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { generateDocumentNumber } from '@/lib/doc-sequence';
 import { logAudit } from '@/lib/audit';
+import { generateDocumentNumber } from '@/lib/doc-sequence';
+import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -104,9 +104,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const effectiveBudgetCode = pr.budgetCode || pr.plan?.budgetCode || 'BG-69-PHARM-01';
     const effectiveDeptName = pr.departmentName || pr.department?.name || 'กลุ่มงานเภสัชกรรม (Pharmacy)';
 
+    const unplannedBudgetLabel = pr.isUnplanned ? 'จัดซื้อเร่งด่วนนอกแผน' : 'งบประมาณดำเนินการ';
     const budgetRef = pr.plan
       ? `[${effectiveAllocationId} · ${effectiveBudgetCode}] ${pr.plan.planNumber} • ${pr.plan.name}`
-      : `[${effectiveAllocationId} · ${effectiveBudgetCode}] ${pr.isUnplanned ? 'จัดซื้อเร่งด่วนนอกแผน' : 'งบประมาณดำเนินการ'}`;
+      : `[${effectiveAllocationId} · ${effectiveBudgetCode}] ${unplannedBudgetLabel}`;
 
     const po = await prisma.$transaction(async (tx) => {
       // 1. Create PO with full financial fields & references

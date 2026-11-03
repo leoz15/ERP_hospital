@@ -1,43 +1,38 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useApp } from '@/context/AppContext';
-import {
-  ShoppingCart,
-  Plus,
-  Search,
-  CheckCircle,
-  Clock,
-  ArrowDownToLine,
-  Building,
-  RefreshCw,
-  FileText,
-  Eye,
-  Copy,
-  Printer,
-  X,
-  Calendar,
-  DollarSign,
-  CheckCircle2,
-  Package,
-  AlertTriangle,
-  ChevronRight,
-  ShieldCheck,
-  Send,
-  MapPin,
-  CreditCard,
-  FileSearch,
-  Lock,
-  Ban,
-  Check,
-  Paperclip,
-  Percent,
-} from 'lucide-react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useApp } from '@/context/AppContext';
 import { useBudget } from '@/context/BudgetContext';
+import { createFormRowId } from '@/lib/form-row';
+import {
+  AlertTriangle,
+  ArrowDownToLine,
+  Ban,
+  Building,
+  Calendar,
+  CheckCircle,
+  ChevronRight,
+  Copy,
+  CreditCard,
+  DollarSign,
+  Eye,
+  FileText,
+  Lock,
+  MapPin,
+  Package,
+  Plus,
+  Printer,
+  RefreshCw,
+  Search,
+  Send,
+  ShoppingCart,
+  X
+} from 'lucide-react';
+import Link from 'next/link';
+import React, { useEffect, useId, useState } from 'react';
 
 export default function PurchaseOrdersPage() {
+  const formId = useId();
   const { addToast, refreshKey, triggerRefresh, currentUser } = useApp();
   const { commitBudget, releaseBudget } = useBudget();
   const [pos, setPos] = useState<any[]>([]);
@@ -49,7 +44,7 @@ export default function PurchaseOrdersPage() {
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedPODetail, setSelectedPODetail] = useState<any | null>(null);
+  const [selectedPODetail, setSelectedPODetail] = useState<any>(null);
 
   // Search & Filter State
   const [search, setSearch] = useState('');
@@ -69,7 +64,7 @@ export default function PurchaseOrdersPage() {
   const [supplierId, setSupplierId] = useState('');
   const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0]);
   const [expectedDate, setExpectedDate] = useState('');
-  const [deliveryLocation, setConvertDeliveryLocation] = useState(
+  const [deliveryLocation, setDeliveryLocation] = useState(
     'คลังเวชภัณฑ์กลาง อาคารเภสัชกรรม ชั้น 1 โรงพยาบาล'
   );
   const [paymentTerms, setPaymentTerms] = useState('Credit 30 วัน');
@@ -78,13 +73,14 @@ export default function PurchaseOrdersPage() {
   const [allocationId, setAllocationId] = useState('ALC-2569-001');
   const [budgetCode, setBudgetCode] = useState('BG-69-PHARM-01');
   const [departmentName, setDepartmentName] = useState('กลุ่มงานเภสัชกรรม (Pharmacy)');
-  const [rfqNumber, setRfqNumber] = useState('');
+  const rfqNumber = '';
   const [quotationNumber, setQuotationNumber] = useState('');
-  const [supplierQuoteRef, setSupplierQuoteRef] = useState('');
-  const [attachmentName, setAttachmentName] = useState('');
+  const supplierQuoteRef = '';
+  const attachmentName = '';
   const [remarks, setRemarks] = useState('');
   const [poLines, setPoLines] = useState<any[]>([
     {
+      clientId: "initial-2625",
       itemId: '',
       specification: '',
       orderedQty: 100,
@@ -123,9 +119,10 @@ export default function PurchaseOrdersPage() {
       .then((data) => {
         if (Array.isArray(data)) {
           setItems(data);
-          if (data.length > 0 && (!poLines[0] || !poLines[0].itemId)) {
+          if (data.length > 0 && !poLines[0]?.itemId) {
             setPoLines([
               {
+                clientId: createFormRowId(),
                 itemId: data[0].id,
                 specification: data[0].description || '',
                 orderedQty: 100,
@@ -165,6 +162,7 @@ export default function PurchaseOrdersPage() {
       );
       if (pr.lines && pr.lines.length > 0) {
         const mappedLines = pr.lines.map((l: any) => ({
+          clientId: createFormRowId(),
           itemId: l.itemId,
           prLineId: l.id,
           specification: l.specification || l.item?.description || '',
@@ -184,6 +182,7 @@ export default function PurchaseOrdersPage() {
       setPoLines([
         ...poLines,
         {
+          clientId: createFormRowId(),
           itemId: items[0].id,
           specification: items[0].description || '',
           orderedQty: 100,
@@ -339,17 +338,11 @@ export default function PurchaseOrdersPage() {
       }
 
       const actionText =
-        action === 'APPROVE'
-          ? `อนุมัติใบสั่งซื้อ ${poNumber} เรียบร้อยแล้ว (บันทึก Commitment ในระบบงบประมาณ ฿${poAmt.toLocaleString()})`
-          : action === 'SEND_TO_SUPPLIER'
-          ? `ส่งใบสั่งซื้อ ${poNumber} ให้ผู้ขายเรียบร้อยแล้ว (สถานะ: สั่งซื้อแล้ว)`
-          : action === 'CLOSE'
-          ? `ปิดใบสั่งซื้อ ${poNumber} เรียบร้อยแล้ว (Completed)`
-          : `ปฏิเสธใบสั่งซื้อ ${poNumber} เรียบร้อยแล้ว (คืนวงเงินงบประมาณ)`;
+        getActionText(action, poNumber, poAmt);
 
       addToast('success', actionText);
 
-      if (selectedPODetail && selectedPODetail.id === poId) {
+      if (selectedPODetail?.id === poId) {
         setShowDetailModal(false);
         setSelectedPODetail(null);
       }
@@ -376,22 +369,17 @@ export default function PurchaseOrdersPage() {
   ).length;
 
   const filteredPOs = pos.filter((po) => {
-    if (statusFilter === 'PENDING_APPROVAL') {
-      if (po.status !== 'PENDING_APPROVAL' && po.status !== 'DRAFT' && po.status !== 'PENDING')
-        return false;
-    } else if (statusFilter === 'APPROVED') {
-      if (po.status !== 'APPROVED') return false;
-    } else if (statusFilter === 'ORDERED') {
-      if (po.status !== 'ORDERED') return false;
-    } else if (statusFilter === 'PARTIALLY_RECEIVED') {
-      if (po.status !== 'PARTIALLY_RECEIVED') return false;
-    } else if (statusFilter === 'FULLY_RECEIVED') {
-      if (po.status !== 'FULLY_RECEIVED' && po.status !== 'COMPLETED') return false;
-    } else if (statusFilter === 'CLOSED') {
-      if (po.status !== 'CLOSED') return false;
-    } else if (statusFilter === 'REJECTED') {
-      if (po.status !== 'REJECTED' && po.status !== 'CANCELLED') return false;
-    }
+    const acceptedStatuses: Record<string, string[]> = {
+      PENDING_APPROVAL: ['PENDING_APPROVAL', 'DRAFT', 'PENDING'],
+      APPROVED: ['APPROVED'],
+      ORDERED: ['ORDERED'],
+      PARTIALLY_RECEIVED: ['PARTIALLY_RECEIVED'],
+      FULLY_RECEIVED: ['FULLY_RECEIVED', 'COMPLETED'],
+      CLOSED: ['CLOSED'],
+      REJECTED: ['REJECTED', 'CANCELLED'],
+    };
+    const statuses = acceptedStatuses[statusFilter];
+    if (statuses && !statuses.includes(po.status)) return false;
 
     if (!search.trim()) return true;
     const term = search.toLowerCase();
@@ -431,14 +419,14 @@ export default function PurchaseOrdersPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => triggerRefresh()}
             className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>รีเฟรช</span>
           </button>
-          <button
+          <button type="button"
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-[#F28C28] hover:bg-[#D97706] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
           >
@@ -477,19 +465,17 @@ export default function PurchaseOrdersPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setStatusFilter(tab.id as StatusFilter)}
-                className={`px-3 py-1.5 rounded-xl font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                  statusFilter === tab.id
-                    ? 'bg-[#F28C28] text-white font-semibold shadow-xs'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-                }`}
+                className={`px-3 py-1.5 rounded-xl font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${statusFilter === tab.id
+                  ? 'bg-[#F28C28] text-white font-semibold shadow-xs'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  }`}
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                    statusFilter === tab.id
-                      ? 'bg-white/20 text-white'
-                      : 'bg-slate-200/80 text-slate-600'
-                  }`}
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${statusFilter === tab.id
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-200/80 text-slate-600'
+                    }`}
                 >
                   {tab.count}
                 </span>
@@ -518,141 +504,7 @@ export default function PurchaseOrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
-                    กำลังโหลดข้อมูลใบสั่งซื้อ...
-                  </td>
-                </tr>
-              ) : filteredPOs.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
-                    {search || statusFilter !== 'ALL'
-                      ? 'ไม่พบใบสั่งซื้อที่ตรงกับเงื่อนไขการค้นหา'
-                      : 'ยังไม่มีรายการใบสั่งซื้อ'}
-                  </td>
-                </tr>
-              ) : (
-                filteredPOs.map((po) => {
-                  const netVal = po.netAmount || po.totalAmount || 0;
-                  return (
-                    <tr
-                      key={po.id}
-                      className="hover:bg-[#FFF7ED]/40 transition-colors group cursor-pointer"
-                      onClick={() => {
-                        setSelectedPODetail(po);
-                        setShowDetailModal(true);
-                      }}
-                    >
-                      <td className="py-3 px-4 font-mono font-bold text-[#D97706]">
-                        <span className="hover:underline text-[#D97706] bg-[#FFF7ED] border border-orange-200/60 group-hover:bg-orange-100 px-2 py-0.5 rounded-lg transition-colors">
-                          {po.poNumber}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">
-                        {po.prNumber ? (
-                          <div>
-                            <span className="bg-slate-100 text-slate-700 border border-slate-200/80 px-2 py-0.5 rounded-lg font-bold">
-                              {po.prNumber}
-                            </span>
-                            <div className="text-[10px] text-emerald-800 font-semibold mt-1">
-                              {po.allocationId || 'ALC-2569-001'} · {po.budgetCode || 'BG-69-PHARM-01'}
-                            </div>
-                          </div>
-                        ) : (
-                          <div>
-                            <span className="text-slate-400">-</span>
-                            {po.allocationId && (
-                              <div className="text-[10px] text-emerald-800 font-semibold mt-0.5">
-                                {po.allocationId}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="font-semibold text-[#14213D]">{po.supplier?.name}</div>
-                        <div className="text-[11px] text-slate-400 font-mono">
-                          {po.supplier?.code} • {po.supplier?.paymentTerm}
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
-                        {new Date(po.orderDate).toLocaleDateString('th-TH')}
-                      </td>
-                      <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
-                        {po.expectedDate ? new Date(po.expectedDate).toLocaleDateString('th-TH') : '-'}
-                      </td>
-                      <td className="py-3 px-3 text-right font-medium tabular-nums">
-                        {po.lines?.length || 0} รายการ
-                      </td>
-                      <td className="py-3 px-3 text-right font-bold text-[#14213D] tabular-nums">
-                        ฿{netVal.toLocaleString()}
-                      </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <StatusBadge status={po.status} />
-                      </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
-                        {po.status === 'COMPLETED' || po.status === 'FULLY_RECEIVED' ? (
-                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            รับของครบแล้ว
-                          </span>
-                        ) : po.status === 'PARTIALLY_RECEIVED' ? (
-                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">
-                            รับของบางส่วน
-                          </span>
-                        ) : po.status === 'ORDERED' ? (
-                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                            รอส่งมอบ
-                          </span>
-                        ) : po.status === 'APPROVED' ? (
-                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                            พร้อมส่งผู้ขาย
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 text-[11px]">-</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedPODetail(po);
-                              setShowDetailModal(true);
-                            }}
-                            className="px-2.5 py-1 text-slate-700 hover:text-[#14213D] hover:bg-slate-100 rounded-lg text-xs font-semibold transition-colors border border-slate-200 shadow-2xs flex items-center gap-1"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-slate-500" />
-                            <span>ดูข้อมูล</span>
-                          </button>
-
-                          {(po.status === 'PENDING_APPROVAL' || po.status === 'DRAFT') && (
-                            <button
-                              type="button"
-                              onClick={() => handlePOAction(po.id, 'APPROVE', po.poNumber)}
-                              className="px-3 py-1 bg-[#F28C28] hover:bg-[#D97706] text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1"
-                            >
-                              <CheckCircle className="w-3.5 h-3.5" />
-                              <span>อนุมัติ</span>
-                            </button>
-                          )}
-
-                          {po.status === 'APPROVED' && (
-                            <button
-                              type="button"
-                              onClick={() => handlePOAction(po.id, 'SEND_TO_SUPPLIER', po.poNumber)}
-                              className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1"
-                            >
-                              <Send className="w-3.5 h-3.5" />
-                              <span>ส่งผู้ขาย</span>
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
+              {renderTableRows(loading, filteredPOs, search, statusFilter, setSelectedPODetail, setShowDetailModal, handlePOAction)}
             </tbody>
           </table>
         </div>
@@ -672,7 +524,7 @@ export default function PurchaseOrdersPage() {
                   เอกสารส่งถึงผู้จำหน่าย (Supplier) รองรับการดึงข้อมูลจากใบขอซื้อ (PR) ที่อนุมัติแล้ว พร้อมคำนวณ VAT 7%
                 </p>
               </div>
-              <button
+              <button type="button"
                 onClick={() => setShowCreateModal(false)}
                 className="text-slate-400 hover:text-slate-600 text-lg p-1"
               >
@@ -706,10 +558,10 @@ export default function PurchaseOrdersPage() {
               {/* Header Details */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#F5F8FC] p-3.5 rounded-xl border border-[#E2EAF4]">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-113`} className="block font-semibold text-slate-700 mb-1">
                     ผู้จัดจำหน่าย (Supplier) *
                   </label>
-                  <select
+                  <select id={`${formId}-field-113`}
                     value={supplierId}
                     onChange={(e) => setSupplierId(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-[#F28C28] cursor-pointer font-medium"
@@ -725,10 +577,10 @@ export default function PurchaseOrdersPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-114`} className="block font-semibold text-slate-700 mb-1">
                     วันที่ออกใบสั่งซื้อ (PO Date)
                   </label>
-                  <input
+                  <input id={`${formId}-field-114`}
                     type="date"
                     value={orderDate}
                     onChange={(e) => setOrderDate(e.target.value)}
@@ -738,10 +590,10 @@ export default function PurchaseOrdersPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-115`} className="block font-semibold text-slate-700 mb-1">
                     กำหนดส่งมอบ (Delivery Date) *
                   </label>
-                  <input
+                  <input id={`${formId}-field-115`}
                     type="date"
                     value={expectedDate}
                     onChange={(e) => setExpectedDate(e.target.value)}
@@ -751,15 +603,15 @@ export default function PurchaseOrdersPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-116`} className="block font-semibold text-slate-700 mb-1">
                     สถานที่ส่งสินค้า (Delivery Location) *
                   </label>
                   <div className="relative">
                     <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                    <input
+                    <input id={`${formId}-field-116`}
                       type="text"
                       value={deliveryLocation}
-                      onChange={(e) => setConvertDeliveryLocation(e.target.value)}
+                      onChange={(e) => setDeliveryLocation(e.target.value)}
                       className="w-full pl-8 pr-3 py-2 border rounded-lg bg-white text-xs"
                       required
                     />
@@ -767,12 +619,12 @@ export default function PurchaseOrdersPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-117`} className="block font-semibold text-slate-700 mb-1">
                     เงื่อนไขชำระเงิน (Payment Terms)
                   </label>
                   <div className="relative">
                     <CreditCard className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                    <input
+                    <input id={`${formId}-field-117`}
                       type="text"
                       value={paymentTerms}
                       onChange={(e) => setPaymentTerms(e.target.value)}
@@ -782,8 +634,8 @@ export default function PurchaseOrdersPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">เครดิตเทอม (วัน)</label>
-                  <input
+                  <label htmlFor={`${formId}-field-118`} className="block font-semibold text-slate-700 mb-1">เครดิตเทอม (วัน)</label>
+                  <input id={`${formId}-field-118`}
                     type="number"
                     value={creditDays}
                     onChange={(e) => setCreditDays(Number(e.target.value))}
@@ -792,10 +644,10 @@ export default function PurchaseOrdersPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-119`} className="block font-semibold text-slate-700 mb-1">
                     อ้างอิงงบประมาณ (Budget Ref)
                   </label>
-                  <input
+                  <input id={`${formId}-field-119`}
                     type="text"
                     value={budgetReference}
                     onChange={(e) => setBudgetReference(e.target.value)}
@@ -805,10 +657,10 @@ export default function PurchaseOrdersPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor={`${formId}-field-120`} className="block font-semibold text-slate-700 mb-1">
                     อ้างอิงใบเสนอราคา (Quotation / RFQ)
                   </label>
-                  <input
+                  <input id={`${formId}-field-120`}
                     type="text"
                     value={quotationNumber}
                     onChange={(e) => setQuotationNumber(e.target.value)}
@@ -821,10 +673,10 @@ export default function PurchaseOrdersPage() {
               {/* Items Section */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-semibold text-slate-700 flex items-center gap-1.5">
+                  <div className="font-semibold text-slate-700 flex items-center gap-1.5">
                     <Package className="w-4 h-4 text-[#F28C28]" />
                     <span>รายการสินค้าสั่งซื้อ ({poLines.length} รายการ)</span>
-                  </label>
+                  </div>
                   <button
                     type="button"
                     onClick={handleAddLine}
@@ -844,7 +696,7 @@ export default function PurchaseOrdersPage() {
                     const lineNet = lineBase + lineVat;
 
                     return (
-                      <div key={idx} className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1.5">
+                      <div key={line.clientId} className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1.5">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-slate-400 w-5">{idx + 1}.</span>
                           <select
@@ -963,10 +815,10 @@ export default function PurchaseOrdersPage() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label htmlFor={`${formId}-field-121`} className="block font-semibold text-slate-700 mb-1">
                   หมายเหตุและเงื่อนไขเพิ่มเติมในใบสั่งซื้อ
                 </label>
-                <textarea
+                <textarea id={`${formId}-field-121`}
                   rows={2}
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
@@ -1066,29 +918,29 @@ export default function PurchaseOrdersPage() {
 
                 {(selectedPODetail.status === 'PENDING_APPROVAL' ||
                   selectedPODetail.status === 'DRAFT') && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handlePOAction(selectedPODetail.id, 'APPROVE', selectedPODetail.poNumber)
-                      }
-                      className="px-4 py-2 bg-[#F28C28] hover:bg-[#D97706] text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      <span>อนุมัติใบสั่งซื้อ (Approve PO)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handlePOAction(selectedPODetail.id, 'REJECT', selectedPODetail.poNumber)
-                      }
-                      className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1"
-                    >
-                      <Ban className="w-3.5 h-3.5" />
-                      <span>ไม่อนุมัติ</span>
-                    </button>
-                  </>
-                )}
+                    <>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handlePOAction(selectedPODetail.id, 'APPROVE', selectedPODetail.poNumber)
+                        }
+                        className="px-4 py-2 bg-[#F28C28] hover:bg-[#D97706] text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        <span>อนุมัติใบสั่งซื้อ (Approve PO)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handlePOAction(selectedPODetail.id, 'REJECT', selectedPODetail.poNumber)
+                        }
+                        className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1"
+                      >
+                        <Ban className="w-3.5 h-3.5" />
+                        <span>ไม่อนุมัติ</span>
+                      </button>
+                    </>
+                  )}
 
                 {selectedPODetail.status === 'APPROVED' && (
                   <button
@@ -1227,49 +1079,7 @@ export default function PurchaseOrdersPage() {
               )}
 
               {/* Linked Goods Receipt (GR) Banner */}
-              {selectedPODetail.goodsReceipts && selectedPODetail.goodsReceipts.length > 0 ? (
-                <div className="p-4 bg-blue-50/70 border border-blue-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
-                      <ArrowDownToLine className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-xs text-blue-950">เอกสารตรวจรับเข้าคลัง (Goods Receipt):</span>
-                        {selectedPODetail.goodsReceipts.map((gr: any) => (
-                          <div key={gr.id} className="inline-flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-blue-200 text-xs">
-                            <span className="font-mono font-bold text-blue-800">{gr.grNumber}</span>
-                            <StatusBadge status={gr.status} />
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-[11px] text-blue-700 mt-1">
-                        ข้อมูลเชื่อมโยงกับระบบตรวจรับเข้าคลัง (GR) เพื่อบันทึก Lot/Exp และตรวจนับจำนวนจริง
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/receiving?poNumber=${selectedPODetail.poNumber}`}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors whitespace-nowrap"
-                  >
-                    <span>เปิดตรวจรับสินค้า (GR)</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              ) : selectedPODetail.status === 'APPROVED' || selectedPODetail.status === 'ORDERED' ? (
-                <div className="p-3.5 bg-blue-50/50 border border-blue-200 rounded-2xl flex items-center justify-between">
-                  <div className="text-xs text-blue-900">
-                    <span className="font-bold">ระบบตรวจรับสินค้า (GR): </span>
-                    <span>สามารถนำเลขที่ใบสั่งซื้อไปตรวจรับสินค้าได้เมื่อของมาส่ง</span>
-                  </div>
-                  <Link
-                    href={`/receiving?poNumber=${selectedPODetail.poNumber}`}
-                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold"
-                  >
-                    ไปหน้าตรวจรับ (GR)
-                  </Link>
-                </div>
-              ) : null}
+              {getGoodsReceiptsContent(selectedPODetail)}
 
               {/* Items Breakdown Table */}
               <div className="bg-white rounded-2xl border border-[#E2EAF4] shadow-2xs overflow-hidden">
@@ -1398,4 +1208,213 @@ export default function PurchaseOrdersPage() {
       )}
     </div>
   );
+}
+
+function getGoodsReceiptsContent(selectedPODetail: any): React.ReactNode {
+  if (selectedPODetail.goodsReceipts && selectedPODetail.goodsReceipts.length > 0) {
+    return <div className="p-4 bg-blue-50/70 border border-blue-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+          <ArrowDownToLine className="w-5 h-5" />
+        </div>
+        <div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-bold text-xs text-blue-950">เอกสารตรวจรับเข้าคลัง (Goods Receipt):</span>
+            {selectedPODetail.goodsReceipts.map((gr: any) => (
+              <div key={gr.id} className="inline-flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-blue-200 text-xs">
+                <span className="font-mono font-bold text-blue-800">{gr.grNumber}</span>
+                <StatusBadge status={gr.status} />
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-blue-700 mt-1">
+            ข้อมูลเชื่อมโยงกับระบบตรวจรับเข้าคลัง (GR) เพื่อบันทึก Lot/Exp และตรวจนับจำนวนจริง
+          </p>
+        </div>
+      </div>
+      <Link
+        href={`/receiving?poNumber=${selectedPODetail.poNumber}`}
+        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors whitespace-nowrap"
+      >
+        <span>เปิดตรวจรับสินค้า (GR)</span>
+        <ChevronRight className="w-4 h-4" />
+      </Link>
+    </div>;
+  }
+  if (selectedPODetail.status === 'APPROVED' || selectedPODetail.status === 'ORDERED') {
+    return <div className="p-3.5 bg-blue-50/50 border border-blue-200 rounded-2xl flex items-center justify-between">
+      <div className="text-xs text-blue-900">
+        <span className="font-bold">ระบบตรวจรับสินค้า (GR): </span>
+        <span>สามารถนำเลขที่ใบสั่งซื้อไปตรวจรับสินค้าได้เมื่อของมาส่ง</span>
+      </div>
+      <Link
+        href={`/receiving?poNumber=${selectedPODetail.poNumber}`}
+        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold"
+      >
+        ไปหน้าตรวจรับ (GR)
+      </Link>
+    </div>;
+  }
+  return null;
+
+}
+
+function renderTableRows(loading: boolean, filteredPOs: any[], search: string, statusFilter: string, setSelectedPODetail: React.Dispatch<any>, setShowDetailModal: React.Dispatch<React.SetStateAction<boolean>>, handlePOAction: (poId: string, action: "APPROVE" | "SEND_TO_SUPPLIER" | "REJECT" | "CLOSE", poNumber: string) => Promise<void>): React.ReactNode {
+  if (loading) {
+    return <tr>
+      <td colSpan={10} className="py-12 text-center text-slate-400">
+        กำลังโหลดข้อมูลใบสั่งซื้อ...
+      </td>
+    </tr>;
+  }
+  if (filteredPOs.length === 0) {
+    return <tr>
+      <td colSpan={10} className="py-12 text-center text-slate-400">
+        {search || statusFilter !== 'ALL'
+          ? 'ไม่พบใบสั่งซื้อที่ตรงกับเงื่อนไขการค้นหา'
+          : 'ยังไม่มีรายการใบสั่งซื้อ'}
+      </td>
+    </tr>;
+  }
+  return filteredPOs.map((po) => {
+    const netVal = po.netAmount || po.totalAmount || 0;
+    return (
+      <tr
+        key={po.id}
+        className="hover:bg-[#FFF7ED]/40 transition-colors group cursor-pointer"
+        onClick={() => {
+          setSelectedPODetail(po);
+          setShowDetailModal(true);
+        }}
+      >
+        <td className="py-3 px-4 font-mono font-bold text-[#D97706]">
+          <span className="hover:underline text-[#D97706] bg-[#FFF7ED] border border-orange-200/60 group-hover:bg-orange-100 px-2 py-0.5 rounded-lg transition-colors">
+            {po.poNumber}
+          </span>
+        </td>
+        <td className="py-3 px-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">
+          {po.prNumber ? (
+            <div>
+              <span className="bg-slate-100 text-slate-700 border border-slate-200/80 px-2 py-0.5 rounded-lg font-bold">
+                {po.prNumber}
+              </span>
+              <div className="text-[10px] text-emerald-800 font-semibold mt-1">
+                {po.allocationId || 'ALC-2569-001'} · {po.budgetCode || 'BG-69-PHARM-01'}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <span className="text-slate-400">-</span>
+              {po.allocationId && (
+                <div className="text-[10px] text-emerald-800 font-semibold mt-0.5">
+                  {po.allocationId}
+                </div>
+              )}
+            </div>
+          )}
+        </td>
+        <td className="py-3 px-3">
+          <div className="font-semibold text-[#14213D]">{po.supplier?.name}</div>
+          <div className="text-[11px] text-slate-400 font-mono">
+            {po.supplier?.code} • {po.supplier?.paymentTerm}
+          </div>
+        </td>
+        <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
+          {new Date(po.orderDate).toLocaleDateString('th-TH')}
+        </td>
+        <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
+          {po.expectedDate ? new Date(po.expectedDate).toLocaleDateString('th-TH') : '-'}
+        </td>
+        <td className="py-3 px-3 text-right font-medium tabular-nums">
+          {po.lines?.length || 0} รายการ
+        </td>
+        <td className="py-3 px-3 text-right font-bold text-[#14213D] tabular-nums">
+          ฿{netVal.toLocaleString()}
+        </td>
+        <td className="py-3 px-3 text-center whitespace-nowrap">
+          <StatusBadge status={po.status} />
+        </td>
+        <td className="py-3 px-3 text-center whitespace-nowrap">
+          {getStatusContent(po)}
+        </td>
+        <td className="py-3 px-4 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedPODetail(po);
+                setShowDetailModal(true);
+              }}
+              className="px-2.5 py-1 text-slate-700 hover:text-[#14213D] hover:bg-slate-100 rounded-lg text-xs font-semibold transition-colors border border-slate-200 shadow-2xs flex items-center gap-1"
+            >
+              <Eye className="w-3.5 h-3.5 text-slate-500" />
+              <span>ดูข้อมูล</span>
+            </button>
+
+            {(po.status === 'PENDING_APPROVAL' || po.status === 'DRAFT') && (
+              <button
+                type="button"
+                onClick={() => handlePOAction(po.id, 'APPROVE', po.poNumber)}
+                className="px-3 py-1 bg-[#F28C28] hover:bg-[#D97706] text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1"
+              >
+                <CheckCircle className="w-3.5 h-3.5" />
+                <span>อนุมัติ</span>
+              </button>
+            )}
+
+            {po.status === 'APPROVED' && (
+              <button
+                type="button"
+                onClick={() => handlePOAction(po.id, 'SEND_TO_SUPPLIER', po.poNumber)}
+                className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>ส่งผู้ขาย</span>
+              </button>
+            )}
+          </div>
+        </td>
+      </tr>
+    );
+  });
+
+}
+
+function getStatusContent(po: any): React.ReactNode {
+  if (po.status === 'COMPLETED' || po.status === 'FULLY_RECEIVED') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+      รับของครบแล้ว
+    </span>;
+  }
+  if (po.status === 'PARTIALLY_RECEIVED') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+      รับของบางส่วน
+    </span>;
+  }
+  if (po.status === 'ORDERED') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+      รอส่งมอบ
+    </span>;
+  }
+  if (po.status === 'APPROVED') {
+    return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+      พร้อมส่งผู้ขาย
+    </span>;
+  }
+  return <span className="text-slate-400 text-[11px]">-</span>;
+
+}
+
+function getActionText(action: string, poNumber: string, poAmt: any) {
+  if (action === 'APPROVE') {
+    return `อนุมัติใบสั่งซื้อ ${poNumber} เรียบร้อยแล้ว (บันทึก Commitment ในระบบงบประมาณ ฿${poAmt.toLocaleString()})`;
+  }
+  if (action === 'SEND_TO_SUPPLIER') {
+    return `ส่งใบสั่งซื้อ ${poNumber} ให้ผู้ขายเรียบร้อยแล้ว (สถานะ: สั่งซื้อแล้ว)`;
+  }
+  if (action === 'CLOSE') {
+    return `ปิดใบสั่งซื้อ ${poNumber} เรียบร้อยแล้ว (Completed)`;
+  }
+  return `ปฏิเสธใบสั่งซื้อ ${poNumber} เรียบร้อยแล้ว (คืนวงเงินงบประมาณ)`;
+
 }

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
-import { ArrowRightLeft, Plus } from 'lucide-react';
+import { ArrowRightLeft } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 export default function BudgetTransfersPage() {
   const { addToast } = useApp();
@@ -56,7 +56,7 @@ export default function BudgetTransfersPage() {
                   <td className="py-3 px-4 text-[#64748B]">{t.reason}</td>
                   <td className="py-3 px-4 text-right">
                     {t.status === 'PENDING' ? (
-                      <button
+                      <button type="button"
                         onClick={() => {
                           setTransfers((prev) => prev.map((x) => (x.id === t.id ? { ...x, status: 'APPROVED' } : x)));
                           addToast('success', `อนุมัติโอนเกลี่ยงบประมาณ ${t.docNo} เรียบร้อยแล้ว`);

@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
 import { usePathname } from 'next/navigation';
+import React from 'react';
 
-export function MainContent({ children }: { children: React.ReactNode }) {
+export function MainContent({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const isHome = pathname === '/';
 

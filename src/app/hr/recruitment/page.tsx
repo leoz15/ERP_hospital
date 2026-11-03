@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useHR, HRRecruitment } from '@/context/HRContext';
 import { useApp } from '@/context/AppContext';
-import { UserPlus, Plus, Eye, ShieldCheck, Calendar, X } from 'lucide-react';
+import { HRRecruitment, useHR } from '@/context/HRContext';
+import { Eye, Plus, UserPlus, X } from 'lucide-react';
+import Link from 'next/link';
+import React, { useId, useState } from 'react';
 
 export default function HRRecruitmentPage() {
+  const formId = useId();
   const { recruitments, addRecruitment } = useHR();
   const { addToast } = useApp();
 
@@ -59,7 +60,7 @@ export default function HRRecruitmentPage() {
             บริหารใบขออัตรากำลัง (MRF) ประกาศรับสมัครงาน คัดกรองใบสมัคร ตารางสัมภาษณ์ และตรวจสอบใบประกอบวิชาชีพก่อนรับเข้าทำงาน
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={() => setShowAddModal(true)}
           className="px-4 py-2.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-xl text-xs font-bold flex items-center gap-2 shrink-0"
         >
@@ -73,20 +74,20 @@ export default function HRRecruitmentPage() {
         {recruitments.map((rec) => (
           <div
             key={rec.id}
-            onClick={() => setSelectedJob(rec)}
-            className="bg-white p-5 rounded-3xl border border-[#E2EAF4] shadow-xs hover:border-[#0D9488] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+
+            className="relative bg-white p-5 rounded-3xl border border-[#E2EAF4] shadow-xs hover:border-[#0D9488] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
           >
+            <button type="button" onClick={() => setSelectedJob(rec)} aria-label={rec.positionTitle} className="absolute inset-0 z-10 rounded-2xl focus-visible:outline-2 focus-visible:outline-blue-600" />
             <div>
               <div className="flex items-center justify-between gap-2">
                 <span className="font-mono text-xs font-bold text-[#0D9488] bg-teal-50 px-2.5 py-0.5 rounded-lg border border-teal-200">
                   {rec.reqNo}
                 </span>
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                    rec.urgency === 'URGENT'
-                      ? 'bg-rose-50 text-rose-700 border-rose-200'
-                      : 'bg-blue-50 text-blue-700 border-blue-200'
-                  }`}
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${rec.urgency === 'URGENT'
+                    ? 'bg-rose-50 text-rose-700 border-rose-200'
+                    : 'bg-blue-50 text-blue-700 border-blue-200'
+                    }`}
                 >
                   {rec.urgency === 'URGENT' ? 'อัตราเร่งด่วน' : 'ตามแผนประจำปี'}
                 </span>
@@ -136,7 +137,7 @@ export default function HRRecruitmentPage() {
                 <h3 className="text-base font-extrabold text-[#14213D] mt-0.5">{selectedJob.positionTitle}</h3>
                 <p className="text-[#64748B]">{selectedJob.qualification}</p>
               </div>
-              <button onClick={() => setSelectedJob(null)} className="p-1.5 text-slate-400 hover:text-slate-700">
+              <button type="button" onClick={() => setSelectedJob(null)} className="p-1.5 text-slate-400 hover:text-slate-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -179,7 +180,7 @@ export default function HRRecruitmentPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              <button
+              <button type="button"
                 onClick={() => {
                   addToast('success', 'ส่งหนังสือเสนองาน (Offer Letter) ให้ผู้ผ่านการคัดเลือกแล้ว');
                   setSelectedJob(null);
@@ -188,7 +189,7 @@ export default function HRRecruitmentPage() {
               >
                 อนุมัติรับเข้าทำงาน (Issue Offer)
               </button>
-              <button onClick={() => setSelectedJob(null)} className="px-4 py-2 border rounded-xl">
+              <button type="button" onClick={() => setSelectedJob(null)} className="px-4 py-2 border rounded-xl">
                 ปิดหน้าต่าง
               </button>
             </div>
@@ -202,26 +203,26 @@ export default function HRRecruitmentPage() {
             <h3 className="font-extrabold text-base text-[#14213D]">เปิดประกาศรับสมัครงานใหม่ (New MRF)</h3>
             <form onSubmit={handleCreate} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold mb-1">ชื่อตำแหน่งที่ต้องการรับสมัคร *</label>
-                <input type="text" value={positionTitle} onChange={(e) => setPositionTitle(e.target.value)} placeholder="เช่น พยาบาลวิชาชีพห้องผ่าตัด (OR RN)" className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
+                <label htmlFor={`${formId}-field-62`} className="block font-bold mb-1">ชื่อตำแหน่งที่ต้องการรับสมัคร *</label>
+                <input id={`${formId}-field-62`} type="text" value={positionTitle} onChange={(e) => setPositionTitle(e.target.value)} placeholder="เช่น พยาบาลวิชาชีพห้องผ่าตัด (OR RN)" className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
               </div>
               <div>
-                <label className="block font-bold mb-1">แผนกต้นสังกัด</label>
-                <input type="text" value={departmentName} onChange={(e) => setDepartmentName(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
+                <label htmlFor={`${formId}-field-63`} className="block font-bold mb-1">แผนกต้นสังกัด</label>
+                <input id={`${formId}-field-63`} type="text" value={departmentName} onChange={(e) => setDepartmentName(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" required />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">จำนวนอัตรา</label>
-                  <input type="number" value={headcountRequested} onChange={(e) => setHeadcountRequested(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-64`} className="block font-bold mb-1">จำนวนอัตรา</label>
+                  <input id={`${formId}-field-64`} type="number" value={headcountRequested} onChange={(e) => setHeadcountRequested(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">กรอบเงินเดือน</label>
-                  <input type="text" value={salaryRange} onChange={(e) => setSalaryRange(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
+                  <label htmlFor={`${formId}-field-65`} className="block font-bold mb-1">กรอบเงินเดือน</label>
+                  <input id={`${formId}-field-65`} type="text" value={salaryRange} onChange={(e) => setSalaryRange(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
                 </div>
               </div>
               <div>
-                <label className="block font-bold mb-1">คุณสมบัติเฉพาะตำแหน่ง</label>
-                <input type="text" value={qualification} onChange={(e) => setQualification(e.target.value)} placeholder="เช่น มีใบประกอบวิชาชีพ..." className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
+                <label htmlFor={`${formId}-field-66`} className="block font-bold mb-1">คุณสมบัติเฉพาะตำแหน่ง</label>
+                <input id={`${formId}-field-66`} type="text" value={qualification} onChange={(e) => setQualification(e.target.value)} placeholder="เช่น มีใบประกอบวิชาชีพ..." className="w-full px-3 py-2 border rounded-xl bg-[#F5F8FC]" />
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 border rounded-xl">ยกเลิก</button>

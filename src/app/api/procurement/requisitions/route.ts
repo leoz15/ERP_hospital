@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { generateDocumentNumber } from '@/lib/doc-sequence';
 import { logAudit } from '@/lib/audit';
+import { generateDocumentNumber } from '@/lib/doc-sequence';
+import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'กรุณาระบุรายการสินค้าที่ต้องการขอซื้ออย่างน้อย 1 รายการ' }, { status: 400 });
     }
 
-    if (isUnplanned && (!unplannedReason || !unplannedReason.trim())) {
+    if (isUnplanned && !unplannedReason?.trim()) {
       return NextResponse.json({ error: 'กรณีขอซื้อนอกแผนงบประมาณ กรุณาระบุเหตุผลความจำเป็นเร่งด่วน' }, { status: 400 });
     }
 
@@ -109,9 +109,9 @@ export async function POST(req: Request) {
       if (plan) {
         fiscalYear = plan.fiscalYear;
         effectivePlanNumber = plan.planNumber;
-        if (plan.departmentName) effectiveDeptName = plan.departmentName;
-        if (plan.allocationId) effectiveAllocationId = plan.allocationId;
-        if (plan.budgetCode) effectiveBudgetCode = plan.budgetCode;
+        effectiveDeptName = plan.departmentName || effectiveDeptName;
+        effectiveAllocationId = plan.allocationId || effectiveAllocationId;
+        effectiveBudgetCode = plan.budgetCode || effectiveBudgetCode;
 
         if (plan.remainingBudget < totalAmount) {
           return NextResponse.json(
