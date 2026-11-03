@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { useBudget } from '@/context/BudgetContext';
+import React from "react";
+import Link from "next/link";
+import { useBudget } from "@/context/BudgetContext";
 import {
   PieChart,
   Wallet,
@@ -18,7 +18,7 @@ import {
   Layers,
   Receipt,
   Lock,
-} from 'lucide-react';
+} from "lucide-react";
 
 export default function BudgetDashboardPage() {
   const { plans, adjustments, approveAdjustment } = useBudget();
@@ -31,15 +31,26 @@ export default function BudgetDashboardPage() {
   const totalActual = plans.reduce((acc, p) => acc + p.actualAmount, 0);
 
   // Formula: งบประมาณคงเหลือ = งบที่อนุมัติ - กันงบประมาณ - ภาระผูกพัน - ค่าใช้จ่ายจริง
-  const totalAvailable = totalApproved - totalReserved - totalCommitment - totalActual;
+  const totalAvailable =
+    totalApproved - totalReserved - totalCommitment - totalActual;
 
-  const actualPct = totalApproved > 0 ? Math.round((totalActual / totalApproved) * 100) : 0;
-  const commitmentPct = totalApproved > 0 ? Math.round((totalCommitment / totalApproved) * 100) : 0;
-  const reservedPct = totalApproved > 0 ? Math.round((totalReserved / totalApproved) * 100) : 0;
-  const availablePct = Math.max(0, 100 - actualPct - commitmentPct - reservedPct);
+  const actualPct =
+    totalApproved > 0 ? Math.round((totalActual / totalApproved) * 100) : 0;
+  const commitmentPct =
+    totalApproved > 0 ? Math.round((totalCommitment / totalApproved) * 100) : 0;
+  const reservedPct =
+    totalApproved > 0 ? Math.round((totalReserved / totalApproved) * 100) : 0;
+  const availablePct = Math.max(
+    0,
+    100 - actualPct - commitmentPct - reservedPct,
+  );
 
-  const pendingPlansCount = plans.filter((p) => p.status === 'PENDING_APPROVAL').length;
-  const pendingAdjustments = adjustments.filter((a) => a.status === 'PENDING_APPROVAL');
+  const pendingPlansCount = plans.filter(
+    (p) => p.status === "PENDING_APPROVAL",
+  ).length;
+  const pendingAdjustments = adjustments.filter(
+    (a) => a.status === "PENDING_APPROVAL",
+  );
   const totalPendingCount = pendingPlansCount + pendingAdjustments.length;
 
   const formatMillion = (val: number) => `${(val / 1000000).toFixed(2)} ลบ.`;
@@ -55,11 +66,13 @@ export default function BudgetDashboardPage() {
               <PieChart className="w-3.5 h-3.5" />
               MOD-001 • BUDGET MANAGEMENT SYSTEM (ปีงบประมาณ 2569)
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-2xl font-bold tracking-tight text-white">
               01. Dashboard งบประมาณ (ภาพรวมงบประมาณ ปี 2569)
             </h1>
             <p className="text-emerald-100/85 text-sm mt-1 max-w-3xl">
-              วางแผน จัดทำ จัดสรร ควบคุมวงเงิน และติดตามภาระผูกพัน (Commitment) แยกสถานะไม่ให้ซ้ำกับค่าใช้จ่ายจริง (Actual Expense) จากระบบ Finance แบบเรียลไทม์
+              วางแผน จัดทำ จัดสรร ควบคุมวงเงิน และติดตามภาระผูกพัน (Commitment)
+              แยกสถานะไม่ให้ซ้ำกับค่าใช้จ่ายจริง (Actual Expense) จากระบบ
+              Finance แบบเรียลไทม์
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2.5">
@@ -143,7 +156,8 @@ export default function BudgetDashboardPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            ฿{totalCommitment.toLocaleString()} • ยอดจาก PO ที่อนุมัติแล้ว (ไม่ซ้ำกับจ่ายจริง)
+            ฿{totalCommitment.toLocaleString()} • ยอดจาก PO ที่อนุมัติแล้ว
+            (ไม่ซ้ำกับจ่ายจริง)
           </p>
         </div>
 
@@ -165,7 +179,8 @@ export default function BudgetDashboardPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            ฿{totalActual.toLocaleString()} • ยอดที่ Finance บันทึกเบิกจ่ายจริงแล้ว
+            ฿{totalActual.toLocaleString()} • ยอดที่ Finance
+            บันทึกเบิกจ่ายจริงแล้ว
           </p>
         </div>
       </div>
@@ -178,7 +193,7 @@ export default function BudgetDashboardPage() {
               กันงบประมาณ (Reserved Budget - PR)
             </span>
             <div className="text-xl font-bold text-purple-700 mt-1">
-              {formatMillion(totalReserved)}{' '}
+              {formatMillion(totalReserved)}{" "}
               <span className="text-xs font-medium text-slate-400">
                 (฿{totalReserved.toLocaleString()})
               </span>
@@ -198,13 +213,16 @@ export default function BudgetDashboardPage() {
               งบคงเหลือใช้ได้จริง (Available Budget)
             </span>
             <div className="text-xl font-extrabold text-emerald-700 mt-1">
-              {formatMillion(totalAvailable)}{' '}
+              {formatMillion(totalAvailable)}{" "}
               <span className="text-xs font-medium text-emerald-600">
                 (฿{totalAvailable.toLocaleString()})
               </span>
             </div>
             <p className="text-[11px] text-emerald-700/80 mt-0.5">
-              สูตร: อนุมัติ ({formatMillion(totalApproved)}) - กันงบ ({formatMillion(totalReserved)}) - ผูกพัน ({formatMillion(totalCommitment)}) - จ่ายจริง ({formatMillion(totalActual)})
+              สูตร: อนุมัติ ({formatMillion(totalApproved)}) - กันงบ (
+              {formatMillion(totalReserved)}) - ผูกพัน (
+              {formatMillion(totalCommitment)}) - จ่ายจริง (
+              {formatMillion(totalActual)})
             </p>
           </div>
           <span className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold">
@@ -221,7 +239,8 @@ export default function BudgetDashboardPage() {
               {totalPendingCount} รายการ
             </div>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              คำของบประมาณ ({pendingPlansCount}) • คำขอโอนงบ ({pendingAdjustments.length})
+              คำของบประมาณ ({pendingPlansCount}) • คำขอโอนงบ (
+              {pendingAdjustments.length})
             </p>
           </div>
           <Link
@@ -244,7 +263,8 @@ export default function BudgetDashboardPage() {
                   สัดส่วนการใช้งบประมาณ ปี 2569 (Deduplicated Status)
                 </h2>
                 <p className="text-xs text-slate-500">
-                  ยอดภาระผูกพัน (PO) และค่าใช้จ่ายจริง (Finance AP) แยกสถานะไม่ให้นับซ้ำกัน
+                  ยอดภาระผูกพัน (PO) และค่าใช้จ่ายจริง (Finance AP)
+                  แยกสถานะไม่ให้นับซ้ำกัน
                 </p>
               </div>
               <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
@@ -289,7 +309,10 @@ export default function BudgetDashboardPage() {
                   </span>
                 </div>
                 <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="bg-blue-600 h-full rounded-full" style={{ width: `${actualPct}%` }} />
+                  <div
+                    className="bg-blue-600 h-full rounded-full"
+                    style={{ width: `${actualPct}%` }}
+                  />
                 </div>
               </div>
 
@@ -304,7 +327,10 @@ export default function BudgetDashboardPage() {
                   </span>
                 </div>
                 <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="bg-amber-500 h-full rounded-full" style={{ width: `${commitmentPct}%` }} />
+                  <div
+                    className="bg-amber-500 h-full rounded-full"
+                    style={{ width: `${commitmentPct}%` }}
+                  />
                 </div>
               </div>
 
@@ -319,7 +345,10 @@ export default function BudgetDashboardPage() {
                   </span>
                 </div>
                 <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="bg-purple-500 h-full rounded-full" style={{ width: `${reservedPct}%` }} />
+                  <div
+                    className="bg-purple-500 h-full rounded-full"
+                    style={{ width: `${reservedPct}%` }}
+                  />
                 </div>
               </div>
 
@@ -334,15 +363,24 @@ export default function BudgetDashboardPage() {
                   </span>
                 </div>
                 <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${availablePct}%` }} />
+                  <div
+                    className="bg-emerald-500 h-full rounded-full"
+                    style={{ width: `${availablePct}%` }}
+                  />
                 </div>
               </div>
             </div>
           </div>
 
           <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>เชื่อมโยงข้อมูลอัตโนมัติระหว่างคลังพัสดุ (PR/PO) และการเงิน (AP/GL)</span>
-            <Link href="/budget/control" className="text-emerald-600 font-bold hover:underline">
+            <span>
+              เชื่อมโยงข้อมูลอัตโนมัติระหว่างคลังพัสดุ (PR/PO) และการเงิน
+              (AP/GL)
+            </span>
+            <Link
+              href="/budget/control"
+              className="text-emerald-600 font-bold hover:underline"
+            >
               ดูตารางควบคุมวงเงินรายแผนก →
             </Link>
           </div>
@@ -359,46 +397,46 @@ export default function BudgetDashboardPage() {
           <div className="space-y-2.5">
             {[
               {
-                step: '1',
-                title: 'หน่วยงานเสนอคำของบประมาณ',
-                desc: 'บันทึกคำของบประจำปี แยกตามหมวด แหล่งเงิน และโครงการ',
-                href: '/budget/planning',
-                badge: 'Planning',
+                step: "1",
+                title: "หน่วยงานเสนอคำของบประมาณ",
+                desc: "บันทึกคำของบประจำปี แยกตามหมวด แหล่งเงิน และโครงการ",
+                href: "/budget/planning",
+                badge: "Planning",
               },
               {
-                step: '2',
-                title: 'ผู้บริหารพิจารณาและอนุมัติงบประมาณ',
-                desc: 'กลั่นกรองกรอบวงเงินรวม (50.00 ลบ.) และอนุมัติแผนประจำปี',
-                href: '/budget/planning',
-                badge: 'Approval',
+                step: "2",
+                title: "ผู้บริหารพิจารณาและอนุมัติงบประมาณ",
+                desc: "กลั่นกรองกรอบวงเงินรวม (50.00 ลบ.) และอนุมัติแผนประจำปี",
+                href: "/budget/planning",
+                badge: "Approval",
               },
               {
-                step: '3',
-                title: 'จัดสรรงบให้แต่ละหน่วยงาน',
-                desc: 'กระจายงบรายไตรมาส Q1-Q4 (ห้ามเกินวงเงินที่ได้รับอนุมัติ)',
-                href: '/budget/allocation',
-                badge: '45.00 ลบ.',
+                step: "3",
+                title: "จัดสรรงบให้แต่ละหน่วยงาน",
+                desc: "กระจายงบรายไตรมาส Q1-Q4 (ห้ามเกินวงเงินที่ได้รับอนุมัติ)",
+                href: "/budget/allocation",
+                badge: "45.00 ลบ.",
               },
               {
-                step: '4',
-                title: 'เมื่อมีใบขอซื้อ (PR) ระบบจะกันงบประมาณ',
-                desc: 'ล็อกวงเงิน Reserved Budget (3.00 ลบ.) เพื่อป้องกันงบซ้ำซ้อน',
-                href: '/budget/control',
-                badge: 'Reserved',
+                step: "4",
+                title: "เมื่อมีใบขอซื้อ (PR) ระบบจะกันงบประมาณ",
+                desc: "ล็อกวงเงิน Reserved Budget (3.00 ลบ.) เพื่อป้องกันงบซ้ำซ้อน",
+                href: "/budget/control",
+                badge: "Reserved",
               },
               {
-                step: '5',
-                title: 'เมื่ออนุมัติใบสั่งซื้อ (PO) ระบบบันทึกภาระผูกพัน',
-                desc: 'เปลี่ยนจากกันงบเป็น Commitment (12.00 ลบ.) รอส่งมอบพัสดุ',
-                href: '/budget/control',
-                badge: '24%',
+                step: "5",
+                title: "เมื่ออนุมัติใบสั่งซื้อ (PO) ระบบบันทึกภาระผูกพัน",
+                desc: "เปลี่ยนจากกันงบเป็น Commitment (12.00 ลบ.) รอส่งมอบพัสดุ",
+                href: "/budget/control",
+                badge: "24%",
               },
               {
-                step: '6',
-                title: 'เมื่อการเงินจ่ายเงินจริง ระบบตัดเป็นค่าใช้จ่ายจริง',
-                desc: 'ตัดยอดออกจาก Commitment และบันทึกเป็น Actual (18.00 ลบ.)',
-                href: '/budget/control',
-                badge: '36%',
+                step: "6",
+                title: "เมื่อการเงินจ่ายเงินจริง ระบบตัดเป็นค่าใช้จ่ายจริง",
+                desc: "ตัดยอดออกจาก Commitment และบันทึกเป็น Actual (18.00 ลบ.)",
+                href: "/budget/control",
+                badge: "36%",
               },
             ].map((item) => (
               <Link
@@ -418,7 +456,9 @@ export default function BudgetDashboardPage() {
                       {item.badge}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">{item.desc}</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    {item.desc}
+                  </p>
                 </div>
               </Link>
             ))}
@@ -434,7 +474,8 @@ export default function BudgetDashboardPage() {
               สถานะวงเงินงบประมาณรายหน่วยงาน (ปีงบประมาณ 2569)
             </h2>
             <p className="text-xs text-slate-500">
-              แสดงวงเงินอนุมัติ จัดสรรแล้ว กันงบ (PR) ภาระผูกพัน (PO) ใช้จ่ายจริง (Actual) และงบคงเหลือสุทธิ
+              แสดงวงเงินอนุมัติ จัดสรรแล้ว กันงบ (PR) ภาระผูกพัน (PO)
+              ใช้จ่ายจริง (Actual) และงบคงเหลือสุทธิ
             </p>
           </div>
           <Link
@@ -453,24 +494,44 @@ export default function BudgetDashboardPage() {
                 <th className="py-3.5 px-4">หมวดงบประมาณ</th>
                 <th className="py-3.5 px-4 text-right">งบที่อนุมัติ</th>
                 <th className="py-3.5 px-4 text-right">จัดสรรแล้ว</th>
-                <th className="py-3.5 px-4 text-right text-purple-700">กันงบ (PR)</th>
-                <th className="py-3.5 px-4 text-right text-amber-700">ผูกพัน (PO)</th>
-                <th className="py-3.5 px-4 text-right text-blue-700">จ่ายจริง (Actual)</th>
-                <th className="py-3.5 px-4 text-right text-emerald-700">งบคงเหลือใช้ได้</th>
+                <th className="py-3.5 px-4 text-right text-purple-700">
+                  กันงบ (PR)
+                </th>
+                <th className="py-3.5 px-4 text-right text-amber-700">
+                  ผูกพัน (PO)
+                </th>
+                <th className="py-3.5 px-4 text-right text-blue-700">
+                  จ่ายจริง (Actual)
+                </th>
+                <th className="py-3.5 px-4 text-right text-emerald-700">
+                  งบคงเหลือใช้ได้
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
               {plans.map((p) => {
-                const avail = p.approvedAmount - p.reservedAmount - p.commitmentAmount - p.actualAmount;
+                const avail =
+                  p.approvedAmount -
+                  p.reservedAmount -
+                  p.commitmentAmount -
+                  p.actualAmount;
                 return (
                   <tr key={p.id} className="hover:bg-slate-50/70 transition">
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900">{p.budgetCode}</div>
-                      <div className="text-slate-500 text-[11px]">{p.departmentName}</div>
+                      <div className="font-bold text-slate-900">
+                        {p.budgetCode}
+                      </div>
+                      <div className="text-slate-500 text-[11px]">
+                        {p.departmentName}
+                      </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="font-medium text-slate-700">{p.budgetCategory}</span>
-                      <div className="text-[11px] text-slate-400">{p.fundSource}</div>
+                      <span className="font-medium text-slate-700">
+                        {p.budgetCategory}
+                      </span>
+                      <div className="text-[11px] text-slate-400">
+                        {p.fundSource}
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 text-right font-bold text-slate-900">
                       ฿{p.approvedAmount.toLocaleString()}
