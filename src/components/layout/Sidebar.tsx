@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
@@ -48,17 +48,43 @@ import {
   CreditCard,
   FileSpreadsheet,
   TrendingUp,
-} from 'lucide-react';
+  X,
+} from "lucide-react";
 
-export function Sidebar() {
+export function Sidebar({ mobileOpen = false, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
+  const sidebarRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const sidebar = sidebarRef.current;
+    sidebar?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose?.();
+      if (event.key !== "Tab" || !sidebar) return;
+      const elements = Array.from(sidebar.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex="0"]')).filter((element) => element.getClientRects().length > 0);
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+      if (!first) { event.preventDefault(); return; }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === sidebar)) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === sidebar)) {
+        event.preventDefault(); first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      requestAnimationFrame(() => { if (previousFocus?.isConnected) previousFocus.focus(); });
+    };
+  }, [mobileOpen, onClose]);
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState<number>(4);
   const [isWorkflowsExpanded, setIsWorkflowsExpanded] = useState(true);
 
   // Fetch real-time pending approvals count (called unconditionally on every render)
   useEffect(() => {
-    if (pathname === '/') return;
-    fetch('/api/approvals')
+    if (pathname === "/") return;
+    fetch("/api/approvals")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -71,48 +97,57 @@ export function Sidebar() {
   }, [pathname]);
 
   // If on ERP Center Portal (home), don't render sidebar to allow clean full-width layout
-  if (pathname === '/') {
+  if (pathname === "/") {
     return null;
   }
 
-  const isProcurement = pathname.startsWith('/procurement');
-  const isHR = pathname.startsWith('/hr');
-  const isBudget = pathname.startsWith('/budget');
-  const isFinance = pathname.startsWith('/finance');
+  const isProcurement = pathname.startsWith("/procurement");
+  const isHR = pathname.startsWith("/hr");
+  const isBudget = pathname.startsWith("/budget");
+  const isFinance = pathname.startsWith("/finance");
 
   // Theme styling helpers based on module
   const activeBg = isProcurement
-    ? 'bg-[#F28C28] text-white shadow-[0_6px_20px_rgba(242,140,40,0.35)]'
+    ? "bg-[#F28C28] text-white shadow-[0_6px_20px_rgba(242,140,40,0.35)]"
     : isHR
-    ? 'bg-[#0D9488] text-white shadow-[0_6px_20px_rgba(13,148,136,0.30)]'
-    : isBudget
-    ? 'bg-[#059669] text-white shadow-[0_6px_20px_rgba(5,150,105,0.30)]'
-    : isFinance
-    ? 'bg-[#0284C7] text-white shadow-[0_6px_20px_rgba(2,132,199,0.30)]'
-    : 'bg-[#2563EB] text-white shadow-[0_6px_20px_rgba(37,99,235,0.30)]';
+      ? "bg-[#0D9488] text-white shadow-[0_6px_20px_rgba(13,148,136,0.30)]"
+      : isBudget
+        ? "bg-[#059669] text-white shadow-[0_6px_20px_rgba(5,150,105,0.30)]"
+        : isFinance
+          ? "bg-[#0284C7] text-white shadow-[0_6px_20px_rgba(2,132,199,0.30)]"
+          : "bg-[#2563EB] text-white shadow-[0_6px_20px_rgba(37,99,235,0.30)]";
 
-  const iconActiveBg = 'bg-white/20 text-white';
+  const iconActiveBg = "bg-white/20 text-white";
   const iconColor = isProcurement
-    ? 'text-[#F28C28]'
+    ? "text-[#F28C28]"
     : isHR
-    ? 'text-[#0D9488]'
-    : isBudget
-    ? 'text-[#059669]'
-    : isFinance
-    ? 'text-[#0284C7]'
-    : 'text-[#2563EB]';
+      ? "text-[#0D9488]"
+      : isBudget
+        ? "text-[#059669]"
+        : isFinance
+          ? "text-[#0284C7]"
+          : "text-[#2563EB]";
   const hoverBg = isProcurement
-    ? 'hover:bg-orange-50/60'
+    ? "hover:bg-orange-50/60"
     : isHR
-    ? 'hover:bg-teal-50/60'
-    : isBudget
-    ? 'hover:bg-emerald-50/60'
-    : isFinance
-    ? 'hover:bg-sky-50/60'
-    : 'hover:bg-blue-50/60';
+      ? "hover:bg-teal-50/60"
+      : isBudget
+        ? "hover:bg-emerald-50/60"
+        : isFinance
+          ? "hover:bg-sky-50/60"
+          : "hover:bg-blue-50/60";
 
   return (
-    <aside className="w-68 bg-white text-[#14213D] flex flex-col flex-shrink-0 h-screen sticky top-0 border-r border-[#E2EAF4] z-40 select-none">
+    <aside
+      ref={sidebarRef}
+      id="application-sidebar"
+      tabIndex={-1}
+      role={mobileOpen ? "dialog" : undefined}
+      aria-modal={mobileOpen || undefined}
+      aria-label="เมนูระบบงาน"
+      onClick={(event) => { if ((event.target as HTMLElement).closest("a[href]")) onClose?.(); }}
+      className={`${mobileOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 xl:sticky xl:top-0 xl:flex w-[17rem] max-w-[85vw] bg-white text-[#14213D] flex-col flex-shrink-0 h-[100dvh] border-r border-[#E2EAF4] z-50 select-none outline-none`}
+    >
       {/* 1. Header (InsightHub Style) - Aligned height (h-16 / 64px) and border with Topbar */}
       <div className="h-16 px-5 flex items-center justify-between border-b border-[#E2EAF4] bg-white">
         <div className="flex items-center gap-3">
@@ -139,29 +174,32 @@ export function Sidebar() {
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
                   isProcurement
-                    ? 'bg-[#F28C28]'
+                    ? "bg-[#F28C28]"
                     : isHR
-                    ? 'bg-[#0D9488]'
-                    : isBudget
-                    ? 'bg-[#059669]'
-                    : isFinance
-                    ? 'bg-[#0284C7]'
-                    : 'bg-[#2563EB]'
+                      ? "bg-[#0D9488]"
+                      : isBudget
+                        ? "bg-[#059669]"
+                        : isFinance
+                          ? "bg-[#0284C7]"
+                          : "bg-[#2563EB]"
                 }`}
               />
               {isProcurement
-                ? 'Procurement Hub'
+                ? "Procurement Hub"
                 : isHR
-                ? 'HUMAN RESOURCE'
-                : isBudget
-                ? 'BUDGET CONTROL'
-                : isFinance
-                ? 'FINANCE & ACCOUNTING'
-                : 'Inventory Hub'}
+                  ? "HUMAN RESOURCE"
+                  : isBudget
+                    ? "BUDGET CONTROL"
+                    : isFinance
+                      ? "FINANCE & ACCOUNTING"
+                      : "Inventory Hub"}
             </div>
           </div>
         </div>
 
+        <button type="button" onClick={onClose} aria-label="ปิดเมนูระบบงาน" className="xl:hidden p-2 rounded-xl hover:bg-slate-100">
+          <X className="w-4 h-4" />
+        </button>
         {/* Back to ERP Center Portal */}
         <Link
           href="/"
@@ -183,14 +221,16 @@ export function Sidebar() {
                 HUMAN RESOURCE
               </div>
               {(() => {
-                const isDashActive = pathname === '/hr';
+                const isDashActive = pathname === "/hr";
                 if (isDashActive) {
                   return (
                     <Link
                       href="/hr"
                       className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-bold text-sm transition-all duration-200 ${activeBg}`}
                     >
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${iconActiveBg}`}>
+                      <div
+                        className={`w-8 h-8 rounded-xl flex items-center justify-center ${iconActiveBg}`}
+                      >
                         <LayoutDashboard className="w-4 h-4" />
                       </div>
                       <span className="tracking-wide">Dashboard HR</span>
@@ -221,8 +261,8 @@ export function Sidebar() {
                 EMPLOYEE MANAGEMENT
               </div>
               {renderMenuItem({
-                href: '/hr/employees',
-                name: 'ทะเบียนบุคลากร',
+                href: "/hr/employees",
+                name: "ทะเบียนบุคลากร",
                 icon: Users,
                 pathname,
                 iconColor,
@@ -231,8 +271,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/organization',
-                name: 'โครงสร้างองค์กร',
+                href: "/hr/organization",
+                name: "โครงสร้างองค์กร",
                 icon: Network,
                 pathname,
                 iconColor,
@@ -241,8 +281,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/positions',
-                name: 'ตำแหน่งและอัตรากำลัง',
+                href: "/hr/positions",
+                name: "ตำแหน่งและอัตรากำลัง",
                 icon: Briefcase,
                 pathname,
                 iconColor,
@@ -251,8 +291,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/contracts',
-                name: 'สัญญาจ้างและประวัติการทำงาน',
+                href: "/hr/contracts",
+                name: "สัญญาจ้างและประวัติการทำงาน",
                 icon: FileSignature,
                 pathname,
                 iconColor,
@@ -268,8 +308,8 @@ export function Sidebar() {
                 TIME & ATTENDANCE
               </div>
               {renderMenuItem({
-                href: '/hr/attendance',
-                name: 'บันทึกเวลาเข้า-ออก',
+                href: "/hr/attendance",
+                name: "บันทึกเวลาเข้า-ออก",
                 icon: Clock,
                 pathname,
                 iconColor,
@@ -278,8 +318,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/roster',
-                name: 'ตารางเวร (Shift & Roster)',
+                href: "/hr/roster",
+                name: "ตารางเวร (Shift & Roster)",
                 icon: CalendarDays,
                 pathname,
                 iconColor,
@@ -288,8 +328,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/overtime',
-                name: 'การทำงานล่วงเวลา (OT)',
+                href: "/hr/overtime",
+                name: "การทำงานล่วงเวลา (OT)",
                 icon: Timer,
                 pathname,
                 iconColor,
@@ -298,8 +338,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/leaves',
-                name: 'การลาและวันหยุด',
+                href: "/hr/leaves",
+                name: "การลาและวันหยุด",
                 icon: Palmtree,
                 pathname,
                 iconColor,
@@ -315,8 +355,8 @@ export function Sidebar() {
                 PAYROLL & BENEFITS
               </div>
               {renderMenuItem({
-                href: '/hr/payroll',
-                name: 'ประมวลผลเงินเดือน',
+                href: "/hr/payroll",
+                name: "ประมวลผลเงินเดือน",
                 icon: Wallet,
                 pathname,
                 iconColor,
@@ -325,8 +365,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/allowances',
-                name: 'ค่าตอบแทนและค่าเวร',
+                href: "/hr/allowances",
+                name: "ค่าตอบแทนและค่าเวร",
                 icon: Coins,
                 pathname,
                 iconColor,
@@ -335,8 +375,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/benefits',
-                name: 'สวัสดิการ',
+                href: "/hr/benefits",
+                name: "สวัสดิการ",
                 icon: HeartHandshake,
                 pathname,
                 iconColor,
@@ -345,8 +385,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/deductions',
-                name: 'รายการหักและรายรับ',
+                href: "/hr/deductions",
+                name: "รายการหักและรายรับ",
                 icon: Receipt,
                 pathname,
                 iconColor,
@@ -362,8 +402,8 @@ export function Sidebar() {
                 DEVELOPMENT & EVALUATION
               </div>
               {renderMenuItem({
-                href: '/hr/recruitment',
-                name: 'สรรหาบุคลากร',
+                href: "/hr/recruitment",
+                name: "สรรหาบุคลากร",
                 icon: UserPlus,
                 pathname,
                 iconColor,
@@ -372,8 +412,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/training',
-                name: 'ฝึกอบรม',
+                href: "/hr/training",
+                name: "ฝึกอบรม",
                 icon: GraduationCap,
                 pathname,
                 iconColor,
@@ -382,8 +422,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/performance',
-                name: 'ประเมินผลการปฏิบัติงาน',
+                href: "/hr/performance",
+                name: "ประเมินผลการปฏิบัติงาน",
                 icon: Target,
                 pathname,
                 iconColor,
@@ -392,8 +432,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/competency',
-                name: 'Competency',
+                href: "/hr/competency",
+                name: "Competency",
                 icon: Award,
                 pathname,
                 iconColor,
@@ -409,8 +449,8 @@ export function Sidebar() {
                 PROFESSIONAL CREDENTIAL
               </div>
               {renderMenuItem({
-                href: '/hr/licenses',
-                name: 'ใบประกอบวิชาชีพ',
+                href: "/hr/licenses",
+                name: "ใบประกอบวิชาชีพ",
                 icon: ShieldCheck,
                 pathname,
                 iconColor,
@@ -419,8 +459,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/certificates',
-                name: 'ใบรับรองและคุณวุฒิ',
+                href: "/hr/certificates",
+                name: "ใบรับรองและคุณวุฒิ",
                 icon: BadgeCheck,
                 pathname,
                 iconColor,
@@ -429,8 +469,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/expiry-alerts',
-                name: 'แจ้งเตือนวันหมดอายุ',
+                href: "/hr/expiry-alerts",
+                name: "แจ้งเตือนวันหมดอายุ",
                 icon: AlertTriangle,
                 pathname,
                 iconColor,
@@ -447,8 +487,8 @@ export function Sidebar() {
                 REPORTS & SETTINGS
               </div>
               {renderMenuItem({
-                href: '/hr/reports',
-                name: 'รายงาน HR',
+                href: "/hr/reports",
+                name: "รายงาน HR",
                 icon: BarChart3,
                 pathname,
                 iconColor,
@@ -457,8 +497,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/approvals',
-                name: 'ศูนย์อนุมัติ',
+                href: "/hr/approvals",
+                name: "ศูนย์อนุมัติ",
                 icon: FileCheck2,
                 pathname,
                 iconColor,
@@ -468,8 +508,8 @@ export function Sidebar() {
                 badgeCount: 3,
               })}
               {renderMenuItem({
-                href: '/hr/settings',
-                name: 'ตั้งค่าระบบ',
+                href: "/hr/settings",
+                name: "ตั้งค่าระบบ",
                 icon: Settings,
                 pathname,
                 iconColor,
@@ -478,8 +518,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/hr/audit',
-                name: 'ประวัติธุรกรรม (Audit Log)',
+                href: "/hr/audit",
+                name: "ประวัติธุรกรรม (Audit Log)",
                 icon: ScrollText,
                 pathname,
                 iconColor,
@@ -498,8 +538,8 @@ export function Sidebar() {
                 01. BUDGET MANAGEMENT
               </div>
               {renderMenuItem({
-                href: '/budget',
-                name: 'Dashboard งบประมาณ',
+                href: "/budget",
+                name: "Dashboard งบประมาณ",
                 icon: LayoutDashboard,
                 pathname,
                 iconColor,
@@ -515,8 +555,8 @@ export function Sidebar() {
                 02. BUDGET PLANNING
               </div>
               {renderMenuItem({
-                href: '/budget/planning',
-                name: 'จัดทำงบประมาณประจำปี',
+                href: "/budget/planning",
+                name: "จัดทำงบประมาณประจำปี",
                 icon: FileSignature,
                 pathname,
                 iconColor,
@@ -532,8 +572,8 @@ export function Sidebar() {
                 03. BUDGET ALLOCATION
               </div>
               {renderMenuItem({
-                href: '/budget/allocation',
-                name: 'จัดสรรงบประมาณ',
+                href: "/budget/allocation",
+                name: "จัดสรรงบประมาณ",
                 icon: PieChart,
                 pathname,
                 iconColor,
@@ -549,8 +589,8 @@ export function Sidebar() {
                 04. BUDGET ADJUSTMENT
               </div>
               {renderMenuItem({
-                href: '/budget/adjustment',
-                name: 'โอนและปรับปรุงงบประมาณ',
+                href: "/budget/adjustment",
+                name: "โอนและปรับปรุงงบประมาณ",
                 icon: ArrowRightLeft,
                 pathname,
                 iconColor,
@@ -567,8 +607,8 @@ export function Sidebar() {
                 05. BUDGET CONTROL
               </div>
               {renderMenuItem({
-                href: '/budget/control',
-                name: 'ควบคุมงบประมาณ (Control)',
+                href: "/budget/control",
+                name: "ควบคุมงบประมาณ (Control)",
                 icon: ShieldCheck,
                 pathname,
                 iconColor,
@@ -584,8 +624,8 @@ export function Sidebar() {
                 06. BUDGET REPORTS
               </div>
               {renderMenuItem({
-                href: '/budget/reports',
-                name: 'รายงานงบประมาณ',
+                href: "/budget/reports",
+                name: "รายงานงบประมาณ",
                 icon: BarChart3,
                 pathname,
                 iconColor,
@@ -601,8 +641,8 @@ export function Sidebar() {
                 07. SETTINGS & AUDIT
               </div>
               {renderMenuItem({
-                href: '/budget/settings',
-                name: 'ตั้งค่าระบบงบประมาณ',
+                href: "/budget/settings",
+                name: "ตั้งค่าระบบงบประมาณ",
                 icon: Settings,
                 pathname,
                 iconColor,
@@ -611,8 +651,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/budget/audit',
-                name: 'ประวัติธุรกรรม (Audit Log)',
+                href: "/budget/audit",
+                name: "ประวัติธุรกรรม (Audit Log)",
                 icon: ScrollText,
                 pathname,
                 iconColor,
@@ -630,8 +670,8 @@ export function Sidebar() {
                 FINANCE & ACCOUNTING
               </div>
               {renderMenuItem({
-                href: '/finance',
-                name: 'Dashboard การเงินและบัญชี',
+                href: "/finance",
+                name: "Dashboard การเงินและบัญชี",
                 icon: LayoutDashboard,
                 pathname,
                 iconColor,
@@ -646,8 +686,8 @@ export function Sidebar() {
                 TREASURY & LEDGER
               </div>
               {renderMenuItem({
-                href: '/finance/payables',
-                name: 'บัญชีเจ้าหนี้และการเบิกจ่าย (AP)',
+                href: "/finance/payables",
+                name: "บัญชีเจ้าหนี้และการเบิกจ่าย (AP)",
                 icon: CreditCard,
                 pathname,
                 iconColor,
@@ -656,8 +696,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/finance/receivables',
-                name: 'บัญชีลูกหนี้และรายรับ (AR)',
+                href: "/finance/receivables",
+                name: "บัญชีลูกหนี้และรายรับ (AR)",
                 icon: TrendingUp,
                 pathname,
                 iconColor,
@@ -666,8 +706,8 @@ export function Sidebar() {
                 hoverBg,
               })}
               {renderMenuItem({
-                href: '/finance/ledger',
-                name: 'สมุดบัญชีแยกประเภท (GL)',
+                href: "/finance/ledger",
+                name: "สมุดบัญชีแยกประเภท (GL)",
                 icon: BookOpen,
                 pathname,
                 iconColor,
@@ -688,10 +728,12 @@ export function Sidebar() {
 
               {(() => {
                 const isDashActive = isProcurement
-                  ? pathname === '/procurement'
-                  : pathname === '/inventory';
-                const dashHref = isProcurement ? '/procurement' : '/inventory';
-                const dashLabel = isProcurement ? 'Dashboard จัดซื้อ' : 'Dashboard คลัง';
+                  ? pathname === "/procurement"
+                  : pathname === "/inventory";
+                const dashHref = isProcurement ? "/procurement" : "/inventory";
+                const dashLabel = isProcurement
+                  ? "Dashboard จัดซื้อ"
+                  : "Dashboard คลัง";
 
                 if (isDashActive) {
                   return (
@@ -730,15 +772,15 @@ export function Sidebar() {
             {/* Category: Workflows & Master Data */}
             <div className="space-y-1.5 pt-1">
               <div className="px-3 text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">
-                {isProcurement ? 'Procurement Core' : 'Inventory Core'}
+                {isProcurement ? "Procurement Core" : "Inventory Core"}
               </div>
 
               {/* INVENTORY MODULE ITEMS */}
               {!isProcurement && (
                 <>
                   {renderMenuItem({
-                    href: '/items',
-                    name: 'ทะเบียนสินค้า (Master)',
+                    href: "/items",
+                    name: "ทะเบียนสินค้า (Master)",
                     icon: Package,
                     pathname,
                     iconColor,
@@ -748,8 +790,8 @@ export function Sidebar() {
                   })}
 
                   {renderMenuItem({
-                    href: '/stock',
-                    name: 'สต็อกคงคลัง (Stock)',
+                    href: "/stock",
+                    name: "สต็อกคงคลัง (Stock)",
                     icon: Layers,
                     pathname,
                     iconColor,
@@ -762,7 +804,9 @@ export function Sidebar() {
                   <div className="pt-1">
                     <button
                       type="button"
-                      onClick={() => setIsWorkflowsExpanded(!isWorkflowsExpanded)}
+                      onClick={() =>
+                        setIsWorkflowsExpanded(!isWorkflowsExpanded)
+                      }
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-semibold transition-all group ${hoverBg}`}
                     >
                       <div className="flex items-center gap-3">
@@ -783,27 +827,27 @@ export function Sidebar() {
                     {isWorkflowsExpanded && (
                       <div className="pl-4 my-1 space-y-1">
                         {renderSubItem({
-                          href: '/receiving',
-                          name: 'รับสินค้าเข้าคลัง (GR)',
-                          iconDotColor: 'bg-blue-500',
+                          href: "/receiving",
+                          name: "รับสินค้าเข้าคลัง (GR)",
+                          iconDotColor: "bg-blue-500",
                           pathname,
                         })}
                         {renderSubItem({
-                          href: '/issue',
-                          name: 'เบิกจ่ายสินค้า (Issue)',
-                          iconDotColor: 'bg-emerald-500',
+                          href: "/issue",
+                          name: "เบิกจ่ายสินค้า (Issue)",
+                          iconDotColor: "bg-emerald-500",
                           pathname,
                         })}
                         {renderSubItem({
-                          href: '/transfer',
-                          name: 'โอนย้ายพัสดุ (Transfer)',
-                          iconDotColor: 'bg-amber-500',
+                          href: "/transfer",
+                          name: "โอนย้ายพัสดุ (Transfer)",
+                          iconDotColor: "bg-amber-500",
                           pathname,
                         })}
                         {renderSubItem({
-                          href: '/return',
-                          name: 'รับคืนพัสดุ (Return)',
-                          iconDotColor: 'bg-rose-500',
+                          href: "/return",
+                          name: "รับคืนพัสดุ (Return)",
+                          iconDotColor: "bg-rose-500",
                           pathname,
                         })}
                       </div>
@@ -811,8 +855,8 @@ export function Sidebar() {
                   </div>
 
                   {renderMenuItem({
-                    href: '/lots',
-                    name: 'Lot & วันหมดอายุ (FEFO)',
+                    href: "/lots",
+                    name: "Lot & วันหมดอายุ (FEFO)",
                     icon: CalendarClock,
                     pathname,
                     iconColor,
@@ -822,8 +866,8 @@ export function Sidebar() {
                   })}
 
                   {renderMenuItem({
-                    href: '/adjustment',
-                    name: 'ปรับปรุงสต็อก (Adjust)',
+                    href: "/adjustment",
+                    name: "ปรับปรุงสต็อก (Adjust)",
                     icon: SlidersHorizontal,
                     pathname,
                     iconColor,
@@ -833,8 +877,8 @@ export function Sidebar() {
                   })}
 
                   {renderMenuItem({
-                    href: '/count',
-                    name: 'ตรวจนับพัสดุ (Count)',
+                    href: "/count",
+                    name: "ตรวจนับพัสดุ (Count)",
                     icon: ClipboardCheck,
                     pathname,
                     iconColor,
@@ -844,8 +888,8 @@ export function Sidebar() {
                   })}
 
                   {renderMenuItem({
-                    href: '/stock-card',
-                    name: 'บัตรสต็อก (Stock Card)',
+                    href: "/stock-card",
+                    name: "บัตรสต็อก (Stock Card)",
                     icon: History,
                     pathname,
                     iconColor,
@@ -855,8 +899,8 @@ export function Sidebar() {
                   })}
 
                   {renderMenuItem({
-                    href: '/warehouses',
-                    name: 'ผังคลังและโซนจัดเก็บ',
+                    href: "/warehouses",
+                    name: "ผังคลังและโซนจัดเก็บ",
                     icon: Building,
                     pathname,
                     iconColor,
@@ -871,8 +915,8 @@ export function Sidebar() {
               {isProcurement && (
                 <>
                   {renderMenuItem({
-                    href: '/procurement/suppliers',
-                    name: 'ทะเบียนผู้จำหน่าย (Suppliers)',
+                    href: "/procurement/suppliers",
+                    name: "ทะเบียนผู้จำหน่าย (Suppliers)",
                     icon: Building2,
                     pathname,
                     iconColor,
@@ -885,7 +929,9 @@ export function Sidebar() {
                   <div className="pt-1">
                     <button
                       type="button"
-                      onClick={() => setIsWorkflowsExpanded(!isWorkflowsExpanded)}
+                      onClick={() =>
+                        setIsWorkflowsExpanded(!isWorkflowsExpanded)
+                      }
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-semibold transition-all group ${hoverBg}`}
                     >
                       <div className="flex items-center gap-3">
@@ -906,39 +952,39 @@ export function Sidebar() {
                     {isWorkflowsExpanded && (
                       <div className="pl-4 my-1 space-y-1">
                         {renderSubItem({
-                          href: '/procurement/plans',
-                          name: 'แผนจัดซื้อและกรอบงบประมาณ (PP)',
-                          iconDotColor: 'bg-blue-500',
+                          href: "/procurement/plans",
+                          name: "แผนจัดซื้อและกรอบงบประมาณ (PP)",
+                          iconDotColor: "bg-blue-500",
                           pathname,
                         })}
                         {renderSubItem({
-                          href: '/procurement/requisitions',
-                          name: 'ใบขอซื้อ (PR)',
-                          iconDotColor: 'bg-orange-500',
+                          href: "/procurement/requisitions",
+                          name: "ใบขอซื้อ (PR)",
+                          iconDotColor: "bg-orange-500",
                           pathname,
                         })}
                         {renderSubItem({
-                          href: '/procurement/rfq',
-                          name: 'ขอใบเสนอราคา (RFQ)',
-                          iconDotColor: 'bg-sky-500',
+                          href: "/procurement/rfq",
+                          name: "ขอใบเสนอราคา (RFQ)",
+                          iconDotColor: "bg-sky-500",
                           pathname,
                         })}
                         {renderSubItem({
-                          href: '/procurement/quotations',
-                          name: 'ใบเสนอราคา (Quotation)',
-                          iconDotColor: 'bg-violet-500',
+                          href: "/procurement/quotations",
+                          name: "ใบเสนอราคา (Quotation)",
+                          iconDotColor: "bg-violet-500",
                           pathname,
                         })}
                         {renderSubItem({
-                          href: '/procurement/comparison',
-                          name: 'เปรียบเทียบใบเสนอราคา',
-                          iconDotColor: 'bg-amber-500',
+                          href: "/procurement/comparison",
+                          name: "เปรียบเทียบใบเสนอราคา",
+                          iconDotColor: "bg-amber-500",
                           pathname,
                         })}
                         {renderSubItem({
-                          href: '/procurement/orders',
-                          name: 'ใบสั่งซื้อ (PO)',
-                          iconDotColor: 'bg-emerald-500',
+                          href: "/procurement/orders",
+                          name: "ใบสั่งซื้อ (PO)",
+                          iconDotColor: "bg-emerald-500",
                           pathname,
                         })}
                       </div>
@@ -946,8 +992,8 @@ export function Sidebar() {
                   </div>
 
                   {renderMenuItem({
-                    href: '/receiving',
-                    name: 'ตรวจรับเข้าคลัง (GR)',
+                    href: "/receiving",
+                    name: "ตรวจรับเข้าคลัง (GR)",
                     icon: ArrowDownToLine,
                     pathname,
                     iconColor,
@@ -957,8 +1003,8 @@ export function Sidebar() {
                   })}
 
                   {renderMenuItem({
-                    href: '/items',
-                    name: 'ทะเบียนสินค้า (Master)',
+                    href: "/items",
+                    name: "ทะเบียนสินค้า (Master)",
                     icon: Package,
                     pathname,
                     iconColor,
@@ -977,7 +1023,7 @@ export function Sidebar() {
               </div>
 
               {(() => {
-                const isActive = pathname === '/approvals';
+                const isActive = pathname === "/approvals";
 
                 if (isActive) {
                   return (
@@ -1025,8 +1071,8 @@ export function Sidebar() {
               })()}
 
               {renderMenuItem({
-                href: '/reports',
-                name: 'รายงานสรุป & มูลค่า',
+                href: "/reports",
+                name: "รายงานสรุป & มูลค่า",
                 icon: BarChart3,
                 pathname,
                 iconColor,
@@ -1036,8 +1082,8 @@ export function Sidebar() {
               })}
 
               {renderMenuItem({
-                href: '/audit',
-                name: 'ประวัติธุรกรรม (Audit)',
+                href: "/audit",
+                name: "ประวัติธุรกรรม (Audit)",
                 icon: ScrollText,
                 pathname,
                 iconColor,
@@ -1077,10 +1123,10 @@ function renderMenuItem({
 }) {
   const isActive =
     pathname === href ||
-    (href !== '/' &&
-      href !== '/hr' &&
-      href !== '/budget' &&
-      href !== '/finance' &&
+    (href !== "/" &&
+      href !== "/hr" &&
+      href !== "/budget" &&
+      href !== "/finance" &&
       pathname.startsWith(href));
 
   if (isActive) {
@@ -1091,7 +1137,9 @@ function renderMenuItem({
         className={`flex items-center justify-between px-3.5 py-2 rounded-2xl font-bold text-xs transition-all duration-200 ${activeBg}`}
       >
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${iconActiveBg}`}>
+          <div
+            className={`w-8 h-8 rounded-xl flex items-center justify-center ${iconActiveBg}`}
+          >
             <Icon className="w-4 h-4" />
           </div>
           <span className="tracking-wide">{name}</span>
@@ -1148,8 +1196,8 @@ function renderSubItem({
       href={href}
       className={`flex items-center gap-2.5 py-2 px-3 rounded-xl text-xs transition-all group ${
         isActive
-          ? 'text-[#2563EB] font-bold bg-[#EFF6FF] border border-blue-100 shadow-2xs'
-          : 'text-[#64748B] hover:text-[#14213D] hover:bg-slate-50'
+          ? "text-[#2563EB] font-bold bg-[#EFF6FF] border border-blue-100 shadow-2xs"
+          : "text-[#64748B] hover:text-[#14213D] hover:bg-slate-50"
       }`}
     >
       <span className={`w-2 h-2 rounded-full ${iconDotColor} shrink-0`} />

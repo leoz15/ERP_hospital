@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useApp } from '@/context/AppContext';
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useApp } from "@/context/AppContext";
 import {
   Bell,
   Search,
@@ -17,9 +17,10 @@ import {
   Users,
   PieChart,
   Landmark,
-} from 'lucide-react';
+  Menu,
+} from "lucide-react";
 
-export function Topbar() {
+export function Topbar({ sidebarOpen = false, onMenuClick }: { sidebarOpen?: boolean; onMenuClick?: () => void }) {
   const pathname = usePathname();
   const { currentUser, selectedWarehouse, setSelectedWarehouse } = useApp();
   const [warehouses, setWarehouses] = useState<any[]>([]);
@@ -27,22 +28,23 @@ export function Topbar() {
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const isHome = pathname === '/';
-  const isProcurement = pathname.startsWith('/procurement');
-  const isHR = pathname.startsWith('/hr');
-  const isBudget = pathname.startsWith('/budget');
-  const isFinance = pathname.startsWith('/finance');
-  const isInventory = !isHome && !isProcurement && !isHR && !isBudget && !isFinance;
+  const isHome = pathname === "/";
+  const isProcurement = pathname.startsWith("/procurement");
+  const isHR = pathname.startsWith("/hr");
+  const isBudget = pathname.startsWith("/budget");
+  const isFinance = pathname.startsWith("/finance");
+  const isInventory =
+    !isHome && !isProcurement && !isHR && !isBudget && !isFinance;
 
   useEffect(() => {
-    fetch('/api/warehouses')
+    fetch("/api/warehouses")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setWarehouses(data);
       })
       .catch(console.error);
 
-    fetch('/api/approvals')
+    fetch("/api/approvals")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setPendingApprovalsCount(data.length);
@@ -53,13 +55,13 @@ export function Topbar() {
   // Keyboard shortcut Ctrl+K to focus search input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   if (isHome) {
@@ -70,6 +72,16 @@ export function Topbar() {
     <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-md border-b border-[#E2EAF4] px-4 sm:px-6 flex items-center justify-between gap-4">
       {/* 1. Left: Module Switcher */}
       <div className="flex items-center shrink-0">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label="เปิดเมนูระบบงาน"
+          aria-expanded={sidebarOpen}
+          aria-controls="application-sidebar"
+          className="flex xl:hidden items-center mr-3 p-2 rounded-xl hover:bg-slate-100 text-xs font-semibold text-[#14213D] transition-all shadow-2xs"
+        >
+          <Menu />
+        </button>
         <div className="relative">
           <button
             onClick={() => setShowAppSwitcher(!showAppSwitcher)}
@@ -79,16 +91,16 @@ export function Topbar() {
             <div
               className={`w-6 h-6 rounded-lg flex items-center justify-center text-white shadow-xs ${
                 isHome
-                  ? 'bg-[#2563EB]'
+                  ? "bg-[#2563EB]"
                   : isProcurement
-                  ? 'bg-[#F28C28]'
-                  : isHR
-                  ? 'bg-[#0D9488]'
-                  : isBudget
-                  ? 'bg-[#059669]'
-                  : isFinance
-                  ? 'bg-[#0284C7]'
-                  : 'bg-[#2563EB]'
+                    ? "bg-[#F28C28]"
+                    : isHR
+                      ? "bg-[#0D9488]"
+                      : isBudget
+                        ? "bg-[#059669]"
+                        : isFinance
+                          ? "bg-[#0284C7]"
+                          : "bg-[#2563EB]"
               }`}
             >
               {isHome ? (
@@ -108,29 +120,29 @@ export function Topbar() {
             <div className="text-left hidden sm:block">
               <span className="font-bold text-xs text-[#14213D] block leading-tight">
                 {isHome
-                  ? 'ERP Center'
+                  ? "ERP Center"
                   : isProcurement
-                  ? 'ระบบจัดซื้อจัดจ้าง'
-                  : isHR
-                  ? 'ระบบบริหารทรัพยากรบุคคล'
-                  : isBudget
-                  ? 'ระบบบริหารงบประมาณ'
-                  : isFinance
-                  ? 'ระบบบริหารการเงินและบัญชี'
-                  : 'ระบบคลังสินค้าและพัสดุ'}
+                    ? "ระบบจัดซื้อจัดจ้าง"
+                    : isHR
+                      ? "ระบบบริหารทรัพยากรบุคคล"
+                      : isBudget
+                        ? "ระบบบริหารงบประมาณ"
+                        : isFinance
+                          ? "ระบบบริหารการเงินและบัญชี"
+                          : "ระบบคลังสินค้าและพัสดุ"}
               </span>
               <span className="text-[10px] text-[#94A3B8] font-normal block">
                 {isHome
-                  ? 'หน้าหลักองค์กร'
+                  ? "หน้าหลักองค์กร"
                   : isProcurement
-                  ? 'Procurement'
-                  : isHR
-                  ? 'Human Resource (HRM)'
-                  : isBudget
-                  ? 'Budget Management'
-                  : isFinance
-                  ? 'Finance & Accounting'
-                  : 'Inventory'}
+                    ? "Procurement"
+                    : isHR
+                      ? "Human Resource (HRM)"
+                      : isBudget
+                        ? "Budget Management"
+                        : isFinance
+                          ? "Finance & Accounting"
+                          : "Inventory"}
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-[#94A3B8] ml-0.5" />
@@ -152,7 +164,9 @@ export function Topbar() {
                     href="/"
                     onClick={() => setShowAppSwitcher(false)}
                     className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${
-                      isHome ? 'bg-blue-50 font-bold text-[#2563EB]' : 'hover:bg-[#F5F8FC] text-[#64748B]'
+                      isHome
+                        ? "bg-blue-50 font-bold text-[#2563EB]"
+                        : "hover:bg-[#F5F8FC] text-[#64748B]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -160,8 +174,12 @@ export function Topbar() {
                         <Home className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="font-bold text-[#14213D]">ERP Center (หน้าหลัก)</div>
-                        <div className="text-[10px] text-[#94A3B8]">ศูนย์กลางการจัดการระบบทั้งหมด</div>
+                        <div className="font-bold text-[#14213D]">
+                          ERP Center (หน้าหลัก)
+                        </div>
+                        <div className="text-[10px] text-[#94A3B8]">
+                          ศูนย์กลางการจัดการระบบทั้งหมด
+                        </div>
                       </div>
                     </div>
                     {isHome && <Check className="w-4 h-4 text-[#2563EB]" />}
@@ -172,7 +190,9 @@ export function Topbar() {
                     href="/inventory"
                     onClick={() => setShowAppSwitcher(false)}
                     className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${
-                      isInventory ? 'bg-blue-50 font-bold text-[#2563EB]' : 'hover:bg-[#F5F8FC] text-[#64748B]'
+                      isInventory
+                        ? "bg-blue-50 font-bold text-[#2563EB]"
+                        : "hover:bg-[#F5F8FC] text-[#64748B]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -180,11 +200,17 @@ export function Topbar() {
                         <Package className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="font-bold text-[#14213D]">คลังสินค้าและพัสดุ (Inventory)</div>
-                        <div className="text-[10px] text-[#94A3B8]">รับเข้า เบิกจ่าย โอนย้าย และตรวจนับ</div>
+                        <div className="font-bold text-[#14213D]">
+                          คลังสินค้าและพัสดุ (Inventory)
+                        </div>
+                        <div className="text-[10px] text-[#94A3B8]">
+                          รับเข้า เบิกจ่าย โอนย้าย และตรวจนับ
+                        </div>
                       </div>
                     </div>
-                    {isInventory && <Check className="w-4 h-4 text-[#2563EB]" />}
+                    {isInventory && (
+                      <Check className="w-4 h-4 text-[#2563EB]" />
+                    )}
                   </Link>
 
                   {/* 3. Procurement */}
@@ -192,7 +218,9 @@ export function Topbar() {
                     href="/procurement"
                     onClick={() => setShowAppSwitcher(false)}
                     className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${
-                      isProcurement ? 'bg-orange-50 font-bold text-[#F28C28]' : 'hover:bg-[#F5F8FC] text-[#64748B]'
+                      isProcurement
+                        ? "bg-orange-50 font-bold text-[#F28C28]"
+                        : "hover:bg-[#F5F8FC] text-[#64748B]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -200,11 +228,17 @@ export function Topbar() {
                         <ShoppingCart className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="font-bold text-[#14213D]">จัดซื้อจัดจ้าง (Procurement)</div>
-                        <div className="text-[10px] text-[#94A3B8]">แผนจัดซื้อ (PP), ขอซื้อ (PR), สั่งซื้อ (PO)</div>
+                        <div className="font-bold text-[#14213D]">
+                          จัดซื้อจัดจ้าง (Procurement)
+                        </div>
+                        <div className="text-[10px] text-[#94A3B8]">
+                          แผนจัดซื้อ (PP), ขอซื้อ (PR), สั่งซื้อ (PO)
+                        </div>
                       </div>
                     </div>
-                    {isProcurement && <Check className="w-4 h-4 text-[#F28C28]" />}
+                    {isProcurement && (
+                      <Check className="w-4 h-4 text-[#F28C28]" />
+                    )}
                   </Link>
 
                   {/* 4. HR & Personnel */}
@@ -212,7 +246,9 @@ export function Topbar() {
                     href="/hr"
                     onClick={() => setShowAppSwitcher(false)}
                     className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${
-                      isHR ? 'bg-teal-50 font-bold text-[#0D9488]' : 'hover:bg-[#F5F8FC] text-[#64748B]'
+                      isHR
+                        ? "bg-teal-50 font-bold text-[#0D9488]"
+                        : "hover:bg-[#F5F8FC] text-[#64748B]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -220,8 +256,12 @@ export function Topbar() {
                         <Users className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="font-bold text-[#14213D]">ทรัพยากรบุคคล (Hospital HRM)</div>
-                        <div className="text-[10px] text-[#94A3B8]">บุคลากร ตารางเวร ใบประกอบวิชาชีพ เงินเดือน</div>
+                        <div className="font-bold text-[#14213D]">
+                          ทรัพยากรบุคคล (Hospital HRM)
+                        </div>
+                        <div className="text-[10px] text-[#94A3B8]">
+                          บุคลากร ตารางเวร ใบประกอบวิชาชีพ เงินเดือน
+                        </div>
                       </div>
                     </div>
                     {isHR && <Check className="w-4 h-4 text-[#0D9488]" />}
@@ -232,7 +272,9 @@ export function Topbar() {
                     href="/budget"
                     onClick={() => setShowAppSwitcher(false)}
                     className={`flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors ${
-                      isBudget ? 'bg-emerald-50 font-bold text-[#059669]' : 'hover:bg-[#F5F8FC] text-[#64748B]'
+                      isBudget
+                        ? "bg-emerald-50 font-bold text-[#059669]"
+                        : "hover:bg-[#F5F8FC] text-[#64748B]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -240,8 +282,12 @@ export function Topbar() {
                         <PieChart className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="font-bold text-[#14213D]">ระบบบริหารงบประมาณ (Budget)</div>
-                        <div className="text-[10px] text-[#94A3B8]">จัดทำงบประจำปี จัดสรรวงเงิน ควบคุมผูกพัน</div>
+                        <div className="font-bold text-[#14213D]">
+                          ระบบบริหารงบประมาณ (Budget)
+                        </div>
+                        <div className="text-[10px] text-[#94A3B8]">
+                          จัดทำงบประจำปี จัดสรรวงเงิน ควบคุมผูกพัน
+                        </div>
                       </div>
                     </div>
                     {isBudget && <Check className="w-4 h-4 text-[#059669]" />}
@@ -257,8 +303,12 @@ export function Topbar() {
                         <Landmark className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="font-bold text-slate-500">การเงินและบัญชี (Finance & Accounting)</div>
-                        <div className="text-[10px] text-slate-400">ยังไม่พร้อมใช้งาน (อยู่ระหว่างพัฒนา)</div>
+                        <div className="font-bold text-slate-500">
+                          การเงินและบัญชี (Finance & Accounting)
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          ยังไม่พร้อมใช้งาน (อยู่ระหว่างพัฒนา)
+                        </div>
                       </div>
                     </div>
                     <span className="px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-500 text-[9px] font-bold">
@@ -327,14 +377,14 @@ export function Topbar() {
         {/* User Card */}
         <div className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-[#E2EAF4]">
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#164EAB] to-[#2563EB] text-white font-bold text-xs flex items-center justify-center shadow-sm">
-            {currentUser?.name ? currentUser.name.slice(0, 2) : 'WH'}
+            {currentUser?.name ? currentUser.name.slice(0, 2) : "WH"}
           </div>
           <div className="hidden lg:block text-left">
             <div className="text-xs font-bold text-[#14213D] leading-tight">
-              {currentUser?.name || 'ผู้ใช้งาน'}
+              {currentUser?.name || "ผู้ใช้งาน"}
             </div>
             <div className="text-[10px] text-[#94A3B8] font-medium">
-              {currentUser?.department?.name || 'โรงพยาบาล'}
+              {currentUser?.department?.name || "โรงพยาบาล"}
             </div>
           </div>
         </div>

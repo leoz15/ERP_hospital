@@ -3,9 +3,7 @@ import { Metadata } from 'next';
 import { AppProvider } from '@/context/AppContext';
 import { HRProvider } from '@/context/HRContext';
 import { BudgetProvider } from '@/context/BudgetContext';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { Topbar } from '@/components/layout/Topbar';
-import { MainContent } from '@/components/layout/MainContent';
+import { ApplicationShell } from '@/components/layout/ApplicationShell';
 import { ToastContainer } from '@/components/ui/ToastContainer';
 
 export const metadata: Metadata = {
@@ -24,13 +22,7 @@ export default function RootLayout({
         <AppProvider>
           <HRProvider>
             <BudgetProvider>
-              <div className="flex min-h-screen bg-[#F5F8FC]">
-                <Sidebar />
-                <div className="flex-1 flex flex-col min-w-0">
-                  <Topbar />
-                  <MainContent>{children}</MainContent>
-                </div>
-              </div>
+              <ApplicationShell>{children}</ApplicationShell>
               <ToastContainer />
             </BudgetProvider>
           </HRProvider>
